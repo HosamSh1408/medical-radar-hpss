@@ -1,0 +1,316 @@
+{
+ "_definitions": {
+  "scope": "PAPER_18=18-session benchmark; retained23/pool30/all_paired=cohort multiverse; sessions with zero valid windows are excluded from all per-measurement aggregates.",
+  "per_session_rmse": "RMSE_k = sqrt(mean((est-ref)^2)) over the session's valid 30-s windows; sessions weighted equally (per-measurement mean = unweighted mean of RMSE_k).",
+  "dft_nls_nmf_hpss": "Per-measurement means of per-session RMSE for each branch.",
+  "const_global_oracle": "Per-measurement mean of per-session RMSE of (ref vs the cohort-pooled mean of all valid refs) -- in-sample constant predictor.",
+  "const_loso": "Per-measurement mean of per-session RMSE of (ref vs the MEDIAN of the OTHER sessions' pooled valid refs) -- leave-one-session-out constant predictor.",
+  "session_mean_oracle": "Mean across sessions of the per-session reference SD -- lower bound for within-session tracking RMSE.",
+  "paired": "delta_k = RMSE_hpss_k - RMSE_nmf_k; stats over sessions. loo_range = min/max of the mean delta when each single session is left out. largest_abs_deltas = top-3 |delta_k| with session id.",
+  "tost_0p5": "Paired one-sample TOST at margin +-0.50 bpm: p = max(P(t>t1), P(t<t2)); ci90 = mean +- t_{0.95,n-1}*SE (sample SD). patient_level = per-patient mean of session deltas. max_abs_patient_ci90_bound = largest |CI bound|; patient-level equivalence holds iff this is < 0.50 (it is 0.508 for all_paired -> patient-level TOST p=0.0528, i.e. marginal failure at the widest cohort; the pre-registered analysis unit is the session).",
+  "window_level_PAPER18": "Pooled over PAPER_18 valid windows. harmonic bins: est/ref ratio in [0.4,0.6] (half) or [1.8,2.2] (double); gross = |err|>10 bpm. Bland-Altman: bias +- 1.96*sample_sd(ddof=1) of (est-ref). heavy_move = windows with n_removed>2 (minmove False).",
+  "mitigation_vs_raw": "Per-measurement paired comparison of each mitigated branch vs Raw NLS; wins = sessions with lower RMSE; two-sided Wilcoxon signed-rank.",
+  "lags": "Synchronization lag (s) stored in the provenance-locked caches (evaluation.sync_arrays, metadata-anchored +-60 s search)."
+ },
+ "baselines": {
+  "PAPER_18": {
+   "dft": 10.106,
+   "nls": 7.487,
+   "nmf": 6.8628,
+   "hpss": 6.798,
+   "const_loso": 8.209,
+   "const_global_oracle": 8.023,
+   "session_mean_oracle": 4.934,
+   "n": 18
+  },
+  "retained23": {
+   "dft": 11.754,
+   "nls": 8.633,
+   "nmf": 7.7961,
+   "hpss": 7.821,
+   "const_loso": 8.576,
+   "const_global_oracle": 8.24,
+   "session_mean_oracle": 4.895,
+   "n": 23
+  },
+  "pool30": {
+   "dft": 12.841,
+   "nls": 8.863,
+   "nmf": 8.181,
+   "hpss": 8.0854,
+   "const_loso": 8.124,
+   "const_global_oracle": 7.805,
+   "session_mean_oracle": 4.61,
+   "n": 28
+  },
+  "all_paired": {
+   "dft": 13.121,
+   "nls": 9.248,
+   "nmf": 8.3489,
+   "hpss": 8.3607,
+   "const_loso": 8.194,
+   "const_global_oracle": 7.861,
+   "session_mean_oracle": 4.514,
+   "n": 31
+  }
+ },
+ "paired": {
+  "PAPER_18": {
+   "mean_delta": -0.0648,
+   "median_delta": -0.045,
+   "hpss_better_sessions": "10/18",
+   "sign_test_p": 0.8145,
+   "loo_range": [
+    -0.1008,
+    -0.0125
+   ],
+   "largest_abs_deltas": [
+    [
+     "9.3",
+     -0.953
+    ],
+    [
+     "6.3",
+     -0.853
+    ],
+    [
+     "11.1",
+     0.548
+    ]
+   ]
+  },
+  "retained23": {
+   "mean_delta": 0.0249,
+   "median_delta": -0.0296,
+   "hpss_better_sessions": "12/23",
+   "sign_test_p": 1.0,
+   "loo_range": [
+    -0.0674,
+    0.0738
+   ],
+   "largest_abs_deltas": [
+    [
+     "9.2",
+     2.055
+    ],
+    [
+     "10.2",
+     -1.052
+    ],
+    [
+     "9.3",
+     -0.953
+    ]
+   ]
+  },
+  "pool30": {
+   "mean_delta": -0.0956,
+   "median_delta": 0.0249,
+   "hpss_better_sessions": "14/28",
+   "sign_test_p": 1.0,
+   "loo_range": [
+    -0.1752,
+    0.103
+   ],
+   "largest_abs_deltas": [
+    [
+     "12.1",
+     -5.458
+    ],
+    [
+     "9.2",
+     2.055
+    ],
+    [
+     "2.3",
+     1.403
+    ]
+   ]
+  },
+  "all_paired": {
+   "mean_delta": 0.0117,
+   "median_delta": 0.0968,
+   "hpss_better_sessions": "14/31",
+   "sign_test_p": 0.7201,
+   "loo_range": [
+    -0.0564,
+    0.1941
+   ],
+   "largest_abs_deltas": [
+    [
+     "12.1",
+     -5.458
+    ],
+    [
+     "9.2",
+     2.055
+    ],
+    [
+     "1.1",
+     1.715
+    ]
+   ]
+  }
+ },
+ "tost_0p5": {
+  "PAPER_18": {
+   "session_level": {
+    "n": 18,
+    "p": 0.0001,
+    "ci90": [
+     -0.225,
+     0.095
+    ]
+   },
+   "patient_level": {
+    "n": 10,
+    "p": 0.0062,
+    "ci90": [
+     -0.348,
+     0.089
+    ]
+   },
+   "max_abs_patient_ci90_bound": 0.348
+  },
+  "retained23": {
+   "session_level": {
+    "n": 23,
+    "p": 0.0006,
+    "ci90": [
+     -0.196,
+     0.245
+    ]
+   },
+   "patient_level": {
+    "n": 10,
+    "p": 0.0011,
+    "ci90": [
+     -0.223,
+     0.195
+    ]
+   },
+   "max_abs_patient_ci90_bound": 0.223
+  },
+  "pool30": {
+   "session_level": {
+    "n": 28,
+    "p": 0.0456,
+    "ci90": [
+     -0.489,
+     0.298
+    ]
+   },
+   "patient_level": {
+    "n": 11,
+    "p": 0.0353,
+    "ci90": [
+     -0.451,
+     0.391
+    ]
+   },
+   "max_abs_patient_ci90_bound": 0.451
+  },
+  "all_paired": {
+   "session_level": {
+    "n": 31,
+    "p": 0.0171,
+    "ci90": [
+     -0.362,
+     0.385
+    ]
+   },
+   "patient_level": {
+    "n": 12,
+    "p": 0.0528,
+    "ci90": [
+     -0.359,
+     0.508
+    ]
+   },
+   "max_abs_patient_ci90_bound": 0.508
+  }
+ },
+ "window_level_PAPER18": {
+  "n_windows": 5466,
+  "ref_range_bpm": [
+   25.8,
+   81.5
+  ],
+  "ref_mean_sd": [
+   48.05,
+   9.31
+  ],
+  "pct_windows_nmf_hpss_within_0.5bpm": 75.03,
+  "corr_err_nmf_vs_hpss": 0.8304,
+  "harmonic_errors_nmf_pct": {
+   "half(0.4-0.6)": 0.0,
+   "double(1.8-2.2)": 0.0,
+   "gross_|err|>10": 14.75
+  },
+  "harmonic_errors_hpss_pct": {
+   "half(0.4-0.6)": 0.0,
+   "double(1.8-2.2)": 0.0,
+   "gross_|err|>10": 14.31
+  },
+  "bland_altman_pooled_nmf(bias,lo,hi)": [
+   1.75,
+   -12.03,
+   15.53
+  ],
+  "bland_altman_pooled_hpss(bias,lo,hi)": [
+   1.53,
+   -12.3,
+   15.35
+  ],
+  "pooled_rmse_nmf_hpss_rawnls": [
+   7.243,
+   7.217,
+   7.886
+  ],
+  "heavy_move_windows": 998,
+  "heavy_move_rmse_nmf_hpss_rawnls": [
+   8.323,
+   7.814,
+   9.052
+  ]
+ },
+ "mitigation_vs_raw": {
+  "PAPER_18": {
+   "nmf_minus_raw": -0.625,
+   "nmf_wins": "13/18",
+   "p_wilcoxon_nmf": 0.0056,
+   "hpss_minus_raw": -0.689,
+   "hpss_wins": "15/18",
+   "p_wilcoxon_hpss": 0.0008
+  },
+  "retained23": {
+   "nmf_minus_raw": -0.837,
+   "nmf_wins": "16/23",
+   "p_wilcoxon_nmf": 0.0024,
+   "hpss_minus_raw": -0.812,
+   "hpss_wins": "18/23",
+   "p_wilcoxon_hpss": 0.0019
+  },
+  "pool30": {
+   "nmf_minus_raw": -0.682,
+   "nmf_wins": "19/28",
+   "p_wilcoxon_nmf": 0.0037,
+   "hpss_minus_raw": -0.777,
+   "hpss_wins": "21/28",
+   "p_wilcoxon_hpss": 0.001
+  },
+  "all_paired": {
+   "nmf_minus_raw": -0.899,
+   "nmf_wins": "22/31",
+   "p_wilcoxon_nmf": 0.0007,
+   "hpss_minus_raw": -0.888,
+   "hpss_wins": "24/31",
+   "p_wilcoxon_hpss": 0.0001
+  }
+ },
+ "lags": {
+  "7.3": -33,
+  "12.1": -116,
+  "3.1": -439
+ }
+}

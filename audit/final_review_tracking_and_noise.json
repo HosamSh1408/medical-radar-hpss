@@ -1,0 +1,77 @@
+{
+ "_definitions": {
+  "within_session_pearson_r": "Pearson r between per-window estimates and reference rates within each session (valid windows only); mean across sessions.",
+  "rmse_*_per_window": "Per-measurement mean of per-session RMSE (same as audit/final_review_independent.json).",
+  "rmse_*_session_median": "Median across sessions of the per-session RMSE (typical-session value, robust to outlier sessions).",
+  "mae_*_session_median": "Median across sessions of the per-session mean absolute error.",
+  "mean_within_session_ref_sd": "Mean across sessions of the per-session reference SD (tracking difficulty floor).",
+  "noise_floor": "Complex white Gaussian noise, 200 windows x 480 samples (seed 20261011), passed through the identical downstream chain: Raw = autocorr_coarse->nls_estimate on bandpassed noise; HPSS = mitigate_hpss->bandpass->autocorr_coarse->nls_estimate. pct in [25.8, 81.5] uses the PAPER_18 reference range. rmse_hpss_vs_shuffled = RMS(est_noise_hpss - ref_shuffled) over 200 i.i.d. draws from PAPER_18 pooled valid refs -- the RMSE a pipeline outputting plausible-looking but uncorrelated rates would score.",
+  "prior_artifact_note": "This file regenerates audit/final_review_tracking_and_noise.json. The earlier untracked version contained 'rmse_*_session_median_of_radar' whose generating code was not committed and whose definition could not be recovered; it is replaced by the explicitly defined 'rmse_*_session_median' / 'mae_*_session_median' fields."
+ },
+ "PAPER_18": {
+  "within_session_pearson_r_nmf_mean": 0.46,
+  "within_session_pearson_r_hpss_mean": 0.465,
+  "sessions_r_hpss_lt_0.3": 4,
+  "n": 18,
+  "rmse_nmf_per_window": 6.863,
+  "rmse_hpss_per_window": 6.798,
+  "rmse_nmf_session_median": 6.339,
+  "rmse_hpss_session_median": 6.514,
+  "mae_nmf_session_median": 4.997,
+  "mae_hpss_session_median": 5.051,
+  "mean_within_session_ref_sd": 4.934
+ },
+ "retained23": {
+  "within_session_pearson_r_nmf_mean": 0.448,
+  "within_session_pearson_r_hpss_mean": 0.46,
+  "sessions_r_hpss_lt_0.3": 4,
+  "n": 23,
+  "rmse_nmf_per_window": 7.796,
+  "rmse_hpss_per_window": 7.821,
+  "rmse_nmf_session_median": 6.626,
+  "rmse_hpss_session_median": 6.677,
+  "mae_nmf_session_median": 5.207,
+  "mae_hpss_session_median": 5.293,
+  "mean_within_session_ref_sd": 4.895
+ },
+ "pool30": {
+  "within_session_pearson_r_nmf_mean": 0.463,
+  "within_session_pearson_r_hpss_mean": 0.447,
+  "sessions_r_hpss_lt_0.3": 6,
+  "n": 28,
+  "rmse_nmf_per_window": 8.181,
+  "rmse_hpss_per_window": 8.085,
+  "rmse_nmf_session_median": 6.686,
+  "rmse_hpss_session_median": 6.865,
+  "mae_nmf_session_median": 5.249,
+  "mae_hpss_session_median": 5.382,
+  "mean_within_session_ref_sd": 4.61
+ },
+ "all_paired": {
+  "within_session_pearson_r_nmf_mean": 0.415,
+  "within_session_pearson_r_hpss_mean": 0.392,
+  "sessions_r_hpss_lt_0.3": 9,
+  "n": 31,
+  "rmse_nmf_per_window": 8.349,
+  "rmse_hpss_per_window": 8.361,
+  "rmse_nmf_session_median": 7.041,
+  "rmse_hpss_session_median": 7.115,
+  "mae_nmf_session_median": 5.316,
+  "mae_hpss_session_median": 5.776,
+  "mean_within_session_ref_sd": 4.514
+ },
+ "noise_floor": {
+  "rawnls_on_noise_median_iqr": [
+   57.0,
+   51.3,
+   64.5
+  ],
+  "hpss_on_noise_median_iqr": [
+   61.6,
+   55.3,
+   69.6
+  ],
+  "rmse_noise_hpss_vs_shuffled_PAPER18_refs": 19.03,
+  "pct_noise_estimates_in_25_82bpm": 97.0
+ }
+}

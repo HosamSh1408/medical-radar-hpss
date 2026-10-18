@@ -272,3 +272,38 @@ An adversarial self-audit of all auxiliary HTML, PNG, CSV, and JSON files uncove
 - **`A19` ([`poster.html`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/outputs/poster.html)):** Updated separation latency table cells from `37.8 ms / 5.5 ms` (`~6.9×`) to `17.8 ms / 2.8 ms` (`~6.4×` filter block; `9.2×` core solver) and updated the footer repository link to `github.com/HosamSh1408/medical-radar-hpss`.
 - **`A20` ([`build_metadata.py`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/src/build_metadata.py) & [`cohort_ledger.csv`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/metadata/cohort_ledger.csv)):** Removed the obsolete `7.2` "protocol label explicitly marked assumed" special-case string after `WS6` proved `7.2` is explicitly present on Page 5 of `annotations.pdf`.
 - **`A21` ([`claim_gate_status.json`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/metadata/claim_gate_status.json)):** Updated `as_of` to `2026-10-18`, set `equivalence_margin_tost_rmse_bpm = 0.5`, and added the `WS4` TOST and `WS8` controlled benchmark evidence.
+
+---
+
+# Phase 5 — Final Independent Review (`A22–A25`)
+
+Reproducible runner: [`paper_workspace/src/final_review.py`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/src/final_review.py) — a self-contained module (not part of `provenance._CORE_FILES`; the 33 locked caches are only read, never invalidated) that regenerates [`audit/final_review_independent.json`](file:///Users/hosamshibly/Downloads/medical_radar/audit/final_review_independent.json) and [`audit/final_review_tracking_and_noise.json`](file:///Users/hosamshibly/Downloads/medical_radar/audit/final_review_tracking_and_noise.json) with explicit `_definitions` blocks and prints PASS/FAIL self-checks for every headline number (all pass).
+
+## Independent Re-Derivation of Headline Numbers
+
+A standalone verification script — written from scratch without importing any `audit_phase*` module — reproduced every headline value directly from the locked caches: per-cohort paired deltas (−0.0648 / +0.0249 / −0.0956 / +0.0117 bpm) and TOST p-values (0.0001 / 0.0006 / 0.0456 / 0.0171), patient-level TOST (0.0062 / 0.0011 / 0.0353 / 0.0528), leave-one-session-out delta ranges, mitigation-vs-raw Wilcoxon results, pooled and heavy-motion window metrics (Bland–Altman limits, 998 heavy windows, gross-error rates 14.75%/14.31%), cached lags (7.3 = −33 s, 12.1 = −116 s, 3.1 = −439 s), within-session Pearson r (0.39–0.47), and the constant/session baselines.
+
+The previously untracked final-review JSONs were regenerated under the committed runner. Drift vs. the prior untracked artifacts (quoted numbers re-verified before regeneration):
+
+1. `baselines.{nmf,hpss}` re-rounded to 4 dp (display-only change).
+2. `const_loso` definition recovered and reproduced exactly: per-session RMSE of the reference vs the **leave-one-session-out median** of the other sessions' pooled references (8.209 / 8.576 / 8.124 / 8.194).
+3. `rmse_{nmf,hpss}_session_median_of_radar` — definition **not recoverable** (its generator was never committed and no plausible reading reproduces it); replaced by the explicitly defined `rmse_*_session_median` and `mae_*_session_median` fields.
+4. `smallest_margin_patient_level` renamed to `max_abs_patient_ci90_bound` (largest |CI bound|); this makes explicit that patient-level TOST **marginally fails** for `all_paired_local` (bound 0.508 > 0.50 bpm margin, p = 0.0528) even though the registered session-level TOST passes (p = 0.0171).
+5. Noise floor is now seed-pinned (20261011, 200 complex-WGN windows through the identical downstream chain): Raw NLS median 57.0 bpm (IQR 51.3–64.5); HPSS+NLS median 61.6 bpm (IQR 55.3–69.6); 97.0% of HPSS outputs land inside the `PAPER_18` reference range [25.8, 81.5] bpm; shuffled-reference RMSE 19.03 bpm.
+
+## A22–A24 — Residual Documentation/Code Mismatches (fixed)
+
+- **`A22` (`LOG:104`; `rbm_nmf.py:81-88`):** Residual instance of the `A9` mismatch — the log still described `env_normalize` as scaling each column by "`peaks > 0.2 * median(peaks)`". Actual code multiplies the whole masked spectrogram by `clip(median(frame_max)/frame_max, 0.5, 2.0)` (empirically: hole frames ×2.0, spike frames ×0.5). Description and line links corrected.
+- **`A23` (`LOG:170`; `estimation.py:30-67`):** The log claimed an "`f_0 < 0.75 Hz` subharmonic check" that does not exist anywhere in the estimator. Corrected to the actual definition (Lk=2 equal-weight harmonic-sum score over `f_0 ± 5` bpm on a 0.1 bpm grid, DFT-peak fallback when the coarse estimate is undefined) with the `dual_center` ablation flagged as inactive-by-default and out of paper spec.
+- **`A24` (`LOG:66, 68, 173`):** "metadata-anchored ±45 s" was stale. The active pipeline anchors the lag search to the metadata clock offset within **±60 s** ([`evaluation.sync_arrays`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/src/evaluation.py#L7), `search_radius_s=60`), with a `±SYNC_MAX_LAG_S = ±120 s` unconstrained fallback ([`config.py:64`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/src/config.py#L64)). All three instances corrected.
+
+## Weakness Inventory (Final Review)
+
+1. **Constant-predictor headroom (per-measurement mean of per-session RMSE).** On the curated cohorts the mitigated pipelines beat trivial constants (`PAPER_18`: 6.80–6.86 vs 8.02 `const_global_oracle`; `retained23`: 7.80–7.82 vs 8.24). On the full cohorts a constant wins (`pool30`: 8.09–8.18 vs 7.81; `all_paired_local`: 8.35–8.36 vs 7.86; `const_loso` = 8.12/8.19 is likewise better than the pipeline on `all_paired_local`). **On the full uncurated cohort there is no demonstrable within-session tracking benefit over predicting the cohort mean.**
+2. **Weak within-session tracking.** Mean within-session Pearson r = 0.39–0.47 across cohorts; 4/18 `PAPER_18` and 9/31 `all_paired` sessions have r < 0.3; ≲22% of within-session rate variance is explained. The session-mean oracle (4.5–4.9 bpm) shows what an oracle-constant tracker would achieve.
+3. **Gross-error tail.** 14.75% (NMF) / 14.31% (HPSS) of `PAPER_18` valid windows exceed 10 bpm error (q90 ≈ 11.9, q99 ≈ 22.5 bpm) — the task is far from the 1 bpm reference monitor resolution in the tail.
+4. **Motion windows remain the dominant error source.** On the 998 heavy-motion windows (`n_removed > 2`), pooled RMSE is 8.32 (NMF) / 7.81 (HPSS) vs 9.05 (Raw NLS): mitigation helps (~0.6–1.2 bpm) but does not close the gap.
+5. **No confidence gate.** Raw NLS on pure white noise emits plausible in-range rates (median 57 bpm; 97% inside [25.8, 81.5] bpm), so an in-range output is not evidence of captured respiration; nothing in the pipeline flags low-confidence windows.
+6. **Patient-level TOST is marginal at the widest cohort** (see drift item 4); the equivalence claim is calibrated to the pre-registered session-level analysis.
+7. **Selection & registration caveats.** `PAPER_18` is reference-validity-ranked (L2 blocked); sessions `1.3`/`5.1` have zero valid windows; `12.1` (−116 s) and `3.1` (−439 s) carry large metadata-anchored lag corrections (WS3 shows conclusions robust to lag regime, but these are not zero-lag registrations).
+8. **Scope limits.** 31 evaluable session pairs, 12 patients, single center, no external validation (L4 not tested) and no clinical claims (L5 blocked). NMF additionally hits its 500-iteration cap on ≈89% of valid windows — an independent motivation for the deterministic HPSS branch.

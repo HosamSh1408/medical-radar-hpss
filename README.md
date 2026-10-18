@@ -39,6 +39,15 @@ Reproduced via `python3 main.py --multiverse` ([`reconstruction_multiverse.csv`]
 * **TOST Equivalence Calibration (`WS4`):** Under formal Two One-Sided Tests (TOST) at a pre-specified margin of $\delta = \pm 0.50\text{ bpm}$ (half the $1\text{ bpm}$ resolution of the clinical reference monitor), `HPSS+NLS` and `NLS+NMF` are statistically equivalent at $\alpha = 0.05$ across all four cohort variants (`PAPER_18`: $\delta^* = 0.225\text{ bpm}, p_{\text{TOST}} = 0.0001$; `retained23`: $\delta^* = 0.246\text{ bpm}, p_{\text{TOST}} = 0.0006$; `pool30`: $\delta^* = 0.489\text{ bpm}, p_{\text{TOST}} = 0.0456$; `all_paired_local`: $\delta^* = 0.385\text{ bpm}, p_{\text{TOST}} = 0.0171$; see [`phase3_ws4_tost_and_bootstrap.csv`](file:///Users/hosamshibly/Downloads/medical_radar/audit/phase3_ws4_tost_and_bootstrap.csv)).
 * **Controlled Single-Thread Timing Benchmark (`WS8`):** In a controlled single-thread benchmark (`OMP/BLAS threads=1`, GC-isolated, 5 warmup + $3\times 50$ timed windows on Session `7.3`; see [`phase3_ws8_timing_benchmark.csv`](file:///Users/hosamshibly/Downloads/medical_radar/audit/phase3_ws8_timing_benchmark.csv)), HPSS's core median-filter mask stage (`1.86 ± 0.11 ms`, median `1.84 ms`) is **9.2× faster** (`9.3×` median) than NMF's iterative solver + mask (`17.01 ± 0.59 ms`, median `17.08 ms`), **6.1–6.4× faster** across the full STFT separation filter block (`2.97 ms` vs. `18.17 ms` in benchmark; `2.78 ms` vs. `17.84 ms` across `PAPER_18` caches), and **5.1× faster** end-to-end per 30-s window (`3.72 ms` vs. `18.97 ms`). The batch builder is single-process/sequential and HPSS is 100% deterministic.
 
+### 3. Final Independent Review (Weaknesses & Context)
+Reproduced by `python3 -m paper_workspace.src.final_review` (regenerates both `audit/final_review_*.json` artifacts with explicit `_definitions` blocks and PASS/FAIL self-checks); full inventory in [`audit/AUDIT_FINDINGS.md`](file:///Users/hosamshibly/Downloads/medical_radar/audit/AUDIT_FINDINGS.md) (Phase 5):
+
+* **Constant-predictor headroom:** both mitigated branches beat trivial constants on the two curated cohorts ($6.80$–$6.86$ vs. $8.02$ bpm; $7.80$–$7.82$ vs. $8.24$ bpm), but on the full cohorts a cohort-mean constant remains competitive-to-better ($7.81$–$7.86$ vs. pipeline $8.09$–$8.36$ bpm) — on the full uncurated cohort there is **no demonstrable within-session tracking benefit over predicting the cohort mean**.
+* **Weak within-session tracking:** mean within-session Pearson $r = 0.39$–$0.47$; $4/18$ (`PAPER_18`) and $9/31$ (`all_paired`) sessions have $r < 0.3$.
+* **Gross-error tail:** $14.8\%$ (NMF) / $14.3\%$ (HPSS) of `PAPER_18` valid windows exceed $10$ bpm error; heavy-motion windows pooled RMSE $8.32/7.81$ vs. $9.05$ unmitigated.
+* **No confidence gate:** Raw NLS on pure white noise emits plausible in-range rates (median $\approx 57$–$62$ bpm; $97\%$ within the `PAPER_18` reference range) — an in-range output is **not** evidence of captured respiration.
+* **Patient-level TOST is marginal at the widest cohort** (`all_paired_local`: CI90 bound $0.508 > 0.50$ bpm margin, $p = 0.0528$); the registered session-level TOST passes everywhere.
+
 ---
 
 ## Repository Structure
@@ -90,6 +99,7 @@ medical_radar/
         ├── plot_figs.py               # Beltrão reproduction figure generator
         ├── plot_nmf_vs_hpss.py        # NMF vs HPSS comparative figure generator
         ├── test_pipeline.py           # 19-check unit, mathematical, provenance & Phase 1–4 audit regression test suite
+        ├── final_review.py            # Phase 5 final-review artifact regenerator (definitions + PASS/FAIL self-checks)
         ├── requirements.txt           # Core Python dependencies
         └── requirements-lock.txt      # Pinned reproducible environment (Python 3.9.6)
 ```
@@ -121,10 +131,13 @@ python3 main.py --tables
 # 4. Rebuild the 33-session SHA-256 cohort ledger and 4-variant multiverse CSVs
 python3 main.py --multiverse
 
-# 5. Regenerate all publication and comparative figures in paper_workspace/outputs/
+# 5. Regenerate the two final-review audit JSONs (baselines, TOST, tracking, noise floor)
+python3 -m paper_workspace.src.final_review
+
+# 6. Regenerate all publication and comparative figures in paper_workspace/outputs/
 python3 main.py --plots
 
-# 6. Run the complete verification, table, multiverse, and figure pipeline end-to-end
+# 7. Run the complete verification, table, multiverse, and figure pipeline end-to-end
 python3 main.py --all
 ```
 
