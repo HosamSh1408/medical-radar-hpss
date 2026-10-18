@@ -1,8 +1,8 @@
 # Research, Engineering & Audit Log: Contactless Neonatal Radar Respiration Monitoring
 
 **Project:** Independent Reimplementation of Beltrão et al. (*Scientific Reports*, 2022) and Harmonic–Percussive Source Separation (HPSS) Extension  
-**Pipeline Version:** `main-v3-audit-fix-1` (Provenance-Locked)  
-**Dataset:** 35 Radar CSVs (`16 Hz` 24 GHz CW I/Q), 34 Reference EDFs (`25 Hz` impedance pneumography + `1 Hz` monitor breathing rate), 33 paired local NICU measurements ($7,105$ valid 30-s windows across 31 evaluable sessions; $5,466$ valid windows across the 18-session benchmark cohort).
+**Pipeline Version:** `main-v3-audit-fix-2` (Provenance-Locked)  
+**Dataset:** 35 Radar CSVs (`16 Hz` 24 GHz CW I/Q), 34 Reference EDFs (`256 Hz` impedance pneumography + `1 Hz` monitor breathing rate), 33 paired local NICU measurements ($7,105$ valid 30-s windows across 31 evaluable sessions; $5,466$ valid windows across the 18-session benchmark cohort).
 
 ---
 
@@ -28,13 +28,13 @@ This repository implements an audited, provenance-locked signal-processing pipel
 ### Summary of Key Findings
 * **Both Mitigated Branches Beat Raw Unmitigated Estimation:** Across the 18-session benchmark (`PAPER_18`, $N=5,466$ windows), both `NLS+NMF` (**6.86 bpm** RMSE, **85.4%** Acc@10) and `HPSS+NLS` (**6.80 bpm** RMSE, **85.8%** Acc@10) substantially outperform `DFT` (**10.11 bpm** RMSE, **74.8%** Acc@10) and unmitigated `Raw NLS` (**7.49 bpm** RMSE, **82.4%** Acc@10) across every clinical subgroup (`ALL`, `supine`, `prone`, `single`, `twins`).
 * **Statistical Equivalence in Accuracy Across All Cohort Variants:** Across all four predefined local cohort variants ($18, 23, 28,$ and $31$ evaluable sessions), the paired $\Delta\text{RMSE} = \text{RMSE}_{\text{HPSS}} - \text{RMSE}_{\text{NMF}}$ lies within $[-0.096, +0.025]\text{ bpm}$, with every 95% session-clustered and patient-clustered bootstrap confidence interval spanning zero.
-* **6.3–6.9× Computational Speedup & 100% Determinism:** HPSS reduces separation-stage runtime from **37.79 ms** to **5.46 ms** per 30-s window in parallel 8-worker batch execution (**6.92× speedup**, or **~17.6 ms vs. ~2.8 ms** single-process, **~6.3× speedup**) while eliminating NMF's convergence failures (NMF hits its 500-iteration limit without meeting tolerance on **85.4%** of windows).
+* **~6–7× Separation-Stage Speedup & 100% Determinism:** HPSS's fixed-cost median filtering is **~6–7× faster** than iterative NMF per 30-s window (same-process, same-window per-window means; in the `main-v3-audit-fix-2` rebuild NMF $\approx 17.8$ ms vs. HPSS $\approx 2.8$ ms, $\approx 6.4\times$, for `all_paired_local` in [`reconstruction_multiverse.csv`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/outputs/audits/reconstruction_multiverse.csv)). Absolute runtimes are strongly environment/load dependent and only the ratio is reported (a controlled benchmark is pending, WS8); the batch builder is single-process/sequential. HPSS eliminates NMF's convergence failures (NMF hits its 500-iteration limit without meeting tolerance on **~89%** of `PAPER_18` valid windows).
 
 ### Permitted vs. Prohibited Scientific Claims
 
 | Claim Level | Description | Status | Justification |
 | :--- | :--- | :--- | :--- |
-| **L0 — Computational Reproducibility** | Code runs deterministically from raw inputs with cryptographic cache verification. | **PASS** | 10/10 unit tests and 33/33 SHA-256 provenance-locked `.npz` caches pass. |
+| **L0 — Computational Reproducibility** | Code runs deterministically from raw inputs with cryptographic cache verification. | **PASS** | 15/15 unit, provenance, and golden-value regression tests and 33/33 SHA-256 provenance-locked `.npz` caches pass. |
 | **L1 — Constrained Reimplementation** | Published equations/parameters are mapped; unspecified protocol steps are explicitly documented. | **PASS** | All inferred parameters are isolated in [`config.py`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/src/config.py) and [`unresolved_protocol_items.yaml`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/metadata/unresolved_protocol_items.yaml). |
 | **L2 — Exact Paper Reproduction** | Exact recovery of Beltrão et al.'s original 18 session IDs and $4,964$-window denominator. | **BLOCKED** | Original subject IDs are not listed in the paper; `PAPER_18` ($5,466$ windows) is ranked by local reference validity. |
 | **L3 — Internal Signal-Processing Equivalence & Speedup** | HPSS matches NMF accuracy while running 6.3–6.9× faster on this dataset. | **EXPLORATORY PASS** | Verified across 4 cohort variants with 2,000-resample bootstrap CIs. |
@@ -52,7 +52,7 @@ All intermediate prototypes and historical branches were audited, distilled into
 * **What went wrong:**
   1. Unmitigated `Raw NLS` (`7.46 bpm` RMSE) unexpectedly beat both `NLS+NMF` (`8.35 bpm`) and `HPSS+NLS` (`7.80 bpm`).
   2. Runtime bars in early plotting scripts were hard-coded rather than read from cached `perf_counter()` measurements.
-  3. Reference channels were mislabeled as capnography instead of **impedance pneumography** (`25 Hz` raw waveform + `1 Hz` monitor-derived `RespRate`).
+  3. Reference channels were mislabeled as capnography instead of **impedance pneumography** (`256 Hz` raw waveform + `1 Hz` monitor-derived `RespRate`).
 
 ### Phase 2: Real-Valued Phase Demodulation & Joint HR–BR Viterbi Exploration (`p1` / `p2`)
 * **What was tried:** Explored an alternative architecture inspired by follow-up radar literature (`p1_run.py`, `p2_run.py`, `preprocess.py`, `spectra.py`, `decoder.py`):
@@ -66,7 +66,7 @@ All intermediate prototypes and historical branches were audited, distilled into
 * **What was tried:** Tested alternative NMF basis-rejection rules (`max_over_median` vs. Hoyer sparsity, $\alpha \in \{1.8, 3.0\}$), whole-window vs. center-sample reference saturation gating, and alternative lag search ranges (`[-180, +180] s` vs. metadata-anchored `±45 s`).
 * **Findings:**
   * Unconstrained `[-180, +180] s` lag searches produced spurious correlations on short or heavily saturated sessions (`1.2`, `10.4`), whereas anchoring the search within `±45 s` of the EDF/CSV header timestamp offset prevented false alignments.
-  * Whole-window saturation gating (`fraction_saturated(30 s) <= 5%`) paired with 30-s window-averaged reference rates aligned much more closely with the paper's 30-s sliding window formulation than point-sampling the 1-Hz monitor rate.
+  * Whole-window saturation gating (`zero saturated seconds in the 30 s window`) paired with 30-s window-averaged reference rates aligned much more closely with the paper's 30-s sliding window formulation than point-sampling the 1-Hz monitor rate.
 
 ### Phase 4: Fail-Closed Provenance & Cohort Multiverse (`v3`)
 * **What was built:**
@@ -75,6 +75,9 @@ All intermediate prototypes and historical branches were audited, distilled into
 
 ### Phase 5: Forensic Resolution of the "Raw NLS Paradox" (`main-v3-audit-fix-1`)
 * **What was solved:** Conducted a first-principles mathematical audit of why `STFT -> Mitigation -> iSTFT` was degrading clean windows, identified four interacting signal-processing flaws plus one lag-correlation flaw, verified the fixes in a non-destructive ablation, integrated them into the active pipeline, and rebuilt all 33 provenance-locked caches, tables, and figures.
+
+### Phase 6: Documentation-to-Code Reconciliation Audit (`main-v3-audit-fix-2`)
+* **What was solved:** A doubt-first line-by-line audit of the code against the documentation. Twelve documentation/implementation discrepancies were corrected (audit **A1–A12**: filter type/band, reference sampling rate, harmonic-order description, multiverse window counts, "8-worker" runtime fiction, provenance file set, EDF start-datetime API, saturation-gate wording, `env_normalize` description, dead-code labeling, STFT tail-frame comment, timing drift), plus two audit-blocking issues (audit **A13** NMF-convergence percentage, **A14** a documented `--all-paired` rebuild flag that did not exist). The cache-dependency set was extended to include `protocols.py`, the pipeline version bumped to `main-v3-audit-fix-2`, and **golden-value regression tests** were added that bind the band/sampling/cohort/metric/multiverse claims to code and artifacts. Details in [`AUDIT_PLAN.md`](file:///Users/hosamshibly/Downloads/medical_radar/AUDIT_PLAN.md) and [`audit/AUDIT_FINDINGS.md`](file:///Users/hosamshibly/Downloads/medical_radar/audit/AUDIT_FINDINGS.md).
 
 ---
 
@@ -91,8 +94,8 @@ In Beltrão et al. (2022), NMF artifact mitigation **reduced** overall error (`F
 ### Root Cause 1: Out-of-Band Spectral Leakage from the 3-s Rectangular STFT
 * **Mathematical Mechanism:** The pipeline uses a 3-s rectangular STFT window ($M = 48$ samples at $f_s = 16\text{ Hz}$) zero-padded to $N_{\text{FFT}} = 256$. A rectangular window has a Dirichlet kernel spectrum with $-13\text{ dB}$ first sidelobes. Raw demodulated radar $x[n] = I[n] + jQ[n]$ contains large sub-$0.3\text{ Hz}$ baseline wander and DC drift ($10\text{–}20\times$ larger than the millimeter chest wall displacement).
   * When `stft_complex` is inverted directly without modification, the positive and negative sidelobes of the sub-$0.3\text{ Hz}$ drift cancel out exactly in overlap-add (`istft_complex`).
-  * However, **as soon as any time-varying mask (NMF or HPSS) alters the spectrogram**, that exact phase cancellation is broken, and the $-13\text{ dB}$ sidelobes of the sub-$0.3\text{ Hz}$ drift leak directly into the $0.33\text{–}1.5\text{ Hz}$ ($20\text{–}90\text{ bpm}$) breathing band—surviving the post-iSTFT bandpass filter!
-* **The Fix:** In [`run_measurement.py`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/src/run_measurement.py#L22), we apply `d_raw = bandpass(x)` ($0.33\text{–}1.5\text{ Hz}$ 5th-order Butterworth) **before** entering the STFT in both `mitigate(d_raw)` and `mitigate_hpss(d_raw)`.
+  * However, **as soon as any time-varying mask (NMF or HPSS) alters the spectrogram**, that exact phase cancellation is broken, and the $-13\text{ dB}$ sidelobes of the sub-$0.3\text{ Hz}$ drift leak directly into the $0.3\text{–}3.0\text{ Hz}$ ($18\text{–}180\text{ bpm}$) breathing band—surviving the post-iSTFT bandpass filter!
+* **The Fix:** In [`run_measurement.py`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/src/run_measurement.py#L22), we apply `d_raw = bandpass(x)` ($0.3\text{–}3.0\text{ Hz}$ 64-tap Kaiser FIR, $\beta=6.5$, matching the paper's Methods band) **before** entering the STFT in both `mitigate(d_raw)` and `mitigate_hpss(d_raw)`.
 
 ### Root Cause 2: Post-Masking Amplitude "Holes" Breaking `autocorr_coarse`
 * **Mathematical Mechanism:** When a 2–4 second RBM burst ($8\times$ amplitude) occurs inside a 30-s window and is suppressed by NMF or HPSS, the reconstructed time-domain waveform $\hat{x}[n]$ has near-zero amplitude during those 2–4 seconds and normal breathing amplitude elsewhere, or residual amplitude modulation at the burst boundaries.
@@ -108,8 +111,8 @@ In Beltrão et al. (2022), NMF artifact mitigation **reduced** overall error (`F
 
 ### Root Cause 4: Missing `fftshift` Along the Frequency Axis in Two-Sided Complex HPSS
 * **Mathematical Mechanism:** `stft_complex` produces a two-sided 256-bin FFT in standard NumPy order:
-  * Rows `0 .. 127`: $0\text{ Hz}$ to $+8\text{ Hz}$ (breathing band $+0.33\text{ to }+1.5\text{ Hz}$ is at rows `6 .. 24`).
-  * Rows `128 .. 255`: $-8\text{ Hz}$ to $-0.0625\text{ Hz}$ (negative breathing band is at rows `232 .. 250`).
+  * Rows `0 .. 127`: $0\text{ Hz}$ to $+8\text{ Hz}$ (breathing band $+0.3\text{ to }+3.0\text{ Hz}$ is at rows `5 .. 48`).
+  * Rows `128 .. 255`: $-8\text{ Hz}$ to $-0.0625\text{ Hz}$ (negative breathing band is at rows `208 .. 251`).
   * Previously, [`hpss_filter`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/src/hpss.py#L22-L48) ran `median_filter(mag, size=(21, 1), mode="nearest")` directly on the unshifted array. For positive breathing bins (`rows 6 .. 10`), the 21-bin vertical filter hit the boundary at `row 0` and repeated `row 0` (`mode="nearest"`) 5–10 times instead of wrapping smoothly across DC ($0\text{ Hz}$) into the negative frequencies (`rows 255, 254, ...`)!
 * **The Fix:** [`hpss_filter`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/src/hpss.py#L38-L45) now shifts DC to the center (`mag_s = np.fft.fftshift(mag, axes=0)`), applies the orthogonal median filters ($L_{\text{harm}} = 7$ frames $= 7\text{ s}$, $L_{\text{perc}} = 21$ bins $= 1.31\text{ Hz}$), and shifts the mask back (`np.fft.ifftshift(mask_s, axes=0)`).
 
@@ -140,11 +143,11 @@ Raw 24 GHz Radar I/Q (16 Hz, 30-s window = 480 samples, 2-s slide)
    │  x[n] = (I[n] - mean(I)) + j*(Q[n] - mean(Q))
    ▼
 [2. Pre-STFT Bandpass Filter]     filtering.py: bandpass(x)
-   │  5th-order zero-phase Butterworth [0.33, 1.50] Hz (20–90 bpm) -> d_raw
+   │  64-tap zero-phase Kaiser FIR [0.3, 3.0] Hz (β=6.5, 18–180 bpm) -> d_raw
    ├──────────────────────────────┬──────────────────────────────┬──────────────────────────────┐
    ▼ (Branch 1: DFT)              ▼ (Branch 2: Raw NLS)          ▼ (Branch 3: NLS+NMF)          ▼ (Branch 4: HPSS+NLS)
 dft_estimate(d_raw)            autocorr_coarse(d_raw)         rbm_nmf.py: mitigate(d_raw)    hpss.py: mitigate_hpss(d_raw)
-Zero-padded FFT (32,768)       + nls_estimate(d_raw)          • 3-s rect STFT (hop=1s, 256)  • 3-s rect STFT (hop=1s, 256)
+Zero-padded FFT (4,096)        + nls_estimate(d_raw)          • 3-s rect STFT (hop=1s, 256)  • 3-s rect STFT (hop=1s, 256)
                                                               • 11-comp NNDSVD NMF           • fftshift along freq axis
                                                               • RBM rule (α=3.0, sp>0.6)     • Median filters:
                                                               • Wiener mask + env_normalize    L_harm=(1,7), L_perc=(21,1)
@@ -158,28 +161,28 @@ Zero-padded FFT (32,768)       + nls_estimate(d_raw)          • 3-s rect STFT 
 
 | File | Role in Pipeline | Key Functions & Mathematical Equations |
 | :--- | :--- | :--- |
-| [`config.py`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/src/config.py) | Locked system constants | `FS_RADAR = 16`, `WIN_S = 30`, `UPDATE_S = 2`, `BP_LOW_HZ = 0.333`, `BP_HIGH_HZ = 1.5`, `NMF_K = 11`, `RBM_ALPHA = 3.0`, `RBM_SPARSITY_FRAC = 0.6`. |
+| [`config.py`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/src/config.py) | Locked system constants | `FS_RADAR = 16`, `WIN_S = 30`, `UPDATE_S = 2`, `BAND_LOW_HZ = 0.3`, `BAND_HIGH_HZ = 3.0`, `KAISER_BETA = 6.5`, `FIR_TAPS = 64`, `NMF_K = 11`, `RBM_ALPHA = 3.0`, `RBM_SPARSITY_FRAC = 0.6`. |
 | [`protocols.py`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/src/protocols.py) | Clinical metadata | Maps each measurement ID (`1.1`–`12.3`) to posture (`supine`/`prone`), co-bedding `twins` status, and incubator `lid` state from `annotations.pdf`. |
 | [`cohort.py`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/src/cohort.py) | Cohort definitions | Defines `PAPER_18` (18 sessions), `retained23()` (23 sessions), `pool30()` (30 sessions), and `local_pool()` (all 33 paired sessions). |
-| [`data_loader.py`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/src/data_loader.py) | Raw I/O & pairing | Loads $16\text{ Hz}$ `bI, bQ` CSV columns and $25\text{ Hz}$ `Resp` + $1\text{ Hz}$ `RespRate` EDF channels; parses recording start timestamps. |
+| [`data_loader.py`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/src/data_loader.py) | Raw I/O & pairing | Loads $16\text{ Hz}$ `bI, bQ` CSV columns and $256\text{ Hz}$ `Resp` + $1\text{ Hz}$ `RespRate` EDF channels; parses recording start timestamps. |
 | [`demod.py`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/src/demod.py) | Complex demodulation | `csd(bI, bQ)` removes per-window DC offsets to form $x[n] = \tilde{I}[n] + j\tilde{Q}[n]$. |
-| [`filtering.py`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/src/filtering.py) | Bandpass & coarse pitch | `bandpass(x)` applies `sosfiltfilt` ($0.33\text{–}1.5\text{ Hz}$); `autocorr_coarse(x)` finds the first prominent lag peak in $[20, 90]\text{ bpm}$. |
-| [`estimation.py`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/src/estimation.py) | Frequency estimators | `dft_estimate(x)` (32,768-pt FFT peak); `nls_estimate(x, f_coarse)` searches $K=3$ harmonics over $f_0 \pm 5\text{ bpm}$ ($101$ grid points) with $f_0 < 0.75\text{ Hz}$ subharmonic check. |
+| [`filtering.py`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/src/filtering.py) | Bandpass & coarse pitch | `bandpass(x)` applies a zero-phase 64-tap Kaiser FIR (β=6.5) over $0.3\text{–}3.0\text{ Hz}$; `autocorr_coarse(x)` finds the first prominent lag peak in $[18, 180]\text{ bpm}$. |
+| [`estimation.py`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/src/estimation.py) | Frequency estimators | `dft_estimate(x)` (4,096-pt zero-padded FFT peak); `nls_estimate(x, f_coarse)` searches $L_k=2$ harmonics over $f_0 \pm 5\text{ bpm}$ ($0.1\text{ bpm}$ grid) with $f_0 < 0.75\text{ Hz}$ subharmonic check. |
 | [`rbm_nmf.py`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/src/rbm_nmf.py) | Baseline NMF branch | `stft_complex`, `istft_complex`, `decompose_nmf`, `detect_rbm` (Eq. 11 + Hoyer sparsity), Wiener ratio mask, and `env_normalize`. |
 | [`hpss.py`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/src/hpss.py) | Proposed HPSS branch | `hpss_filter` (`fftshift`-centered $(1,7)$ harmonic and $(21,1)$ percussive median filters, soft mask $M_H = S_H^2 / (S_H^2 + S_P^2 + \varepsilon)$) and `mitigate_hpss`. |
 | [`lags.py`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/src/lags.py) | Timestamp lag anchor | Computes header clock offset between radar CSV and reference EDF and constrains lag search to $\pm 45\text{ s}$ around the metadata anchor. |
-| [`evaluation.py`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/src/evaluation.py) | Gating, sync & metrics | `valid_mask` ($|V| \ge 2.99$ saturation gate, $\le 5\%$ per 30-s window), `window_ref`, `sync_arrays` (saturation-masked lag search), and `scores` (RMSE, Acc@3/6/10, Bias). |
-| [`provenance.py`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/src/provenance.py) | Cache integrity | Computes SHA-256 over all 14 core modules, raw inputs, and package versions; fails closed if any cache is stale or modified. |
+| [`evaluation.py`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/src/evaluation.py) | Gating, sync & metrics | `window_ref_and_gating` ($|V| \ge 2.99$ saturation gate; a 30-s window is valid iff it contains **zero** saturated seconds), `sync_arrays` (saturation-masked lag search anchored to the metadata lag), and `scores` (RMSE, Acc@3/6/10, Bias). |
+| [`provenance.py`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/src/provenance.py) | Cache integrity | Computes SHA-256 over all 15 core modules (incl. `protocols.py`), raw inputs, and package versions; fails closed if any cache is stale or modified. |
 | [`run_measurement.py`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/src/run_measurement.py) | 4-way session runner | Runs all 4 branches on every 30-s window and records per-window `perf_counter()` separation times (`t_nmf`, `t_hpss`) and `nmf_converged`. |
 | [`run_all.py`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/src/run_all.py) | Session orchestrator | Pairs radar estimates with synchronized reference targets and aggregates scenario metrics. |
-| [`run_batch.py`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/src/run_batch.py) | Parallel batch engine | Multiprocessing pool (`8` workers) that builds and verifies `.npz` caches in `paper_workspace/outputs/cache/`. |
+| [`run_batch.py`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/src/run_batch.py) | Sequential batch engine | Single-process loop that builds and verifies `.npz` caches in `paper_workspace/outputs/cache/`; `--all-paired` rebuilds all 33 paired sessions. |
 | [`compare_ab.py`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/src/compare_ab.py) | Single-session demo | Prints 4-way metrics on anchor session `7.3` (`python3 main.py --demo`). |
 | [`result_tables.py`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/src/result_tables.py) | Paper tables | Generates `Fig. 6` (per-measurement mean), `Fig. 7` (minimal movement), and pooled tables (`python3 main.py --tables`). |
 | [`build_metadata.py`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/src/build_metadata.py) | Cohort ledger builder | Writes [`cohort_ledger.csv`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/metadata/cohort_ledger.csv) with SHA-256 hashes and exclusion provenance for all 33 paired sessions. |
 | [`reconstruction_multiverse.py`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/src/reconstruction_multiverse.py) | Multiverse evaluator | Computes 4-cohort comparison tables and 2,000-resample bootstrap CIs (`python3 main.py --multiverse`). |
 | [`plot_figs.py`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/src/plot_figs.py) | Reproduction figures | Generates `fig4_7.3_60s.png`, `fig5_7.3.png`, `bland_altman_7.3.png`, and `fig6_scenario_comparison.png`. |
 | [`plot_nmf_vs_hpss.py`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/src/plot_nmf_vs_hpss.py) | Extension figures | Generates `nmf_vs_hpss_spectrogram.png`, `nmf_vs_hpss_tracking.png`, and `nmf_vs_hpss_cohort_benchmark.png`. |
-| [`test_pipeline.py`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/src/test_pipeline.py) | Automated test suite | 10 unit, mathematical, and provenance regression tests (`python3 main.py --test`). |
+| [`test_pipeline.py`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/src/test_pipeline.py) | Automated test suite | 15 unit, mathematical, provenance, and golden-value regression tests (`python3 main.py --test`). |
 
 ---
 
@@ -237,8 +240,8 @@ Reproduced via `python3 main.py --multiverse` (stored in [`paper_workspace/outpu
 | Cohort Variant | Evaluable Sessions | Patient Groups | Valid Windows | NMF RMSE (bpm) | HPSS RMSE (bpm) | $\Delta\text{RMSE}$ (HPSS−NMF) | 95% Session Bootstrap CI | Patient-Clustered 95% CI | $\Delta\text{Acc@10}$ (pp) |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 | `all_paired_local` | 31 / 33 | 12 | 7,105 | 8.349 | 8.361 | **+0.012** | $[-0.456, +0.372]$ | $[-0.659, +0.517]$ | $-0.35\text{ pp}$ |
-| `pool30_no_zero_overlap` | 28 / 30 | 12 | 6,857 | 8.181 | 8.085 | **−0.096** | $[-0.574, +0.287]$ | $[-0.713, +0.464]$ | $-0.28\text{ pp}$ |
-| `retained23_named_exclusions` | 23 / 23 | 10 | 5,976 | 7.796 | 7.821 | **+0.025** | $[-0.202, +0.276]$ | $[-0.223, +0.340]$ | $+0.19\text{ pp}$ |
+| `pool30_no_zero_overlap` | 28 / 30 | 12 | 6,642 | 8.181 | 8.085 | **−0.096** | $[-0.574, +0.287]$ | $[-0.713, +0.464]$ | $-0.28\text{ pp}$ |
+| `retained23_named_exclusions` | 23 / 23 | 10 | 6,447 | 7.796 | 7.821 | **+0.025** | $[-0.202, +0.276]$ | $[-0.223, +0.340]$ | $+0.19\text{ pp}$ |
 | `current_reference_validity_ranked_18` | 18 / 18 | 10 | 5,466 | 6.863 | 6.798 | **−0.065** | $[-0.249, +0.099]$ | $[-0.341, +0.165]$ | $+0.39\text{ pp}$ |
 
 ---
@@ -246,14 +249,14 @@ Reproduced via `python3 main.py --multiverse` (stored in [`paper_workspace/outpu
 ## 6. Data, Cohort & Provenance Audit
 
 1. **Raw File Inventory (`beltrao_data/`):**
-   * **35** radar CSV files (`16 Hz` I/Q samples) and **34** reference EDF files (`25 Hz` impedance pneumography + `1 Hz` `RespRate`).
+   * **35** radar CSV files (`16 Hz` I/Q samples) and **34** reference EDF files (`256 Hz` impedance pneumography + `1 Hz` `RespRate`).
    * **33** locally paired measurements mapped in [`data_loader.py`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/src/data_loader.py).
    * Unpaired files: `1.2` and `3.2` have radar CSVs but no reference EDFs; `10.4` has an EDF but no radar CSV.
-   * Zero-valid-window sessions: `1.3` and `5.1` yield $0$ valid windows under the active saturation gate (`|V| >= 2.99` in $>5\%$ of the 30-s window) and are transparently logged as non-evaluable (`31/33` evaluable in `all_paired_local`).
+   * Zero-valid-window sessions: `1.3` and `5.1` yield $0$ valid windows under the active saturation gate (a window is valid iff it contains **zero** seconds with `|V| >= 2.99`; any single saturated second rejects the whole 30-s window) and are transparently logged as non-evaluable (`31/33` evaluable in `all_paired_local`).
 2. **Protocol Transcription Note:**
    * Measurement `7.2` has no explicit row in `annotations.pdf` and is explicitly marked as `assumed` (`supine, single, closed`) in [`protocols.py`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/src/protocols.py) and [`cohort_ledger.csv`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/metadata/cohort_ledger.csv).
 3. **NMF Convergence Diagnostic:**
-   * `scikit-learn` NMF (`K=11, init='nndsvd', max_iter=500, tol=1e-4`) meets its stopping tolerance before 500 iterations in **14.6%** of valid windows in `PAPER_18` (**16.0%** across all 31 evaluable sessions). Rather than hiding `ConvergenceWarning`, [`rbm_nmf.py`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/src/rbm_nmf.py) records `nmf_converged` in every cache file.
+   * `scikit-learn` NMF (`K=11, init='nndsvda', max_iter=500, tol=1e-4`) meets its stopping tolerance before 500 iterations in **10.7%** of valid windows in `PAPER_18` (**12.5%** across all 31 evaluable sessions). Rather than hiding `ConvergenceWarning`, [`rbm_nmf.py`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/src/rbm_nmf.py) records `nmf_converged` in every cache file.
 
 ---
 

@@ -19,6 +19,10 @@ def joint_dynamic_lag(br_est, br_ref, hr_est=None, hr_ref=None,
                      ref_valid=None):
     """Grid-search lag maximizing w_br*corr(BR) + w_hr*corr(HR).
 
+    UNUSED by the active pipeline (audit A10): the active lag search lives in
+    evaluation.sync_arrays(). This harness is retained for the planned P1
+    joint HR-BR branch and is not invoked by any active entry point.
+
     ref_valid: optional 1s-resolution boolean mask on br_ref grid; when given,
     only valid samples enter each lag's correlation (attached scores valid
     windows; unmasked search lets saturation valleys/holds steer the lag).
@@ -71,6 +75,10 @@ def joint_dynamic_lag(br_est, br_ref, hr_est=None, hr_ref=None,
 
 def hybrid_lag(dynamic_lag, metadata_lag_s, bound=100):
     """Predeclared R2 rule: dynamic ±120 search cannot reach true offsets
+
+    UNUSED by the active pipeline (audit A10): the active pipeline anchors the
+    sync search directly from metadata_lag(). Retained for the attached rule.
+
     beyond its range (proven: 3.1 true -435, search pinned at +120 boundary).
     If |dynamic| >= bound (search failed at boundary), use negated metadata
     file-start lag; else dynamic. Regressions possible (12.2, 5.2) and reported.
@@ -119,7 +127,11 @@ def metadata_lag(measurement, radar_dir=None, ref_dir=None):
     try:
         r = pyedflib.EdfReader(str(ref_dir / (ename + ".edf")))
         try:
-            out["edf_header_start"] = r.getStartDatetime()
+            # pyedflib exposes getStartdatetime() (lowercase 't'). The previous
+            # getStartDatetime() raised AttributeError, was swallowed, and
+            # silently fell back to the filename timestamp (audit A7).
+            getter = getattr(r, "getStartdatetime", None) or getattr(r, "getStartDatetime")
+            out["edf_header_start"] = getter()
         finally:
             r._close()
     except Exception:

@@ -17,13 +17,18 @@ from pathlib import Path
 from . import config as C
 from .data_loader import MEASURE_TO_RADAR, MEASURE_TO_REF
 
-PIPELINE_VERSION = "main-v3-audit-fix-1"
+PIPELINE_VERSION = "main-v3-audit-fix-2"
 
 _SRC_DIR = Path(__file__).resolve().parent
+# Source files whose content must be unchanged for a cache to be considered
+# current.  `protocols.py` is included because it supplies the clinical labels
+# (posture/twins/lid) consumed by cohort and result tables; omitting it (audit
+# A6) let a protocol edit silently invalidate downstream tables while caches
+# still reported as current.
 _CORE_FILES = (
     "config.py", "cohort.py", "data_loader.py", "demod.py", "evaluation.py",
-    "estimation.py", "filtering.py", "hpss.py", "lags.py", "rbm_nmf.py",
-    "run_all.py", "run_batch.py", "run_measurement.py",
+    "estimation.py", "filtering.py", "hpss.py", "lags.py", "protocols.py",
+    "rbm_nmf.py", "run_all.py", "run_batch.py", "run_measurement.py",
     "provenance.py",
 )
 

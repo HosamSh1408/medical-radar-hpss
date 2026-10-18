@@ -20,7 +20,9 @@ def stft_complex(x, win=C.STFT_WIN, hop=C.STFT_HOP, nfft=C.STFT_NFFT):
         seg = x[s:s + win]
         spec = np.fft.fft(seg, n=nfft)
         frames.append(spec)
-    # tail: pad last partial frame for full coverage
+    # No tail frame is emitted: for the 480-sample analysis window (win=48,
+    # hop=16) this stride already covers the full signal, and istft_complex
+    # stops once idx >= sig_len (audit A11 previously described padding here).
     X = np.stack(frames, axis=1)  # (F, T)
     mag = np.abs(X)
     phase = np.angle(X)

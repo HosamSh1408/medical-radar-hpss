@@ -13,7 +13,11 @@ def csd(bI, bQ):
 
 
 def ad(bI, bQ, lam=C.LAMBDA_M):
-    """Arctangent demodulation (Eq.8). Fragile; for clean-segment illustration only."""
+    """Arctangent demodulation (Eq.8). UNUSED by the active pipeline (audit A10).
+
+    The active pipeline adopts CSD (csd, above); this function is retained only
+    for the Fig.3 clean-segment illustration. Fragile; not used for scoring.
+    """
     bI = np.asarray(bI, dtype=float)
     bQ = np.asarray(bQ, dtype=float)
     bI0 = bI - np.mean(bI)

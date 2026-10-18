@@ -1,4 +1,8 @@
-"""Chunked batch runner with NPZ caching for 18-measurement aggregate."""
+"""Sequential batch runner with NPZ caching for the local paired cohort.
+
+Single-process by design (audit A5): earlier documentation described an
+"8-worker multiprocessing pool" that never existed in this module.
+"""
 import numpy as np
 from pathlib import Path
 import sys
@@ -75,7 +79,14 @@ def aggregate(measurements=None):
 
 
 if __name__ == "__main__":
-    args = [a for a in sys.argv[1:] if a != "--force"]
+    flags = {"--force", "--all-paired"}
+    args = [a for a in sys.argv[1:] if a not in flags]
     force = "--force" in sys.argv[1:]
-    ms = args or TOP18
+    if args:
+        ms = args
+    elif "--all-paired" in sys.argv[1:]:
+        from .data_loader import valid_paired_measurements
+        ms = valid_paired_measurements()  # all 33 paired sessions (audit A14)
+    else:
+        ms = TOP18
     run_and_cache(ms, force=force)

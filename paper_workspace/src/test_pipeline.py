@@ -139,10 +139,125 @@ def test_cache_provenance_is_deterministic():
     first = expected_provenance("7.3")
     second = expected_provenance("7.3")
     assert first == second
-    assert '"pipeline_version":"main-v3-audit-fix-1"' in provenance_json("7.3")
-    assert len(first["source_sha256"]) == 14
+    assert '"pipeline_version":"main-v3-audit-fix-2"' in provenance_json("7.3")
+    assert len(first["source_sha256"]) == 15
+    assert "protocols.py" in first["source_sha256"]  # audit A6
     assert set(first["input_sha256"]) == {"radar_csv", "reference_edf"}
     print("cache provenance ok")
+
+
+# --- Golden-value regression tests (audit Phase 0) -------------------------
+# These bind the documented/spec claims to concrete code, inputs and artifacts
+# so a silent drift in band, sampling rate, cohort membership, metrics or the
+# multiverse table fails loudly instead of shipping stale numbers.
+
+def test_golden_filter_matches_paper_spec():
+    from scipy import signal as sig
+    from .filtering import design_kaiser
+    assert (C.BAND_LOW_HZ, C.BAND_HIGH_HZ) == (0.3, 3.0)
+    assert (C.KAISER_BETA, C.FIR_TAPS) == (6.5, 64)
+    taps = design_kaiser()
+    assert taps.shape == (64,)
+    w, h = sig.freqz(taps, worN=65536, fs=C.FS_RADAR)
+
+    def mag(f):
+        return float(np.abs(h[np.argmin(np.abs(w - f))]))
+
+    assert mag(1.0) > 0.95, mag(1.0)
+    assert mag(4.0) < 0.01, mag(4.0)
+    # NOTE: this 64-tap Kaiser design has a wide transition band; DC rejection
+    # is weak (|H(0)| ~ 0.14) and the 0.3/3.0 Hz edges sit near -6 dB. Pinned so
+    # any revisit of filter shape/taps (WS1) is deliberate.
+    assert mag(0.0) < 0.2, mag(0.0)
+    print("golden filter ok: H(1Hz)=%.4f H(4Hz)=%.4e H(0Hz)=%.4f"
+          % (mag(1.0), mag(4.0), mag(0.0)))
+
+
+def test_golden_reference_sampling_rates():
+    from .data_loader import load_reference
+    assert (C.FS_REF_RAW, C.FS_REF_RATE) == (256, 1)
+    resp, rate, fs_raw, fs_rate = load_reference("7.3")
+    assert fs_raw == 256.0 and fs_rate == 1.0, (fs_raw, fs_rate)
+    assert len(rate) > 0 and len(resp) > len(rate)
+    print("golden reference rates ok: resp=%d@%.0f rate=%d@%.0f"
+          % (len(resp), fs_raw, len(rate), fs_rate))
+
+
+def test_golden_cohort_counts():
+    from .cohort import PAPER_18, local_pool, pool30, retained23
+    from .run_batch import CACHE
+    from .provenance import cache_is_current
+    assert (len(local_pool()), len(PAPER_18), len(pool30()), len(retained23())) == (33, 18, 30, 23)
+    expect = {"all_paired_local": 7105, "pool30_no_zero_overlap": 6642,
+              "retained23_named_exclusions": 6447,
+              "current_reference_validity_ranked_18": 5466}
+    groups = {"all_paired_local": local_pool(), "pool30_no_zero_overlap": pool30(),
+              "retained23_named_exclusions": retained23(),
+              "current_reference_validity_ranked_18": PAPER_18}
+    for name, ms in groups.items():
+        total = 0
+        for m in ms:
+            p = CACHE / f"{m}.npz"
+            assert p.exists() and cache_is_current(p, m), \
+                f"cache missing/stale: {m}; run `python3 -m paper_workspace.src.run_batch --all-paired --force`"
+            with np.load(p) as z:
+                total += int(np.asarray(z["valid"], bool).sum())
+        assert total == expect[name], (name, total, expect[name])
+    print("golden cohort counts ok:", expect)
+
+
+def test_golden_paper18_metrics():
+    from .cohort import PAPER_18
+    from .run_batch import CACHE
+    from .result_tables import extended_scores
+    from .provenance import cache_is_current
+    nmf, hpss = [], []
+    for m in PAPER_18:
+        p = CACHE / f"{m}.npz"
+        assert p.exists() and cache_is_current(p, m), m
+        with np.load(p) as z:
+            v = np.asarray(z["valid"], bool)
+            ref = np.asarray(z["ref"], float)
+            nmf.append(extended_scores(np.asarray(z["est"])[v], ref[v])["rmse"])
+            hpss.append(extended_scores(np.asarray(z["est_hpss"])[v], ref[v])["rmse"])
+    nmf_m, hpss_m = float(np.mean(nmf)), float(np.mean(hpss))
+    assert abs(nmf_m - 6.8628) < 0.01, nmf_m
+    assert abs(hpss_m - 6.7980) < 0.01, hpss_m
+    assert hpss_m < nmf_m
+    print("golden PAPER_18 metrics ok: NMF=%.4f HPSS=%.4f" % (nmf_m, hpss_m))
+
+
+def test_golden_multiverse_csv_matches_caches():
+    import csv
+    from pathlib import Path
+    from .cohort import PAPER_18, local_pool, pool30, retained23
+    from .run_batch import CACHE
+    from .result_tables import extended_scores
+    from .provenance import cache_is_current
+    csv_path = (Path(__file__).resolve().parents[1]
+                / "outputs" / "audits" / "reconstruction_multiverse.csv")
+    rows = {r["variant"]: r for r in csv.DictReader(csv_path.open())}
+    groups = {"all_paired_local": local_pool(), "pool30_no_zero_overlap": pool30(),
+              "retained23_named_exclusions": retained23(),
+              "current_reference_validity_ranked_18": PAPER_18}
+    for name, ms in groups.items():
+        n_w, nmf, hpss = 0, [], []
+        for m in ms:
+            p = CACHE / f"{m}.npz"
+            assert cache_is_current(p, m), m
+            with np.load(p) as z:
+                v = np.asarray(z["valid"], bool)
+                ref = np.asarray(z["ref"], float)
+                n_w += int(v.sum())
+                nmf.append(extended_scores(np.asarray(z["est"])[v], ref[v])["rmse"])
+                hpss.append(extended_scores(np.asarray(z["est_hpss"])[v], ref[v])["rmse"])
+        r = rows[name]
+        assert n_w == int(r["n_valid_windows"]), (name, n_w, r["n_valid_windows"])
+        nmf_f = [x for x in nmf if np.isfinite(x)]
+        hpss_f = [x for x in hpss if np.isfinite(x)]
+        assert abs(float(np.mean(nmf_f)) - float(r["nmf_rmse"])) < 1e-6, name
+        assert abs(float(np.mean(hpss_f)) - float(r["hpss_rmse"])) < 1e-6, name
+    print("golden multiverse CSV matches caches")
 
 
 if __name__ == "__main__":
@@ -156,5 +271,10 @@ if __name__ == "__main__":
     test_evaluation_sync_and_gating()
     test_four_way_window_runner()
     test_cache_provenance_is_deterministic()
+    test_golden_filter_matches_paper_spec()
+    test_golden_reference_sampling_rates()
+    test_golden_cohort_counts()
+    test_golden_paper18_metrics()
+    test_golden_multiverse_csv_matches_caches()
     print("ALL TESTS PASSED")
 

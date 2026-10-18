@@ -107,6 +107,10 @@ def window_ref_and_gating(resp_raw, resp_rate, centers_s, lag_s, fs_raw=256.0,
 def ref_saturation_mask(resp_rate, flat_s=3, drop_bpm=15):
     """Detect unreliable reference segments (paper Fig.5 valleys).
 
+    UNUSED (audit A10): not imported by the active pipeline. Reference gating
+    is performed by window_ref_and_gating(); this rate-flatness heuristic is
+    retained only as an exploration artifact.
+
     Marks invalid where flat (diff==0) or abrupt drop>drop_bpm.
     Returns boolean valid mask.
     """
@@ -139,6 +143,8 @@ def ref_saturation_mask(resp_rate, flat_s=3, drop_bpm=15):
 def ref_valid_from_raw(resp_raw, resp_rate, fs_raw=256.0,
                         flat_tol=1e-9, clip_frac=0.5, std_thresh=1e-3):
     """Raw-ADC-based validity (paper: ADC clips at max magnitude -> constant amplitude).
+
+    UNUSED (audit A10): not imported by the active pipeline; kept for reference.
 
     For each 1Hz RespRate sample j, inspect raw segment j*fs_raw:(j+1)*fs_raw:
     invalid if raw std < std_thresh (flat/clipped) or >clip_frac of samples

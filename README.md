@@ -1,7 +1,7 @@
 # Contactless Neonatal Radar Respiration Monitoring: Beltrão Reimplementation & HPSS Extension
 
-[![Pipeline Version](https://img.shields.io/badge/pipeline-main--v3--audit--fix--1-blue)](#reproducibility--execution-guide)
-[![Tests](https://img.shields.io/badge/tests-10%2F10%20passing-brightgreen)](#reproducibility--execution-guide)
+[![Pipeline Version](https://img.shields.io/badge/pipeline-main--v3--audit--fix--2-blue)](#reproducibility--execution-guide)
+[![Tests](https://img.shields.io/badge/tests-15%2F15%20passing-brightgreen)](#reproducibility--execution-guide)
 [![Provenance Caches](https://img.shields.io/badge/caches-33%2F33%20SHA256--verified-success)](#reproducibility--execution-guide)
 
 An audited, cryptographically provenance-locked academic codebase for **contactless neonatal breathing rate estimation** using $24\text{ GHz}$ continuous-wave (CW) interferometer radar in the Neonatal Intensive Care Unit (NICU).
@@ -32,11 +32,11 @@ Reproduced via `python3 main.py --multiverse` ([`reconstruction_multiverse.csv`]
 | Predefined Cohort Variant | Evaluable Sessions | Valid Windows | `NLS+NMF` RMSE | `HPSS+NLS` RMSE | $\Delta\text{RMSE}$ (bpm) | 95% Session Bootstrap CI | $\Delta\text{Acc@10}$ (pp) |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 | `all_paired_local` | 31 / 33 | 7,105 | 8.349 | 8.361 | **+0.012** | $[-0.456, +0.372]$ | $-0.35\text{ pp}$ |
-| `pool30_no_zero_overlap` | 28 / 30 | 6,857 | 8.181 | 8.085 | **−0.096** | $[-0.574, +0.287]$ | $-0.28\text{ pp}$ |
-| `retained23_named_exclusions` | 23 / 23 | 5,976 | 7.796 | 7.821 | **+0.025** | $[-0.202, +0.276]$ | $+0.19\text{ pp}$ |
+| `pool30_no_zero_overlap` | 28 / 30 | 6,642 | 8.181 | 8.085 | **−0.096** | $[-0.574, +0.287]$ | $-0.28\text{ pp}$ |
+| `retained23_named_exclusions` | 23 / 23 | 6,447 | 7.796 | 7.821 | **+0.025** | $[-0.202, +0.276]$ | $+0.19\text{ pp}$ |
 | `current_reference_validity_ranked_18` | 18 / 18 | 5,466 | 6.863 | 6.798 | **−0.065** | $[-0.249, +0.099]$ | $+0.39\text{ pp}$ |
 
-* **Computational Speedup:** HPSS runs in **5.46 ms** vs. NMF's **37.79 ms** per 30-s window in 8-worker batch execution (**6.92× speedup**, or **~2.8 ms vs. ~17.6 ms** single-process, **~6.3× speedup**) while being 100% deterministic.
+* **Separation-Stage Speedup:** HPSS's fixed-cost median filtering is **~6–7× faster** than iterative NMF per 30-s window, measured in the same process on the same windows ([`reconstruction_multiverse.csv`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/outputs/audits/reconstruction_multiverse.csv) records per-window means; in the `main-v3-audit-fix-2` rebuild NMF $\approx 17.8$ ms vs. HPSS $\approx 2.8$ ms, $\approx 6.4\times$, for `all_paired_local`). Absolute runtimes are strongly environment/load dependent, so only the ratio is reported; a controlled benchmark is pending (WS8). The batch builder is single-process/sequential and HPSS is 100% deterministic.
 
 ---
 
@@ -47,7 +47,7 @@ medical_radar/
 ├── README.md                          # Submission overview & reproduction guide
 ├── RESEARCH_AND_ENGINEERING_LOG.md    # Complete history of versions, solved bugs, audits & lessons learned
 ├── main.py                            # Unified command-line interface (CLI)
-├── beltrao_data/                      # Raw NICU radar CSVs (16 Hz), reference EDFs (25 Hz/1 Hz), & paper PDF
+├── beltrao_data/                      # Raw NICU radar CSVs (16 Hz), reference EDFs (256 Hz Resp / 1 Hz RespRate), & paper PDF
 └── paper_workspace/
     ├── metadata/
     │   ├── analysis_plan_v1.md        # Pre-specified evaluation protocol & estimands
@@ -55,7 +55,7 @@ medical_radar/
     │   ├── cohort_ledger.csv          # 33-session SHA-256 input & exclusion evidence ledger
     │   └── unresolved_protocol_items.yaml
     ├── outputs/
-    │   ├── cache/                     # 33 SHA-256 provenance-locked .npz caches (main-v3-audit-fix-1)
+    │   ├── cache/                     # 33 SHA-256 provenance-locked .npz caches (main-v3-audit-fix-2)
     │   ├── audits/                    # Multiverse & per-session CSV tables
     │   ├── fig4_7.3_60s.png           # Beltrão Fig. 4 spectrogram reproduction
     │   ├── fig5_7.3.png               # Beltrão Fig. 5 25-min tracking reproduction
@@ -72,7 +72,7 @@ medical_radar/
         ├── cohort.py                  # Cohort definitions (PAPER_18, pool30, retained23, local_pool)
         ├── data_loader.py             # Raw I/Q CSV & EDF reference loader
         ├── demod.py                   # Complex Signal Demodulation (CSD)
-        ├── filtering.py               # 5th-order Butterworth bandpass & coarse autocorrelation
+        ├── filtering.py               # 64-tap Kaiser FIR bandpass (0.3–3.0 Hz, β=6.5) & coarse autocorrelation
         ├── estimation.py              # Zero-padded DFT & Harmonic Nonlinear Least Squares (NLS)
         ├── rbm_nmf.py                 # Baseline NMF + RBM detection + Wiener ratio mask + env_normalize
         ├── hpss.py                    # Proposed fftshift-centered HPSS + soft Wiener mask + env_normalize
@@ -81,14 +81,14 @@ medical_radar/
         ├── provenance.py              # Cryptographic SHA-256 cache provenance validator
         ├── run_measurement.py         # Single-window & full-session 4-way runner
         ├── run_all.py                 # Session orchestrator & scenario aggregator
-        ├── run_batch.py               # Parallel 8-worker batch cache builder
+        ├── run_batch.py               # Sequential single-process batch cache builder
         ├── compare_ab.py              # Anchor session 7.3 4-way A/B demo
         ├── result_tables.py           # Fig. 6, Fig. 7, & pooled scenario tables
         ├── build_metadata.py          # Cohort SHA-256 ledger generator
         ├── reconstruction_multiverse.py # 4-cohort multiverse & bootstrap CI evaluator
         ├── plot_figs.py               # Beltrão reproduction figure generator
         ├── plot_nmf_vs_hpss.py        # NMF vs HPSS comparative figure generator
-        ├── test_pipeline.py           # 10-check unit, mathematical, & provenance test suite
+        ├── test_pipeline.py           # 15-check unit, mathematical, provenance & golden-value regression test suite
         ├── requirements.txt           # Core Python dependencies
         └── requirements-lock.txt      # Pinned reproducible environment (Python 3.9.6)
 ```
@@ -108,7 +108,7 @@ pip install -r paper_workspace/src/requirements-lock.txt
 All tasks are orchestrated through [`main.py`](file:///Users/hosamshibly/Downloads/medical_radar/main.py):
 
 ```bash
-# 1. Run the 10-check unit, mathematical & cache-provenance test suite
+# 1. Run the 15-check unit, mathematical, provenance & golden-value regression test suite
 python3 main.py --test
 
 # 2. Run the 4-way A/B comparison on anchor session 7.3
@@ -129,6 +129,9 @@ python3 main.py --all
 
 To recompute all `.npz` caches from scratch (rather than using the verified SHA-256 locked caches):
 ```bash
-python3 main.py --batch --force
+# Rebuild all 33 paired-session caches (needed for the four-variant multiverse):
 python3 -m paper_workspace.src.run_batch --all-paired --force
+
+# Rebuild only the 18-session benchmark cohort (PAPER_18):
+python3 main.py --batch --force
 ```

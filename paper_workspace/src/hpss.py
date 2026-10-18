@@ -13,7 +13,7 @@ Separation (on magnitude spectrogram |X|, F x T):
 Note axis convention: |X| rows=frequency, cols=time, so time smoothing uses
 a (1, l_harm) footprint and frequency smoothing a (l_perc, 1) footprint.
 
-Hyperparameters (plan): l_harm=5 frames (~5 s, spans full 1-2 s breath cycles),
+Hyperparameters (plan): l_harm=7 frames (~7 s, spans full 1-2 s breath cycles),
 l_perc=21 bins (~1.3 Hz @0.0625 Hz/bin, wider than the narrow breathing line),
 gamma=2, eps=1e-12.
 
