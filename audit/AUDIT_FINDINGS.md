@@ -182,4 +182,54 @@ Reproducible runner: [`paper_workspace/src/audit_phase2_ws3_ws6_ws7.py`](file://
    - **Unique 4 Twin Sessions in `PAPER_18`:** Within Patients `03–12`, there are **only 4 twin measurements (`7.2, 7.3, 8.2, 8.3`)**, proving that `PAPER_18` contains the exact 4 twin sessions from Beltrão et al.'s Fig. 7.
    - **Strict Subset Hierarchy & SHA-256 Ledger:** Verified `PAPER_18 (18) < retained23 (23) < pool30 (30) < local_pool (33)` and confirmed 100% SHA-256 digest match across all 66 files in [`paper_workspace/outputs/audits/cohort_audit_ledger.csv`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/outputs/audits/cohort_audit_ledger.csv).
 
+---
+
+# Phase 3 Findings (`WS4`, `WS5`, `WS8`)
+
+Reproducible runner: [`paper_workspace/src/audit_phase3_ws4_ws5_ws8.py`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/src/audit_phase3_ws4_ws5_ws8.py) (pinned by `test_phase3_ws4_ws5_ws8_tost_provenance_and_timing` in [`paper_workspace/src/test_pipeline.py`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/src/test_pipeline.py)).
+
+## WS4 — Formal TOST Equivalence, BCa/Clustered Bootstrap & Outcome-Free Combinatorics
+
+1. **Formal Two One-Sided Tests (TOST) Equivalence Calibration (`audit/phase3_ws4_tost_and_bootstrap.csv`, resolves `T8`):**
+   - To replace unqualified "statistically equivalent" wording (`T8`), formal TOST equivalence testing was performed across all 4 cohorts (`PAPER_18`, `retained23`, `pool30`, `all_paired_local`) and 5 scenarios (`ALL`, `supine`, `prone`, `single`, `twins`), alongside 10,000-resample percentile, BCa (Bias-Corrected and Accelerated), and patient-clustered bootstrap 95% CIs and Holm–Bonferroni multiplicity-adjusted $p$-values:
+
+| Cohort (`ALL`) | $N_{\text{sess}}$ ($N_{\text{pat}}$) | $\Delta\text{RMSE}$ (HPSS−NMF) | 90% TOST CI | Min Margin $\delta^*$ (bpm) | $p_{\text{TOST}}(\pm 0.25)$ | $p_{\text{TOST}}(\pm 0.50)$ | $p_{\text{TOST}}(\pm 1.00)$ | BCa 95% CI | Patient-Cluster 95% CI |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **`PAPER_18`** | 18 (10) | **−0.0648 bpm** | $[-0.225, +0.095]$ | **0.225 bpm** | **0.0300** | **0.0001** | **< 0.0001** | $[-0.277, +0.084]$ | $[-0.275, +0.097]$ |
+| **`retained23`** | 23 (10) | **+0.0249 bpm** | $[-0.196, +0.246]$ | **0.246 bpm** | **0.0468** | **0.0006** | **< 0.0001** | $[-0.179, +0.320]$ | $[-0.202, +0.214]$ |
+| **`pool30`** | 28 (11) | **−0.0956 bpm** | $[-0.489, +0.298]$ | **0.489 bpm** | 0.2546 | **0.0456** | **0.0003** | $[-0.808, +0.208]$ | $[-0.542, +0.256]$ |
+| **`all_paired_local`** | 31 (12) | **+0.0117 bpm** | $[-0.362, +0.385]$ | **0.385 bpm** | 0.1437 | **0.0171** | **< 0.0001** | $[-0.637, +0.317]$ | $[-0.443, +0.396]$ |
+
+   - **Verdict on `T8`:** At a pre-specified equivalence margin of **$\delta = \pm 0.50\text{ bpm}$** (half the $1\text{ bpm}$ quantization step of the clinical Philips IntelliVue MP70 `RespRate` monitor), **non-equivalence is formally rejected at $\alpha = 0.05$ across all four cohorts** ($p_{\text{TOST}} \in [0.0001, 0.0456]$). On `PAPER_18` and `retained23`, equivalence holds even at the sub-quarter-breath margin **$\delta = \pm 0.25\text{ bpm}$** ($p_{\text{TOST}} = 0.0300$ and $0.0468$). Documentation in [`README.md`](file:///Users/hosamshibly/Downloads/medical_radar/README.md) and [`RESEARCH_AND_ENGINEERING_LOG.md`](file:///Users/hosamshibly/Downloads/medical_radar/RESEARCH_AND_ENGINEERING_LOG.md) has been calibrated to state the explicit TOST margins and $\delta^*$ values.
+
+2. **Exhaustive $\binom{9}{7} = 36$ Prone-Subset Combinatorics (`audit/phase3_ws4_prone_combinatorics.csv`):**
+   - Because `PAPER_18` selects 7 prone sessions out of the 9 prone sessions in Patients `03–12` (`3.1, 4.3, 5.3, 6.2, 7.3, 8.3, 10.2, 12.1, 12.2`), we evaluated **all $\binom{9}{7} = 36$ possible 7-prone combinations** (including all $\binom{7}{5} = 21$ combinations that preserve the 4 twin sessions `7.2, 7.3, 8.2, 8.3`):
+     - Across **36/36 (100%)** of prone combinations, `HPSS+NLS` achieves lower RMSE than `NLS+NMF` (`mean ΔRMSE = −0.3433 bpm`, range `[−0.4456, −0.0648 bpm]`, valid window counts spanning `4,622–5,466`, bracketing the paper's `~4,964`).
+     - Notably, `PAPER_18` (`ΔRMSE = −0.0648 bpm`) is the **most conservative** of all 36 combinations (`max ΔRMSE = −0.0648 bpm`), proving that reference-validity ranking did *not* inflate HPSS's advantage.
+     - Across 2,000 completely random 18-session draws (`11 supine + 7 prone`) from the 27 paired sequences in Patients `03–12`, the mean $\Delta\text{RMSE}$ is **$-0.1911\text{ bpm}$** ($95\%\text{ CI } [-0.4027, +0.1253]\text{ bpm}$).
+
+## WS5 — Provenance & Environment Lock Audit (`audit/phase3_ws5_provenance_audit.json`)
+
+1. **33/33 Cache Freshness & 15-File `_CORE_FILES` Coverage:**
+   - All 33 `.npz` caches pass `cache_is_current(p, m)` under `PIPELINE_VERSION = "main-v3-audit-fix-2"` with all 15 core modules hashed.
+2. **Environment Lock Verification & Fix `A16`:**
+   - Active runtime versions (`numpy==2.0.2`, `scipy==1.13.1`, `scikit-learn==1.5.2`, `pandas==2.3.3`, `matplotlib==3.9.4`, `pyedflib==0.1.42`) match [`paper_workspace/src/requirements-lock.txt`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/src/requirements-lock.txt) (`lock_exact_match = True`).
+   - Fixed `A16` in [`paper_workspace/src/requirements.txt`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/src/requirements.txt), where line 6 previously specified `pyedflib>=0.3` (unsatisfiable on PyPI since latest is `0.1.42`); updated to `pyedflib>=0.1.30` (`requirements_min_satisfied = True`).
+
+## WS8 — Controlled Single-Thread Timing Benchmark (`audit/phase3_ws8_timing_benchmark.csv`)
+
+1. **Stage-by-Stage Single-Thread Timing Decomposition (`OMP/BLAS threads = 1`, GC disabled during timing, 5 warmup + $3 \times 50 = 150$ timed window evaluations on Session `7.3`):**
+
+| Pipeline Stage | Mean $\pm$ SD (ms) | Median `p50` (ms) | IQR (ms) | `p95` (ms) | `p99` (ms) | Speedup (`NMF / HPSS`) |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Shared `CSD + Pre-Bandpass`** | $0.297 \pm 0.035$ | $0.282$ | $0.025$ | $0.359$ | $0.406$ | $1.00\times$ (shared) |
+| **Shared `STFT (256-pt rect)`** | $0.366 \pm 0.013$ | $0.362$ | $0.011$ | $0.393$ | $0.401$ | $1.00\times$ (shared) |
+| **Core Separation (`NMF solver+mask` vs. `HPSS median+mask`)** | $17.011 \pm 0.593$ vs. **$1.858 \pm 0.114$** | $17.079$ vs. **$1.839$** | $0.285$ vs. $0.083$ | $17.505$ vs. $2.115$ | $18.483$ vs. $2.247$ | **$9.16\times$ mean ($9.29\times$ p50)** |
+| **Post-Mask (`env_normalize + iSTFT + Post-BP`)** | $0.789 \pm 0.045$ vs. $0.749 \pm 0.104$ | $0.778$ vs. $0.705$ | $0.026$ vs. $0.064$ | $0.878$ vs. $0.957$ | $0.969$ vs. $1.072$ | $1.05\times$ |
+| **Full Filter Block (`STFT + Mask + iSTFT + Post-BP`)** | $18.166 \pm 0.592$ vs. **$2.972 \pm 0.183$** | $18.242$ vs. **$2.921$** | $0.285$ vs. $0.122$ | $18.700$ vs. $3.373$ | $19.662$ vs. $3.484$ | **$6.11\times$ mean ($6.24\times$ p50)** |
+| **Downstream `Autocorr + Harmonic NLS`** | $0.507 \pm 0.052$ vs. $0.454 \pm 0.042$ | $0.488$ vs. $0.441$ | $0.022$ vs. $0.025$ | $0.605$ vs. $0.514$ | $0.754$ vs. $0.668$ | $1.12\times$ |
+| **End-to-End 30-s Window (`CSD` $\to$ `NLS`)** | $18.970 \pm 0.601$ vs. **$3.724 \pm 0.188$** | $19.033$ vs. **$3.665$** | $0.317$ vs. $0.166$ | $19.541$ vs. $4.089$ | $20.458$ vs. $4.236$ | **$5.09\times$ mean ($5.19\times$ p50)** |
+| **Cached `PAPER_18` Session Means ($N=18$)** | $17.842 \pm 0.491$ vs. **$2.776 \pm 0.072$** | $17.887$ vs. **$2.803$** | $0.471$ vs. $0.037$ | $18.395$ vs. $2.836$ | $18.750$ vs. $2.865$ | **$6.43\times$ mean ($6.38\times$ p50)** |
+| **Cached `all_paired` Session Means ($N=31$)** | $17.784 \pm 0.619$ vs. **$2.795 \pm 0.107$** | $17.827$ vs. **$2.806$** | $0.476$ vs. $0.048$ | $18.578$ vs. $2.925$ | $19.520$ vs. $3.109$ | **$6.36\times$ mean ($6.35\times$ p50)** |
+
 

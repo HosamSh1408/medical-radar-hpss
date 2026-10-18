@@ -3,4 +3,5 @@ scipy>=1.8
 scikit-learn>=1.1
 pandas>=1.4
 matplotlib>=3.5
-pyedflib>=0.3
+pyedflib>=0.1.30
+

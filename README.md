@@ -1,7 +1,7 @@
 # Contactless Neonatal Radar Respiration Monitoring: Beltrão Reimplementation & HPSS Extension
 
 [![Pipeline Version](https://img.shields.io/badge/pipeline-main--v3--audit--fix--2-blue)](#reproducibility--execution-guide)
-[![Tests](https://img.shields.io/badge/tests-15%2F15%20passing-brightgreen)](#reproducibility--execution-guide)
+[![Tests](https://img.shields.io/badge/tests-18%2F18%20passing-brightgreen)](#reproducibility--execution-guide)
 [![Provenance Caches](https://img.shields.io/badge/caches-33%2F33%20SHA256--verified-success)](#reproducibility--execution-guide)
 
 An audited, cryptographically provenance-locked academic codebase for **contactless neonatal breathing rate estimation** using $24\text{ GHz}$ continuous-wave (CW) interferometer radar in the Neonatal Intensive Care Unit (NICU).
@@ -36,7 +36,8 @@ Reproduced via `python3 main.py --multiverse` ([`reconstruction_multiverse.csv`]
 | `retained23_named_exclusions` | 23 / 23 | 6,447 | 7.796 | 7.821 | **+0.025** | $[-0.202, +0.276]$ | $+0.19\text{ pp}$ |
 | `current_reference_validity_ranked_18` | 18 / 18 | 5,466 | 6.863 | 6.798 | **−0.065** | $[-0.249, +0.099]$ | $+0.39\text{ pp}$ |
 
-* **Separation-Stage Speedup:** HPSS's fixed-cost median filtering is **~6–7× faster** than iterative NMF per 30-s window, measured in the same process on the same windows ([`reconstruction_multiverse.csv`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/outputs/audits/reconstruction_multiverse.csv) records per-window means; in the `main-v3-audit-fix-2` rebuild NMF $\approx 17.8$ ms vs. HPSS $\approx 2.8$ ms, $\approx 6.4\times$, for `all_paired_local`). Absolute runtimes are strongly environment/load dependent, so only the ratio is reported; a controlled benchmark is pending (WS8). The batch builder is single-process/sequential and HPSS is 100% deterministic.
+* **TOST Equivalence Calibration (`WS4`):** Under formal Two One-Sided Tests (TOST) at a pre-specified margin of $\delta = \pm 0.50\text{ bpm}$ (half the $1\text{ bpm}$ resolution of the clinical reference monitor), `HPSS+NLS` and `NLS+NMF` are statistically equivalent at $\alpha = 0.05$ across all four cohort variants (`PAPER_18`: $\delta^* = 0.225\text{ bpm}, p_{\text{TOST}} = 0.0001$; `retained23`: $\delta^* = 0.246\text{ bpm}, p_{\text{TOST}} = 0.0006$; `pool30`: $\delta^* = 0.489\text{ bpm}, p_{\text{TOST}} = 0.0456$; `all_paired_local`: $\delta^* = 0.385\text{ bpm}, p_{\text{TOST}} = 0.0171$; see [`phase3_ws4_tost_and_bootstrap.csv`](file:///Users/hosamshibly/Downloads/medical_radar/audit/phase3_ws4_tost_and_bootstrap.csv)).
+* **Controlled Single-Thread Timing Benchmark (`WS8`):** In a controlled single-thread benchmark (`OMP/BLAS threads=1`, GC-isolated, 5 warmup + $3\times 50$ timed windows on Session `7.3`; see [`phase3_ws8_timing_benchmark.csv`](file:///Users/hosamshibly/Downloads/medical_radar/audit/phase3_ws8_timing_benchmark.csv)), HPSS's core median-filter mask stage (`1.86 ± 0.11 ms`, median `1.84 ms`) is **9.2× faster** (`9.3×` median) than NMF's iterative solver + mask (`17.01 ± 0.59 ms`, median `17.08 ms`), **6.1–6.4× faster** across the full STFT separation filter block (`2.97 ms` vs. `18.17 ms` in benchmark; `2.78 ms` vs. `17.84 ms` across `PAPER_18` caches), and **5.1× faster** end-to-end per 30-s window (`3.72 ms` vs. `18.97 ms`). The batch builder is single-process/sequential and HPSS is 100% deterministic.
 
 ---
 

@@ -1,0 +1,17 @@
+stage,n_samples,mean_ms,sd_ms,median_p50_ms,iqr_ms,p95_ms,p99_ms
+shared_csd_pre_bp_ms,150,0.2974,0.0349,0.282,0.0254,0.3587,0.4058
+shared_stft_ms,150,0.3656,0.0125,0.3616,0.0107,0.3925,0.401
+nmf_solver_and_mask_ms,150,17.0111,0.5927,17.0788,0.285,17.5046,18.4832
+hpss_median_and_mask_ms,150,1.8575,0.1142,1.8391,0.0832,2.1152,2.2466
+nmf_env_istft_post_bp_ms,150,0.7891,0.0451,0.7777,0.0257,0.8775,0.9686
+hpss_env_istft_post_bp_ms,150,0.7494,0.1038,0.7053,0.0643,0.9569,1.0722
+nmf_filter_total_ms,150,18.1658,0.5918,18.2421,0.2849,18.6996,19.662
+hpss_filter_total_ms,150,2.9724,0.1828,2.9212,0.1215,3.3731,3.4838
+nmf_downstream_autocorr_nls_ms,150,0.5065,0.0518,0.4879,0.0223,0.6052,0.7536
+hpss_downstream_autocorr_nls_ms,150,0.4539,0.0419,0.4405,0.0253,0.5137,0.6681
+nmf_end_to_end_window_ms,150,18.9697,0.6005,19.0326,0.3171,19.5407,20.4581
+hpss_end_to_end_window_ms,150,3.7237,0.1877,3.6654,0.1664,4.0893,4.236
+cache_PAPER_18_sessions_nmf_filter_ms,18,17.842,0.4908,17.8866,0.4709,18.3953,18.7499
+cache_PAPER_18_sessions_hpss_filter_ms,18,2.7762,0.0722,2.8033,0.0368,2.8364,2.8645
+cache_all_paired_sessions_nmf_filter_ms,31,17.784,0.6186,17.8273,0.4763,18.5779,19.5201
+cache_all_paired_sessions_hpss_filter_ms,31,2.7953,0.1073,2.8057,0.0483,2.9247,3.1091

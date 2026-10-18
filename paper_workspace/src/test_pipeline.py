@@ -375,6 +375,49 @@ def test_phase2_ws3_ws6_ws7_leakage_and_ingestion():
     print("phase2 ws3/ws6/ws7 leakage, ingestion & cohort reconciliation ok")
 
 
+def test_phase3_ws4_ws5_ws8_tost_provenance_and_timing():
+    import csv
+    from .audit_phase3_ws4_ws5_ws8 import (
+        AUDIT_DIR,
+        audit_ws4_tost_and_bootstrap,
+        audit_ws5_provenance_and_env,
+        audit_ws8_controlled_timing_benchmark,
+    )
+
+    # 1. WS4: Formal TOST equivalence at delta=0.50 bpm across all 4 cohorts & C(9,7)=36 prone combinatorics
+    ws4_rows, comb_rows, ws4_sum = audit_ws4_tost_and_bootstrap()
+    by_cs = {(r["cohort"], r["scenario"]): r for r in ws4_rows}
+    for c_name in ("PAPER_18", "retained23", "pool30", "all_paired_local"):
+        r = by_cs[(c_name, "ALL")]
+        assert r["min_tost_margin_bpm"] < 0.50, (c_name, r["min_tost_margin_bpm"])
+        assert r["tost_p_050bpm"] < 0.05, (c_name, r["tost_p_050bpm"])
+        assert r["tost_p_100bpm"] < 0.001, (c_name, r["tost_p_100bpm"])
+    assert by_cs[("PAPER_18", "ALL")]["min_tost_margin_bpm"] == 0.2247
+    assert ws4_sum["n_prone_combinations_total"] == 36
+    assert ws4_sum["all36_hpss_beats_nmf_count"] == 36
+    assert ws4_sum["twin21_hpss_beats_nmf_count"] == 21
+    assert len(comb_rows) == 36
+
+    # 2. WS5: 33/33 cache freshness, 15-file _CORE_FILES, and requirements.txt / lock verification
+    ws5 = audit_ws5_provenance_and_env()
+    assert ws5["n_core_files"] == 15
+    assert ws5["n_caches_checked"] == 33
+    assert ws5["all_33_caches_current"] is True
+    assert ws5["lock_exact_match"] is True
+    assert ws5["requirements_min_satisfied"] is True
+
+    # 3. WS8: Controlled single-thread timing benchmark CSV + live smoke check
+    ws8_csv = AUDIT_DIR / "phase3_ws8_timing_benchmark.csv"
+    with open(ws8_csv, "r", encoding="utf-8") as f:
+        ws8_rows = {r["stage"]: r for r in csv.DictReader(f)}
+    assert float(ws8_rows["nmf_solver_and_mask_ms"]["mean_ms"]) > 5.0 * float(ws8_rows["hpss_median_and_mask_ms"]["mean_ms"])
+    assert float(ws8_rows["nmf_filter_total_ms"]["mean_ms"]) > 4.5 * float(ws8_rows["hpss_filter_total_ms"]["mean_ms"])
+    _, live_sum = audit_ws8_controlled_timing_benchmark(n_windows=6, n_warmup=2, n_repeats=1)
+    assert live_sum["core_solver_speedup_mean_x"] > 5.0
+    assert live_sum["filter_stage_speedup_mean_x"] > 4.0
+    print("phase3 ws4/ws5/ws8 TOST, provenance & timing benchmark ok")
+
+
 if __name__ == "__main__":
     test_csd_preserves_fundamental()
     test_nmf_removes_spike()
@@ -393,6 +436,8 @@ if __name__ == "__main__":
     test_golden_multiverse_csv_matches_caches()
     test_phase1_ws1_ws2_cleanroom_and_symmetry()
     test_phase2_ws3_ws6_ws7_leakage_and_ingestion()
+    test_phase3_ws4_ws5_ws8_tost_provenance_and_timing()
     print("ALL TESTS PASSED")
+
 
 
