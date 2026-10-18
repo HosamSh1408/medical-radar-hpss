@@ -1,0 +1,23 @@
+{
+  "as_of": "2026-10-11",
+  "author_contact_available": false,
+  "exact_reproduction": {
+    "status": "blocked",
+    "reason": "Original cohort IDs, denominator, and several protocol details are unresolved from the supplied materials."
+  },
+  "independent_internal_comparison": {
+    "status": "exploratory_complete",
+    "evidence": "Four predefined local cohort variants were evaluated with 33 fresh provenance-valid caches and deterministic bootstrap intervals.",
+    "claim_allowed": "HPSS is a promising faster candidate in this internal reconstruction."
+  },
+  "generalizable_superiority": {
+    "status": "not_evaluable",
+    "reason": "No untouched external dataset/site/device validation has been run."
+  },
+  "clinical_superiority": {
+    "status": "blocked",
+    "reason": "No clinical utility endpoint, prospective workflow study, safety analysis, or target-hardware validation is available."
+  },
+  "superiority_margin_rmse_bpm": null,
+  "analysis_plan": "paper_workspace/metadata/analysis_plan_v1.md"
+}

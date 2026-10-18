@@ -1,0 +1,74 @@
+project_status: independent_constrained_reimplementation
+author_contact: unavailable
+exact_reproduction_claim: prohibited
+default_policy: run_all_defensible_variants_and_report_the_full_result_matrix
+
+items:
+  - id: original_cohort_ids
+    status: unresolved
+    evidence:
+      - beltrao_paper.pdf reports scenario counts but does not identify all 18 local measurement IDs
+      - annotations.pdf supplies protocol labels and exclusions but not a verified analysis-ID list
+      - current PAPER_18 is reference-validity-ranked and outcome-dependent
+    default: current PAPER_18 retained only as a historical exploratory variant
+    variants:
+      - all_paired_local
+      - pool30_no_zero_overlap
+      - retained23_named_exclusions
+      - current_reference_validity_ranked_18
+    prohibited_claim: exact_original_cohort_reproduction
+
+  - id: valid_window_count
+    status: unresolved
+    evidence:
+      - paper reports approximately 4964 valid estimates
+      - active pipeline currently evaluates 5466 valid two-second windows
+    default: preserve the active count and report a denominator audit
+    variants:
+      - center_only_gating
+      - whole_window_gating
+    prohibited_claim: exact_denominator_match
+
+  - id: reference_target_construction
+    status: unresolved
+    evidence:
+      - paper describes a window-level reference frequency but does not fully specify implementation details
+      - local EDF contains raw respiration and one-Hz RespRate channels
+    default: active 30-second window-average reference construction
+    variants:
+      - active_window_average
+      - documented_alternative_only_if_reimplemented
+    prohibited_claim: uniquely_verified_reference_algorithm
+
+  - id: synchronization_rule
+    status: unresolved
+    evidence:
+      - local metadata provides start-time information
+      - paper does not specify the complete lag search and tie-breaking procedure
+    default: metadata-anchored lag search used by the active pipeline
+    variants:
+      - metadata_anchored
+      - data_derived_fixed_bounds_only_if_reimplemented
+    prohibited_claim: paper_exact_synchronization_reproduction
+
+  - id: nmf_solver_details
+    status: unresolved
+    evidence:
+      - paper specifies K=11 but not the complete sklearn-compatible solver configuration
+      - active implementation reaches the iteration limit in a substantial fraction of windows
+    default: active locked NMF configuration with convergence recorded
+    variants:
+      - active_beltrao_tuned
+      - attached_locked_if_explicitly_reported
+    prohibited_claim: solver_identical_to_paper
+
+  - id: aggregation_rule
+    status: partially_resolved
+    evidence:
+      - paper Figure 6 is interpreted as a per-measurement mean
+      - pooled-window metrics are also useful descriptive summaries
+    default: per-measurement means for paper-inspired tables; pooled values reported separately
+    variants:
+      - per_measurement
+      - pooled_windows
+    prohibited_claim: pooled_and_per_measurement_values_are_interchangeable

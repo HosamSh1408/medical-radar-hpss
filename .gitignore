@@ -1,0 +1,19 @@
+# Python bytecode & virtual environments
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+.env
+
+# macOS & editor/agent metadata
+.DS_Store
+.claude/
+
+# Raw clinical dataset (573 MB total):
+# Ignore full radar CSV and reference EDF folders by default,
+# while tracking anchor session 7.3 (16.8 MB) so tests and demos run out-of-the-box.
+beltrao_data/radar/*.csv
+!beltrao_data/radar/20191212T121224.9057437_1.csv
+beltrao_data/reference/*.edf
+!beltrao_data/reference/7.0.1.15.0.3_L12122019_121140.edf

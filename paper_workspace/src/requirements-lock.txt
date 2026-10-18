@@ -1,0 +1,18 @@
+# P0 environment record (solver-version-specific NMF per attached §4.3)
+# Recorded local environment: Python 3.9.6, NumPy 2.0.2, SciPy 1.13.1,
+# scikit-learn 1.5.2
+# Current local env (measured 2026-10-11, do NOT change mid-study):
+#   Python 3.9.6, NumPy 2.0.2 (match), SciPy 1.13.1 (match), scikit-learn 1.5.2 (GAP vs 1.6.1)
+#
+# Gap impact: NMF (CD solver, NNDSVD init, tol 1e-4) internals may differ
+# between sklearn 1.5.2 and 1.6.1. Attached thresholds (Hoyer>0.55,
+# max>2.mean(H), no V/W/H normalization) are therefore solver-version-specific
+# and must be revalidated if the env is upgraded. Do not upgrade sklearn
+# without rerunning test_pipeline + 7.3 anchor (Fig.2-type) checks.
+numpy==2.0.2
+scipy==1.13.1
+# scikit-learn==1.6.1  # attached pin; local is 1.5.2 (see gap note above)
+scikit-learn==1.5.2
+pandas==2.3.3
+matplotlib==3.9.4
+pyedflib==0.1.42

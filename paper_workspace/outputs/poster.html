@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scientific Poster - Medical Radar NICU Respiration Monitoring</title>
+<style>
+  :root {
+    --primary: #0f2b48;
+    --primary-light: #1b4b7a;
+    --accent: #2563eb;
+    --accent-green: #16a34a;
+    --accent-red: #dc2626;
+    --bg: #f1f5f9;
+    --card-bg: #ffffff;
+    --text-dark: #0f172a;
+    --text-muted: #475569;
+    --border: #cbd5e1;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text-dark);
+    padding: 24px;
+    line-height: 1.45;
+  }
+
+  .poster-container {
+    max-width: 1750px;
+    margin: 0 auto;
+    background: #ffffff;
+    border: 1px solid var(--border);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  /* Header */
+  header {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    color: #ffffff;
+    padding: 36px 48px;
+    border-bottom: 5px solid var(--accent);
+  }
+  header h1 {
+    font-size: 2.2rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+  }
+  header h2 {
+    font-size: 1.3rem;
+    font-weight: 400;
+    color: #93c5fd;
+    margin-bottom: 16px;
+  }
+  .authors-bar {
+    display: flex;
+    justify-content: space-between;
+    font-size: 1.05rem;
+    color: #e2e8f0;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    padding-top: 14px;
+  }
+
+  /* Grid Layout (3 Columns) */
+  .grid-columns {
+    display: grid;
+    grid-template-columns: 1fr 1.15fr 1fr;
+    gap: 24px;
+    padding: 28px;
+  }
+
+  .column {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  /* Cards */
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 22px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  }
+  .card h3 {
+    font-size: 1.25rem;
+    color: var(--primary);
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 8px;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .badge {
+    background: var(--accent);
+    color: #ffffff;
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: 9999px;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  .badge-green { background: var(--accent-green); }
+
+  p { margin-bottom: 10px; font-size: 0.95rem; color: var(--text-dark); }
+  ul { margin-left: 20px; margin-bottom: 10px; font-size: 0.93rem; }
+  li { margin-bottom: 6px; }
+
+  /* Callout boxes */
+  .callout {
+    background: #f8fafc;
+    border-left: 4px solid var(--accent);
+    padding: 12px 16px;
+    border-radius: 0 6px 6px 0;
+    margin: 12px 0;
+    font-size: 0.92rem;
+  }
+  .callout-green {
+    background: #f0fdf4;
+    border-left-color: var(--accent-green);
+  }
+  .callout-red {
+    background: #fef2f2;
+    border-left-color: var(--accent-red);
+  }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+    margin: 12px 0;
+  }
+  th, td {
+    padding: 7px 10px;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  th {
+    background: #f8fafc;
+    color: var(--primary);
+    font-weight: 600;
+  }
+  tr:hover { background: #f8fafc; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+
+  /* Figures */
+  .fig-box {
+    margin: 12px 0;
+    text-align: center;
+  }
+  .fig-box img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+  }
+  .fig-caption {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    margin-top: 6px;
+    text-align: left;
+    line-height: 1.35;
+  }
+
+  /* Pipeline flowchart box */
+  .pipeline-flow {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: #f8fafc;
+    padding: 14px;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+    font-size: 0.88rem;
+    font-weight: 500;
+  }
+  .flow-step {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    padding: 8px 12px;
+    border-radius: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .flow-arrow { text-align: center; color: var(--accent); font-weight: bold; }
+
+  /* Footer */
+  footer {
+    background: #f8fafc;
+    border-top: 1px solid var(--border);
+    padding: 18px 48px;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="poster-container">
+  <!-- Poster Header -->
+  <header>
+    <h1>Contactless Respiratory Monitoring of Preterm Infants in the NICU Using 24 GHz CW Radar</h1>
+    <h2>Audited Reimplementation of Beltrão et al. (Sci Rep 2022) &amp; Exploratory HPSS Extension</h2>
+    <div class="authors-bar">
+      <span><strong>Authors:</strong> Biomedical Signal Processing &amp; Medical Radar Academic Research Group</span>
+      <span><strong>Context:</strong> Academic Capstone / Student Research Project</span>
+      <span><strong>Dataset:</strong> 18 local analysis sessions (24 GHz CW Radar vs. impedance-pneumography reference)</span>
+    </div>
+  </header>
+
+  <!-- 3-Column Layout -->
+  <div class="grid-columns">
+
+    <!-- COLUMN 1: Clinical Need & Original Architecture -->
+    <div class="column">
+
+      <div class="card">
+        <h3>1. Clinical Background &amp; Need</h3>
+        <p>Preterm infants in Neonatal Intensive Care Units (NICUs) possess fragile, gelatinous skin. Traditional monitoring relies on adhesive thoracic leads, causing epidermal stripping, skin tears, pain, and frequent detachment alarms.</p>
+        <div class="callout callout-green">
+          <strong>The Solution:</strong> Contactless Continuous Wave (CW) 24 GHz radar suspended 30–45 cm above the infant cot, capturing micro-millimeter chest displacement touch-free.
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>2. Signal Processing Pipeline <span class="badge">Beltrão 2022</span></h3>
+        <p>The core pipeline processes sliding 30-second radar windows (stride = 2 s, 28 s overlap):</p>
+        <div class="pipeline-flow">
+          <div class="flow-step">
+            <span><strong>Baseband Demodulation</strong></span>
+            <span>CSD: x(t) = bI + j·bQ - μ</span>
+          </div>
+          <div class="flow-arrow">▼</div>
+          <div class="flow-step">
+            <span><strong>Pre-STFT Bandpass &amp; STFT</strong></span>
+            <span>0.3–3.0 Hz FIR → 3s rect STFT, NFFT=256</span>
+          </div>
+          <div class="flow-arrow">▼</div>
+          <div class="flow-step" style="border-left: 3px solid var(--accent);">
+            <span><strong>Artifact Mitigation (Branch A / B)</strong></span>
+            <span>NMF (Paper) vs. HPSS (Extension) + Env Norm</span>
+          </div>
+          <div class="flow-arrow">▼</div>
+          <div class="flow-step">
+            <span><strong>Zero-Phase Kaiser Bandpass</strong></span>
+            <span>0.3 – 3.0 Hz, 64-tap filtfilt</span>
+          </div>
+          <div class="flow-arrow">▼</div>
+          <div class="flow-step">
+            <span><strong>Coarse ACF Tracker</strong></span>
+            <span>Consecutive Inter-Peak Gap Mean</span>
+          </div>
+          <div class="flow-arrow">▼</div>
+          <div class="flow-step" style="background: #eff6ff; border-color: var(--accent);">
+            <span><strong>NLS Fine Harmonic Fitting</strong></span>
+            <span>Minimizes Euclidean Norm (Eq. 17)</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>3. Branch A: NMF Artifact Mitigation</h3>
+        <p>Decomposes magnitude spectrogram into K=11 frequency and time bases: |X| ≈ W·H.</p>
+        <ul>
+          <li><strong>Impulsiveness Rule:</strong> Flags basis if max(h<sub>i</sub>) &gt; 3.0·mean(H).</li>
+          <li><strong>Sparsity Rule:</strong> Top-3 time bins hold &gt;60% of activation energy.</li>
+          <li><strong>Wiener Synthesis &amp; Env Norm:</strong> Applies ratio mask (W<sub>keep</sub>H<sub>keep</sub> / WH)·|X|, normalizes per-frame peak envelope, and reuses complex phase before iSTFT.</li>
+        </ul>
+      </div>
+
+    </div>
+
+    <!-- COLUMN 2: Reproducibility Audit & Visual Comparisons -->
+    <div class="column">
+
+      <div class="card">
+        <h3>4. Reproducibility Audit: 6 Root-Cause Fixes</h3>
+        <p>Our initial v1 reimplementation failed (RMSE 14.68 vs 6.38 bpm), and an intermediate build had Raw NLS (7.46 bpm) beating mitigated NLS (8.35 bpm). Resolving both protocol and STFT/mitigation defects restored the paper's hierarchy across every scenario:</p>
+        
+        <table>
+          <thead>
+            <tr>
+              <th>Defect</th>
+              <th>Root Cause &amp; Mathematical Fix</th>
+              <th>Impact</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Projection Null-Space</strong></td>
+              <td>v = Re(x) + Im(x) destroyed up to 84% breathing power. Replaced with folded complex PSD: P(f) = |X(+f)|² + |X(-f)|².</td>
+              <td>Preserves 100% power</td>
+            </tr>
+            <tr>
+              <td><strong>ACF Subharmonic Lock</strong></td>
+              <td>argmax(h·prom) locked to 2T peaks (38% half-rate errors). Fixed to inter-peak gap mean.</td>
+              <td>-3.41 bpm RMSE</td>
+            </tr>
+            <tr>
+              <td><strong>STFT Drift &amp; ACF Holes</strong></td>
+              <td>Pre-bandpassed before STFT, added Wiener ratio mask (α=3.0), fftshifted HPSS (L<sub>harm</sub>=7), and normalized per-frame envelopes.</td>
+              <td>Mitigation beats Raw NLS in all scenarios</td>
+            </tr>
+            <tr>
+              <td><strong>3.5× Denominator Gap</strong></td>
+              <td>v1 counted seconds on 1Hz grid (17,190). True 2-s window grid with whole-window gating yields 5,466 windows.</td>
+              <td>Aligns with ~4,964</td>
+            </tr>
+            <tr>
+              <td><strong>Reference &amp; Sync Lag</strong></td>
+              <td>30-s window-average reference (Fig. 4g) + metadata-anchored lag search scored strictly on saturation-free windows.</td>
+              <td>Fixes 3.1 (34→5.11 bpm)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h3>5. Spectrogram Separation in Action</h3>
+        <div class="fig-box">
+          <img src="nmf_vs_hpss_spectrogram.png" alt="Spectrogram Separation: Raw vs NMF vs HPSS">
+          <div class="fig-caption"><strong>Figure 1:</strong> 30-second window containing infant motion (session 7.3). Both NMF basis pruning (b, 4/11 bases pruned) and HPSS soft harmonic masking (c) isolate the continuous horizontal breathing line (40–55 bpm) and suppress vertical broadband movement bursts while maintaining steady time-domain amplitude (d).</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- COLUMN 3: Novel HPSS Extension & Verified Benchmarks -->
+    <div class="column">
+
+      <div class="card">
+        <h3>6. Novel Extension: HPSS <span class="badge badge-green">Branch B</span></h3>
+        <p>In music, HPSS separates harmonic tones from percussive drums. In radar, respiration is a horizontal ridge across time, while motion artifacts are vertical broadband bursts on the zero-centered (<code>fftshift</code>) spectrogram:</p>
+        <ul>
+          <li><strong>Time Median Filter:</strong> S<sub>harm</sub> = median<sub>t</sub>(|X|, size=(1, 7 frames)) (~7 s).</li>
+          <li><strong>Freq Median Filter:</strong> S<sub>perc</sub> = median<sub>f</sub>(|X|, size=(21 bins, 1)) (~1.3 Hz).</li>
+          <li><strong>Soft Masking &amp; Env Norm:</strong> M<sub>harm</sub> = S<sub>harm</sub>² / (S<sub>harm</sub>² + S<sub>perc</sub>² + ε), followed by per-frame envelope normalization.</li>
+        </ul>
+        <div class="callout callout-green">
+          <strong>Measured engineering result:</strong> HPSS matches NMF accuracy across all 4 cohort variants while running <strong>~6.9× faster</strong> in Python with zero iterative convergence failures.
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>7. Active 18-Session Benchmark Results (N = 5,466)</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Scenario</th>
+              <th>Method</th>
+              <th class="num">Acc@6</th>
+              <th class="num">Acc@10</th>
+              <th class="num">RMSE</th>
+              <th class="num">Sep. Time</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>ALL (18)</strong></td>
+              <td>DFT Baseline</td>
+              <td class="num">58.6%</td>
+              <td class="num">74.8%</td>
+              <td class="num">10.11</td>
+              <td class="num">—</td>
+            </tr>
+            <tr>
+              <td><strong>ALL (18)</strong></td>
+              <td>Raw NLS (No Mit.)</td>
+              <td class="num">63.9%</td>
+              <td class="num">82.4%</td>
+              <td class="num">7.49</td>
+              <td class="num">—</td>
+            </tr>
+            <tr>
+              <td><strong>ALL (18)</strong></td>
+              <td>NLS+NMF (Paper)</td>
+              <td class="num">67.1%</td>
+              <td class="num">85.4%</td>
+              <td class="num">6.86</td>
+              <td class="num">37.8 ms</td>
+            </tr>
+            <tr style="background: #f0fdf4; font-weight: 600;">
+              <td><strong>ALL (18)</strong></td>
+              <td>HPSS (Extension)</td>
+              <td class="num">67.3%</td>
+              <td class="num">85.8%</td>
+              <td class="num">6.80</td>
+              <td class="num">5.5 ms</td>
+            </tr>
+            <tr>
+              <td><strong>Prone (7)</strong></td>
+              <td>Raw NLS (No Mit.)</td>
+              <td class="num">71.4%</td>
+              <td class="num">89.0%</td>
+              <td class="num">6.12</td>
+              <td class="num">—</td>
+            </tr>
+            <tr>
+              <td><strong>Prone (7)</strong></td>
+              <td>NLS+NMF (Paper)</td>
+              <td class="num">74.9%</td>
+              <td class="num">91.7%</td>
+              <td class="num">5.65</td>
+              <td class="num">37.8 ms</td>
+            </tr>
+            <tr style="background: #f0fdf4; font-weight: 600;">
+              <td><strong>Prone (7)</strong></td>
+              <td>HPSS (Extension)</td>
+              <td class="num">74.4%</td>
+              <td class="num">92.4%</td>
+              <td class="num">5.62</td>
+              <td class="num">5.5 ms</td>
+            </tr>
+            <tr style="background: #ecfdf5; font-weight: 700;">
+              <td><strong>Prone MinMove</strong></td>
+              <td>HPSS / NMF</td>
+              <td class="num">75.4% / 76.0%</td>
+              <td class="num">93.5% / 93.3%</td>
+              <td class="num">5.33 / 5.34</td>
+              <td class="num">5.5 / 37.8 ms</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h3>8. Continuous 25-Min Tracking (Anchor 7.3)</h3>
+        <div class="fig-box">
+          <img src="nmf_vs_hpss_tracking.png" alt="25-min Tracking & Bland-Altman Agreement">
+          <div class="fig-caption"><strong>Figure 2:</strong> 25-min continuous tracking on session 7.3 (N=594). HPSS achieves RMSE 4.79 bpm (MAE 3.18 bpm, Acc@10 93.8%, bias +1.36 bpm) and NMF achieves RMSE 4.85 bpm (MAE 3.20 bpm, Acc@10 93.9%, bias +1.55 bpm).</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>9. Conclusions &amp; Takeaways</h3>
+        <ul>
+          <li><strong>Audit status:</strong> Fixing STFT drift leakage and post-mitigation amplitude holes makes both NMF (6.86 bpm) and HPSS (6.80 bpm) beat Raw NLS (7.49 bpm) across every scenario.</li>
+          <li><strong>Clinical Feasibility:</strong> Contactless radar achieves &gt;92.4% Acc@10 (93.5% on minimal-movement windows) and ~5.3–5.6 bpm RMSE on prone preterm infants.</li>
+          <li><strong>Engineering result:</strong> HPSS matches NMF accuracy across all 4 cohort variants while running ~6.9× faster in Python; external and embedded validation remain next steps.</li>
+        </ul>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Poster Footer -->
+  <footer>
+    <div><strong>Repository:</strong> github.com/medical_radar &nbsp;|&nbsp; Unified CLI: <code>python3 main.py --all</code></div>
+    <div>Presented for Academic Examination &bull; Biomedical Signal Processing &amp; Radar Sensing</div>
+  </footer>
+</div>
+
+</body>
+</html>

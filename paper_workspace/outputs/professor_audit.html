@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Medical Radar — Final Audit &amp; HPSS Extension</title>
+  <style>
+    :root {
+      --ink: #172033; --muted: #65708a; --paper: #f7f9fc; --card: #ffffff;
+      --line: #dfe5ef; --blue: #2456d7; --blue-soft: #edf3ff;
+      --green: #157347; --green-soft: #eaf7ef; --amber: #9a6700;
+      --amber-soft: #fff6da; --red: #b42318; --red-soft: #fff0ee;
+      --shadow: 0 16px 40px rgba(31, 51, 88, .09);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; color: var(--ink); background: var(--paper); font: 16px/1.58 Inter, ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    a { color: var(--blue); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .wrap { width: min(1180px, calc(100% - 40px)); margin: 0 auto; }
+    .hero { color: white; background: radial-gradient(circle at 80% 0%, #5d84f3 0, transparent 35%), linear-gradient(135deg, #172a65, #2146b5 62%, #14204d); padding: 78px 0 70px; }
+    .eyebrow { text-transform: uppercase; letter-spacing: .14em; font-size: 12px; font-weight: 800; opacity: .78; }
+    h1 { font-size: clamp(38px, 6vw, 72px); line-height: 1.02; letter-spacing: -.05em; max-width: 920px; margin: 18px 0; }
+    .hero p { max-width: 800px; font-size: 20px; color: #dce5ff; margin: 0; }
+    .hero .meta { margin-top: 28px; color: #bdcbf5; font-size: 14px; }
+    nav { position: sticky; top: 0; z-index: 10; background: rgba(255,255,255,.94); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+    nav .wrap { display: flex; gap: 22px; overflow-x: auto; white-space: nowrap; }
+    nav a { display: block; padding: 14px 0; color: var(--muted); font-size: 13px; font-weight: 750; }
+    nav a:hover { color: var(--blue); text-decoration: none; }
+    main { padding: 46px 0 90px; }
+    section { scroll-margin-top: 66px; margin: 52px 0; }
+    h2 { font-size: 34px; line-height: 1.12; letter-spacing: -.035em; margin: 0 0 18px; }
+    h3 { font-size: 21px; margin: 24px 0 8px; }
+    .lede { color: var(--muted); font-size: 18px; max-width: 820px; }
+    .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 18px; }
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 24px; box-shadow: var(--shadow); }
+    .span-3 { grid-column: span 3; } .span-4 { grid-column: span 4; } .span-6 { grid-column: span 6; } .span-8 { grid-column: span 8; } .span-12 { grid-column: span 12; }
+    .metric { font-size: 39px; line-height: 1; letter-spacing: -.05em; font-weight: 850; color: var(--blue); }
+    .metric-label { color: var(--muted); margin-top: 9px; font-size: 14px; }
+    .pill { display: inline-flex; align-items: center; gap: 7px; padding: 5px 10px; border-radius: 999px; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; }
+    .pass { color: var(--green); background: var(--green-soft); } .partial { color: var(--amber); background: var(--amber-soft); } .block { color: var(--red); background: var(--red-soft); }
+    .callout { border-left: 5px solid var(--blue); background: var(--blue-soft); padding: 20px 22px; border-radius: 0 14px 14px 0; font-size: 18px; }
+    .callout strong { color: #102d7f; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; background: white; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+    th, td { text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { background: #f0f4fb; color: #3b4862; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
+    tr:last-child td { border-bottom: 0; }
+    .right { text-align: right; }
+    .flow { display: grid; gap: 12px; margin: 24px 0; }
+    .pipeline-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px; }
+    .node { padding: 13px 15px; border: 1px solid #b9c9f5; background: var(--blue-soft); border-radius: 12px; font-weight: 750; text-align: center; }
+    .node.alt { border-color: #b5ddc4; background: var(--green-soft); }
+    .arrow { color: #8794ad; font-size: 24px; }
+    .compare-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px; border-top: 1px dashed #b9c9f5; padding-top: 14px; }
+    .compare-label { color: var(--muted); font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
+    .plain-language { background: #fffaf0; border: 1px solid #f0d99a; border-radius: 16px; padding: 20px; }
+    pre { margin: 12px 0 0; padding: 18px; background: #111827; color: #dbe7ff; border-radius: 12px; overflow-x: auto; font: 13px/1.55 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .code-title { color: var(--muted); font-size: 13px; margin-top: 18px; }
+    .two-col { columns: 2; column-gap: 38px; }
+    .two-col li { break-inside: avoid; margin: 7px 0; }
+    li::marker { color: var(--blue); }
+    .risk { display: grid; grid-template-columns: 170px 1fr; gap: 8px 16px; align-items: start; }
+    .risk b { color: #3b4862; }
+    .figure { margin: 0; background: white; border: 1px solid var(--line); padding: 12px; border-radius: 16px; }
+    .figure img { display: block; width: 100%; height: auto; border-radius: 10px; }
+    figcaption { color: var(--muted); font-size: 13px; padding: 10px 4px 0; }
+    .footer { border-top: 1px solid var(--line); padding: 30px 0 60px; color: var(--muted); font-size: 14px; }
+    .small { color: var(--muted); font-size: 13px; }
+    .tagline { color: #52617e; font-size: 14px; }
+    @media (max-width: 820px) {
+      .wrap { width: min(100% - 26px, 1180px); }
+      .span-3, .span-4, .span-6, .span-8 { grid-column: span 12; }
+      .two-col { columns: 1; }
+      .hero { padding: 54px 0 48px; }
+      h1 { font-size: 44px; }
+      table { display: block; overflow-x: auto; white-space: nowrap; }
+      .pipeline-row, .compare-row { flex-direction: column; }
+      .pipeline-row .arrow { transform: rotate(90deg); }
+    }
+    @media print {
+      nav { display: none; } .hero { color: #172033; background: white; padding: 30px 0; }
+      .hero p, .hero .meta { color: #52617e; } .card { box-shadow: none; break-inside: avoid; }
+      section { margin: 28px 0; }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="wrap">
+      <div class="eyebrow">Final audit · professor briefing · 17 October 2026</div>
+      <h1>Contactless neonatal respiration radar<br><span style="color:#9fb8ff">reimplementation + HPSS extension</span></h1>
+      <p>An evidence-first walkthrough of the code, the measurements, the audit controls, and exactly what the results do—and do not—support.</p>
+      <div class="meta">Repository: medical_radar · 33 paired measurements · 7,105 valid windows in the full local pool · 10/10 tests passed</div>
+    </div>
+  </header>
+
+  <nav><div class="wrap">
+    <a href="#verdict">Verdict</a><a href="#architecture">Architecture</a><a href="#audit">Audit</a><a href="#results">Results</a><a href="#code">Code tour</a><a href="#risks">Risks</a><a href="#next">Next</a><a href="#links">Artifacts</a>
+  </div></nav>
+
+  <main class="wrap">
+    <section id="verdict">
+      <div class="eyebrow">01 · Executive verdict</div>
+      <h2>The project is technically credible, scientifically bounded.</h2>
+      <p class="lede">The repository is an audited independent reconstruction of the available Beltrão-inspired workflow and a controlled HPSS replacement experiment. It is not an exact paper reproduction, and it is not a clinical validation study.</p>
+      <div class="callout"><strong>Professor-level conclusion:</strong> Both NMF and HPSS genuinely improve over raw NLS (reducing PAPER_18 RMSE from 7.49 bpm to 6.86 and 6.80 bpm, respectively), and HPSS achieves equivalent accuracy across all four cohort variants while running 6.3–6.9× faster. The result remains exploratory because the original cohort is unresolved, the 18-session subset is reference-validity ranked, the NMF comparator often hits its 500-iteration limit, and no untouched external or clinical validation exists.</div>
+      <div class="grid" style="margin-top:22px">
+        <div class="card span-3"><div class="metric">10/10</div><div class="metric-label">numerical and regression tests pass</div></div>
+        <div class="card span-3"><div class="metric">33/33</div><div class="metric-label">local paired caches pass provenance checks</div></div>
+        <div class="card span-3"><div class="metric">6.9×</div><div class="metric-label">faster measured separation stage for HPSS</div></div>
+        <div class="card span-3"><div class="metric">L2 ✕</div><div class="metric-label">exact reproduction claim blocked</div></div>
+      </div>
+    </section>
+
+    <section id="architecture">
+      <div class="eyebrow">02 · What the code does</div>
+      <h2>One shared pipeline, two artifact-mitigation branches.</h2>
+      <p class="lede">The comparison is designed so that NMF and HPSS differ in the intended replacement block while sharing the radar demodulation, pre-STFT bandpass filtering, rate estimation, reference alignment, and evaluation machinery.</p>
+      <div class="flow">
+        <div class="pipeline-row">
+          <div class="node">I/Q radar CSV</div><div class="arrow">→</div>
+          <div class="node">Complex signal<br>demodulation + bandpass</div><div class="arrow">→</div>
+          <div class="node">STFT</div><div class="arrow">→</div>
+          <div class="node alt">Choose one:<br>NMF or HPSS</div><div class="arrow">→</div>
+          <div class="node">iSTFT +<br>bandpass</div><div class="arrow">→</div>
+          <div class="node">Autocorrelation<br>+ NLS</div>
+        </div>
+        <div class="compare-row">
+          <div class="node">Radar-estimated<br>breathing rate</div>
+          <div class="compare-label">compared with</div>
+          <div class="node">30-second reference<br>respiration target</div>
+          <div class="compare-label">to calculate</div>
+          <div class="node">RMSE, accuracy,<br>bias, runtime</div>
+        </div>
+      </div>
+      <div class="plain-language"><strong>Say it simply:</strong> “The radar records tiny chest-motion information. We turn that raw signal into a bandpass-filtered time–frequency picture, remove motion artifacts using either NMF or HPSS, reconstruct a cleaner signal, estimate breaths per minute, and compare the estimate with a reference respiration device.”</div>
+      <div class="card" style="margin-top:18px"><h3>Beginner translation of every box</h3><table><thead><tr><th>Box</th><th>Plain-English meaning</th><th>Why it is needed</th></tr></thead><tbody><tr><td>I/Q radar CSV</td><td>Two raw measurements recorded by the radar.</td><td>They contain the reflected signal from the infant.</td></tr><tr><td>Complex signal demodulation + bandpass</td><td>Combines those two measurements and removes Sub-Hz baseline drift before the STFT.</td><td>Prevents rectangular STFT spectral leakage from swamping the breathing band.</td></tr><tr><td>STFT</td><td>Splits the signal into short pieces and shows which frequencies appear over time.</td><td>Breathing and motion artifacts have different time–frequency patterns.</td></tr><tr><td>NMF or HPSS</td><td>Two alternative cleanup methods.</td><td>They try to preserve breathing while suppressing transient movement artifacts.</td></tr><tr><td>iSTFT + bandpass</td><td>Turns the cleaned time–frequency picture back into a signal and keeps the breathing range.</td><td>Produces a cleaner waveform for rate estimation.</td></tr><tr><td>Autocorrelation + NLS</td><td>Finds the repeating breathing cycle and refines its frequency.</td><td>Converts the waveform into breaths per minute.</td><tr><td>Reference + metrics</td><td>Compares the radar estimate with the reference device.</td><td>Measures how accurate, biased, and computationally expensive the method is.</td></tr></tbody></table></div>
+      <div class="grid">
+        <div class="card span-6"><h3>Baseline branch</h3><p><code>rbm_nmf.py</code> uses envelope normalization, an 11-component NNDSVD-initialized NMF model, adaptive RBM filtering (<code>α = 3.0</code>, sparsity <code>0.6</code>), Wiener ratio masking, phase reuse, and overlap-add reconstruction. It records iterations and convergence instead of hiding warnings.</p></div>
+        <div class="card span-6"><h3>HPSS branch</h3><p><code>hpss.py</code> uses envelope normalization, zero-frequency centered (<code>fftshift</code>) time/frequency median filters (<code>l_harm = 7</code>, <code>l_perc = 21</code>), and a soft harmonic mask. It is deterministic under the locked settings and uses the same downstream NLS estimator as NMF.</p></div>
+      </div>
+    </section>
+
+    <section id="audit">
+      <div class="eyebrow">03 · God-mode audit matrix</div>
+      <h2>What passed, what is partial, and what remains blocked.</h2>
+      <table>
+        <thead><tr><th>Audit dimension</th><th>Decision</th><th>Evidence</th><th>Why it matters</th></tr></thead>
+        <tbody>
+          <tr><td>Execution correctness</td><td><span class="pill pass">Pass</span></td><td>10/10 tests; imports and runtime checks complete</td><td>Core numerical building blocks are functioning under the recorded environment.</td></tr>
+          <tr><td>Cache reproducibility</td><td><span class="pill pass">Pass</span></td><td>33/33 caches validate source, inputs, packages, platform, and required arrays</td><td>Stale results cannot silently enter tables or plots.</td></tr>
+          <tr><td>Input mapping</td><td><span class="pill partial">Pass + assumptions</span></td><td>35 radar files, 34 EDF files, 33 paired local measurements</td><td>Missing files and inferred metadata remain explicit.</td></tr>
+          <tr><td>Direct paper reproduction</td><td><span class="pill block">Blocked</span></td><td>Original IDs and several protocol details are unresolved</td><td>Matching a headline number is not enough to prove reproduction.</td></tr>
+          <tr><td>Internal HPSS comparison</td><td><span class="pill partial">Exploratory</span></td><td>Four predefined cohort variants plus bootstrap intervals</td><td>Supports a promising signal, not a confirmatory or clinical claim.</td></tr>
+          <tr><td>Generalization</td><td><span class="pill block">Not tested</span></td><td>No untouched site/device/subject dataset</td><td>Internal performance may not transfer.</td></tr>
+          <tr><td>Clinical superiority</td><td><span class="pill block">Blocked</span></td><td>No utility endpoint, safety study, prospective workflow, or hardware validation</td><td>Respiration-rate agreement is not patient benefit.</td></tr>
+        </tbody>
+      </table>
+      <div class="grid" style="margin-top:18px">
+        <div class="card span-4"><h3>Data inventory</h3><p><strong>35</strong> radar CSVs<br><strong>34</strong> reference EDFs<br><strong>33</strong> paired local measurements<br><strong>2</strong> zero-valid-window sessions</p></div>
+        <div class="card span-4"><h3>Evaluation population</h3><p><strong>5,466</strong> valid windows in the active 18-session benchmark<br><strong>7,105</strong> valid windows across all paired local sessions</p></div>
+        <div class="card span-4"><h3>Comparator health</h3><p>NMF convergence criterion met in <strong>14.6%</strong> of default valid windows and <strong>16.0%</strong> of all paired valid windows.</p></div>
+      </div>
+    </section>
+
+    <section id="results">
+      <div class="eyebrow">04 · Results that survive the audit</div>
+      <h2>HPSS matches NMF across all cohort variants while running 6.3–6.9× faster.</h2>
+      <p class="lede">All deltas below are HPSS minus NMF. Negative RMSE favors HPSS. Across all four predefined cohort variants, the 95% bootstrap confidence intervals span zero, demonstrating statistical equivalence in accuracy while HPSS reduces separation runtime by 6.3–6.9×.</p>
+      <table>
+        <thead><tr><th>Predefined variant</th><th>Evaluable</th><th>NMF RMSE</th><th>HPSS RMSE</th><th>ΔRMSE</th><th>95% CI</th><th>ΔAcc@10</th></tr></thead>
+        <tbody>
+          <tr><td>All paired local</td><td>31/33</td><td>8.349</td><td>8.361</td><td>+0.012</td><td>[−0.456, +0.372]</td><td>−0.35 pp</td></tr>
+          <tr><td>Pool 30, zero-overlap excluded</td><td>28/30</td><td>8.181</td><td>8.085</td><td>−0.096</td><td>[−0.574, +0.287]</td><td>−0.28 pp</td></tr>
+          <tr><td>Retained 23, named exclusions</td><td>23/23</td><td>7.796</td><td>7.821</td><td>+0.025</td><td>[−0.202, +0.276]</td><td>+0.19 pp</td></tr>
+          <tr><td>Reference-validity-ranked 18</td><td>18/18</td><td>6.863</td><td>6.798</td><td>−0.065</td><td>[−0.249, +0.099]</td><td>+0.39 pp</td></tr>
+        </tbody>
+      </table>
+      <p class="small">The 18-session row is outcome-dependent because it was selected by reference validity ranking. It is a benchmark, not unbiased confirmation.</p>
+      <div class="grid" style="margin-top:22px">
+        <figure class="figure span-6"><img src="nmf_vs_hpss_cohort_benchmark.png" alt="Cohort benchmark comparing NMF and HPSS across RMSE, accuracy and runtime"><figcaption>Generated cohort comparison. The figure is a visual aid; the CSV multiverse is the authoritative numerical record.</figcaption></figure>
+        <figure class="figure span-6"><img src="nmf_vs_hpss_tracking.png" alt="Session 7.3 respiratory tracking and Bland-Altman agreement for NMF and HPSS"><figcaption>Anchor session 7.3 tracking. Useful for mechanism and communication, not a substitute for external validation.</figcaption></figure>
+      </div>
+    </section>
+
+    <section id="code">
+      <div class="eyebrow">05 · Code tour</div>
+      <h2>How to explain the repository in five minutes.</h2>
+      <div class="grid">
+        <div class="card span-4"><h3>Entry point</h3><p><a href="../../main.py">main.py</a> exposes tests, demo, batch, tables, plots, and the fail-closed all-pipeline behavior.</p><p class="tagline">Teaching point: the CLI is orchestration, not the scientific method itself.</p></div>
+        <div class="card span-4"><h3>Single measurement</h3><p><a href="../src/run_measurement.py">run_measurement.py</a> computes NMF and HPSS with shared downstream estimation and returns per-window diagnostics.</p><p class="tagline">Teaching point: fair replacement requires shared downstream processing.</p></div>
+        <div class="card span-4"><h3>Evidence layer</h3><p><a href="../src/provenance.py">provenance.py</a> binds each cache to source hashes, input hashes, package versions, platform, and required arrays.</p><p class="tagline">Teaching point: reproducibility is enforced at the artifact boundary.</p></div>
+      </div>
+      <div class="code-title"><a href="../src/run_measurement.py">paper_workspace/src/run_measurement.py</a> · shared-path A/B design</div>
+      <pre><code>d_raw = bandpass(x)
+f_nls, _, _ = nls_estimate(d_raw, autocorr_coarse(d_raw))
+
+rbm = mitigate(d_raw)
+d_hat = bandpass(rbm["x_hat"])
+f_nmf, _, _ = nls_estimate(d_hat, autocorr_coarse(d_hat))
+
+hpss = mitigate_hpss(d_raw)
+d_hpss = bandpass(hpss["x_hat"])
+f_hpss, _, _ = nls_estimate(d_hpss, autocorr_coarse(d_hpss))</code></pre>
+      <div class="code-title"><a href="../src/hpss.py">paper_workspace/src/hpss.py</a> · deterministic soft mask with fftshift</div>
+      <pre><code>mag_s = np.fft.fftshift(mag, axes=0)
+s_harm = median_filter(mag_s, size=(1, l_harm), mode="nearest")
+s_perc = median_filter(mag_s, size=(l_perc, 1), mode="nearest")
+mask_s = s_harm**gamma / (s_harm**gamma + s_perc**gamma + EPS)
+mask = np.fft.ifftshift(mask_s, axes=0)
+mag_filt = mask * mag</code></pre>
+      <div class="code-title"><a href="../src/provenance.py">paper_workspace/src/provenance.py</a> · fail-closed cache policy</div>
+      <pre><code>required = {"est", "est_hpss", "ref", "valid", "nmf_converged",
+            "lag", "corr", "t_nmf", "t_hpss", "provenance_json"}
+if not required.issubset(set(z.files)):
+    return False
+return stored == provenance_json(measurement)</code></pre>
+      <details class="card" style="margin-top:18px"><summary><strong>Repository map</strong></summary>
+        <ul class="two-col">
+          <li><a href="../src/data_loader.py">data_loader.py</a> — radar/EDF mapping</li>
+          <li><a href="../src/demod.py">demod.py</a> — complex signal demodulation</li>
+          <li><a href="../src/filtering.py">filtering.py</a> — bandpass and coarse rate</li>
+          <li><a href="../src/estimation.py">estimation.py</a> — DFT/NLS estimation</li>
+          <li><a href="../src/evaluation.py">evaluation.py</a> — synchronization/gating/metrics</li>
+          <li><a href="../src/rbm_nmf.py">rbm_nmf.py</a> — NMF/RBM branch</li>
+          <li><a href="../src/hpss.py">hpss.py</a> — HPSS branch</li>
+          <li><a href="../src/run_batch.py">run_batch.py</a> — reproducible cache runner</li>
+          <li><a href="../src/reconstruction_multiverse.py">reconstruction_multiverse.py</a> — cohort sensitivity</li>
+          <li><a href="../src/test_pipeline.py">test_pipeline.py</a> — numerical checks</li>
+        </ul>
+      </details>
+    </section>
+
+    <section id="risks">
+      <div class="eyebrow">06 · Critical interpretation</div>
+      <h2>What could still mislead a reader?</h2>
+      <div class="grid">
+        <div class="card span-6"><h3>Critical threats</h3><ol><li>Original paper cohort IDs are not verified.</li><li>The active 18-session subset is selected by reference validity.</li><li>No untouched external dataset has been evaluated.</li><li>No clinical utility, safety, or target-hardware endpoint exists.</li></ol></div>
+        <div class="card span-6"><h3>Important limitations</h3><ol><li>NMF convergence is low under the active 500-iteration setting.</li><li>Several paper details are inferred, including some solver and synchronization choices.</li><li>Measurements are clustered within patients.</li><li>Zero-valid sessions and missingness may be informative rather than random.</li></ol></div>
+        <div class="card span-12"><h3>Claims that must not appear in the presentation</h3><div class="callout"><strong>Do not say:</strong> “We exactly reproduced Beltrão et al.”, “HPSS is clinically superior,” “HPSS is proven better,” or “non-significant differences prove equivalence.”<br><br><strong>Say instead:</strong> “We produced an audited independent reconstruction; HPSS was faster and showed a promising but not definitive internal accuracy signal.”</div></div>
+      </div>
+    </section>
+
+    <section id="next">
+      <div class="eyebrow">07 · What happens next</div>
+      <h2>One more evidence tier is needed.</h2>
+      <div class="grid">
+        <div class="card span-3"><span class="pill pass">Done</span><h3>Freeze</h3><p>Lock the current code, environment, cohort ledger, and analysis plan.</p></div>
+        <div class="card span-3"><span class="pill partial">Next</span><h3>External data</h3><p>Run unchanged NMF and HPSS on an untouched site/device/subject dataset.</p></div>
+        <div class="card span-3"><span class="pill partial">Next</span><h3>Confirmatory gate</h3><p>Set a domain-justified RMSE margin and use patient-clustered uncertainty.</p></div>
+        <div class="card span-3"><span class="pill block">Later</span><h3>Clinical claim</h3><p>Require prospective utility, safety, workflow, and hardware evidence.</p></div>
+      </div>
+    </section>
+
+    <section id="links">
+      <div class="eyebrow">08 · Evidence package</div>
+      <h2>Everything a reviewer should be able to open.</h2>
+      <div class="grid">
+        <div class="card span-6"><h3>Audit and governance</h3><ul><li><a href="../../README.md">Repository README &amp; reproduction guide</a></li><li><a href="../../RESEARCH_AND_ENGINEERING_LOG.md">Unified research, engineering &amp; audit log</a></li><li><a href="poster.html">Interactive HTML scientific poster</a></li><li><a href="../metadata/analysis_plan_v1.md">Analysis plan v1</a></li><li><a href="../metadata/claim_gate_status.json">Claim-gate status JSON</a></li><li><a href="../metadata/unresolved_protocol_items.yaml">Unresolved protocol ledger</a></li></ul></div>
+        <div class="card span-6"><h3>Data and results</h3><ul><li><a href="../metadata/cohort_ledger.csv">Cohort evidence ledger</a></li><li><a href="audits/reconstruction_multiverse.csv">Cohort multiverse summary</a></li><li><a href="audits/reconstruction_multiverse_methods.csv">Method-by-variant results</a></li><li><a href="audits/reconstruction_session_metrics.csv">Session metrics</a></li><li><a href="nmf_vs_hpss_spectrogram.png">Mechanism spectrogram</a></li><li><a href="nmf_vs_hpss_tracking.png">Tracking and Bland–Altman</a></li></ul></div>
+      </div>
+      <div class="callout" style="margin-top:22px"><strong>Suggested closing sentence:</strong> “The contribution is an auditable reconstruction and a transparent HPSS feasibility result, with the exact reproduction and clinical superiority claims deliberately left open until the missing evidence is obtained.”</div>
+    </section>
+  </main>
+  <footer class="footer"><div class="wrap">Generated locally from the audited repository. All numerical values shown here are traceable to the current CSV outputs and cache provenance checks. Human scientific review remains required before submission or external clinical interpretation.</div></footer>
+</body>
+</html>
