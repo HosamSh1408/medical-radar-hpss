@@ -418,6 +418,48 @@ def test_phase3_ws4_ws5_ws8_tost_provenance_and_timing():
     print("phase3 ws4/ws5/ws8 TOST, provenance & timing benchmark ok")
 
 
+def test_phase4_ws9_ws10_adversarial_and_traceability():
+    import csv
+    import json
+    from .audit_phase3_ws4_ws5_ws8 import AUDIT_DIR
+    from .audit_phase4_ws9_ws10_adversarial import run_ws10_traceability_audit
+
+    # 1. WS9a/b: Verify negative controls, positive control, and 6 mathematical invariances
+    inv_csv = AUDIT_DIR / "phase4_ws9_invariance_and_controls.csv"
+    with open(inv_csv, "r", encoding="utf-8") as f:
+        inv_rows = list(csv.DictReader(f))
+    assert len(inv_rows) == 9
+    assert all(r["passed"] == "True" for r in inv_rows), inv_rows
+    by_name = {r["test_name"]: r for r in inv_rows}
+    assert float(by_name["pure_tone_60bpm_recovery"]["max_abs_diff_bpm"]) == 0.0
+    for k in ("scale_up_100x", "scale_down_0.01x", "phase_rotation_60deg",
+              "sign_flip_neg_iq", "channel_swap_iq", "time_reversal_symmetry"):
+        assert float(by_name[k]["max_abs_diff_bpm"]) == 0.0, (k, by_name[k])
+
+    # 2. WS9c: Verify semi-synthetic 24 GHz CW interferometer SAR sweep (-15 dB to +10 dB)
+    sar_csv = AUDIT_DIR / "phase4_ws9_semisynthetic_sar.csv"
+    with open(sar_csv, "r", encoding="utf-8") as f:
+        sar_rows = {float(r["sar_db"]): r for r in csv.DictReader(f)}
+    assert len(sar_rows) == 6
+    # At -15 dB and -10 dB, both NMF and HPSS strongly beat Raw NLS
+    assert float(sar_rows[-15.0]["raw_nls_rmse_bpm"]) > 15.0
+    assert float(sar_rows[-15.0]["nmf_rmse_bpm"]) < 0.5
+    assert float(sar_rows[-15.0]["hpss_rmse_bpm"]) < 3.0
+    assert float(sar_rows[-10.0]["raw_nls_rmse_bpm"]) > 4.0
+    assert float(sar_rows[-10.0]["nmf_rmse_bpm"]) < 0.2
+    assert float(sar_rows[-10.0]["hpss_rmse_bpm"]) < 0.2
+    # At >= -5 dB, both achieve 100% Acc@6 and < 0.1 bpm RMSE
+    for s_db in (-5.0, 0.0, 5.0, 10.0):
+        assert float(sar_rows[s_db]["nmf_acc6_pct"]) == 100.0
+        assert float(sar_rows[s_db]["hpss_acc6_pct"]) == 100.0
+
+    # 3. WS10: Live artifact & HTML traceability check
+    tr_json = AUDIT_DIR / "phase4_ws10_traceability_audit.json"
+    tr_rep = run_ws10_traceability_audit(str(tr_json))
+    assert tr_rep["all_clean"] is True, tr_rep
+    print("phase4 ws9/ws10 adversarial, invariance, semi-synthetic SAR & traceability ok")
+
+
 if __name__ == "__main__":
     test_csd_preserves_fundamental()
     test_nmf_removes_spike()
@@ -437,7 +479,5 @@ if __name__ == "__main__":
     test_phase1_ws1_ws2_cleanroom_and_symmetry()
     test_phase2_ws3_ws6_ws7_leakage_and_ingestion()
     test_phase3_ws4_ws5_ws8_tost_provenance_and_timing()
+    test_phase4_ws9_ws10_adversarial_and_traceability()
     print("ALL TESTS PASSED")
-
-
-

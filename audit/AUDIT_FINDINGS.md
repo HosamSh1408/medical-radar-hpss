@@ -232,4 +232,43 @@ Reproducible runner: [`paper_workspace/src/audit_phase3_ws4_ws5_ws8.py`](file://
 | **Cached `PAPER_18` Session Means ($N=18$)** | $17.842 \pm 0.491$ vs. **$2.776 \pm 0.072$** | $17.887$ vs. **$2.803$** | $0.471$ vs. $0.037$ | $18.395$ vs. $2.836$ | $18.750$ vs. $2.865$ | **$6.43\times$ mean ($6.38\times$ p50)** |
 | **Cached `all_paired` Session Means ($N=31$)** | $17.784 \pm 0.619$ vs. **$2.795 \pm 0.107$** | $17.827$ vs. **$2.806$** | $0.476$ vs. $0.048$ | $18.578$ vs. $2.925$ | $19.520$ vs. $3.109$ | **$6.36\times$ mean ($6.35\times$ p50)** |
 
+---
 
+# Phase 4 & Adversarial Self-Audit Findings (`WS9`, `WS10`, `A17–A21`)
+
+Reproducible runner: [`paper_workspace/src/audit_phase4_ws9_ws10_adversarial.py`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/src/audit_phase4_ws9_ws10_adversarial.py) (pinned by `test_phase4_ws9_ws10_adversarial_and_traceability` in [`paper_workspace/src/test_pipeline.py`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/src/test_pipeline.py)).
+
+## WS9 — Adversarial Negative Controls, Mathematical Invariances & Semi-Synthetic 24 GHz CW SAR Sweep
+
+1. **Negative Controls, Positive Control & Mathematical Group Invariances (`audit/phase4_ws9_invariance_and_controls.csv`):**
+   - **Negative Control 1 (`shuffled_reference_paper18`):** Randomly permuting reference respiratory rates across the 5,466 valid windows of `PAPER_18` collapses $\text{Acc}@6$ by ~30 percentage points (`67.1% -> 36.66%` for NMF; `67.3% -> 37.29%` for HPSS) and doubles RMSE (`6.86 -> 14.00 bpm` for NMF; `6.80 -> 13.99 bpm` for HPSS).
+   - **Negative Control 2 (`white_gaussian_noise_30win`):** Complex white Gaussian noise ($30\text{ windows} \times 30\text{ s}$) fails to track physiological respiratory targets spanning $[25, 110]\text{ bpm}$ ($\text{Acc}@6 = 16.67\%$, $\text{RMSE} = 27.99\text{ bpm}$ for NMF and $27.81\text{ bpm}$ for HPSS).
+   - **Positive Control (`pure_tone_60bpm_recovery`):** A synthetic $1.0\text{ Hz}$ ($60.0\text{ bpm}$) complex exponential plus $2\text{nd}$ harmonic is recovered with **`0.000000 bpm` error** (`60.000000 bpm`) across Raw NLS, `NLS+NMF`, and `HPSS+NLS`.
+   - **Mathematical Group Invariances (`Session 7.3` real window):** Verified **`0.000000 bpm` deviation** (`NMF = 52.955172 bpm`, `HPSS = 53.013793 bpm`) across all 6 mathematical transformations:
+     1. Linear amplitude scale-up ($\times 100$)
+     2. Linear amplitude scale-down ($\times 0.01$)
+     3. Global complex phase rotation ($e^{j\pi/3}$)
+     4. Simultaneous I/Q sign inversion ($-I, -Q$)
+     5. Quadrature channel swap ($I \leftrightarrow Q$, complex conjugation)
+     6. Time reversal ($x[-n]$)
+
+2. **Semi-Synthetic 24 GHz CW Interferometer Physics Benchmark (`audit/phase4_ws9_semisynthetic_sar.csv`):**
+   - Simulated neonatal chest-wall phase modulation $x_{\text{resp}}(t) = \exp\!\left(j\frac{4\pi}{\lambda} d(t)\right) - \mu$ at $f_c = 24\text{ GHz}$ ($\lambda = 12.5\text{ mm}$) across 24 ground-truth respiratory rates ($34\text{–}76\text{ bpm}$), corrupted by 163 real NICU transient RBM bursts extracted from Session `7.3` across controlled Signal-to-Artifact Ratios ($\text{SAR} \in \{-15, -10, -5, 0, +5, +10\}\text{ dB}$):
+
+| $\text{SAR}$ (dB) | `DFT` RMSE (bpm) | `Raw NLS` RMSE (bpm) | `NLS + NMF` RMSE (bpm) | `HPSS + NLS` RMSE (bpm) | `Raw NLS` Acc@6 (%) | `NLS + NMF` Acc@6 (%) | `HPSS + NLS` Acc@6 (%) |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **−15.0 dB** | 18.26 | 20.51 | **0.09** | **2.69** | 8.3% | **100.0%** | **95.8%** |
+| **−10.0 dB** | 7.17 | 4.93 | **0.07** | **0.12** | 83.3% | **100.0%** | **100.0%** |
+| **−5.0 dB** | 0.17 | 0.19 | **0.06** | **0.07** | 100.0% | **100.0%** | **100.0%** |
+| **0.0 dB** | 0.11 | 0.08 | **0.05** | **0.06** | 100.0% | **100.0%** | **100.0%** |
+| **+5.0 dB** | 0.08 | 0.07 | **0.05** | **0.07** | 100.0% | **100.0%** | **100.0%** |
+| **+10.0 dB** | 0.08 | 0.06 | **0.06** | **0.06** | 100.0% | **100.0%** | **100.0%** |
+
+## WS10 — Adversarial Self-Audit & Artifact Traceability (`A17–A21`, `audit/phase4_ws10_traceability_audit.json`)
+
+An adversarial self-audit of all auxiliary HTML, PNG, CSV, and JSON files uncovered and resolved 5 residual pre-audit discrepancies (`A17–A21`):
+- **`A17` ([`nmf_vs_hpss_cohort_benchmark.png`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/outputs/nmf_vs_hpss_cohort_benchmark.png) & [`plot_nmf_vs_hpss.py:279`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/src/plot_nmf_vs_hpss.py#L279)):** Fixed inverted ratio label (`HPSS/NMF` $\to$ `NMF/HPSS = 6.43×`) and regenerated the figure from current caches so Panel (d) displays `2.8 ms` vs. `17.8 ms` instead of the pre-audit `5.5 ms` vs. `37.8 ms`.
+- **`A18` ([`professor_audit.html`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/outputs/professor_audit.html)):** Updated stale `10/10` test count to `19/19`, NMF convergence rates from `14.6%/16.0%` to `10.7%/12.5%`, separation speedup to `6.4×` (`9.2×` core solver), TOST equivalence margin ($\pm 0.50\text{ bpm}$), and the `provenance.py` required-keys snippet.
+- **`A19` ([`poster.html`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/outputs/poster.html)):** Updated separation latency table cells from `37.8 ms / 5.5 ms` (`~6.9×`) to `17.8 ms / 2.8 ms` (`~6.4×` filter block; `9.2×` core solver) and updated the footer repository link to `github.com/HosamSh1408/medical-radar-hpss`.
+- **`A20` ([`build_metadata.py`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/src/build_metadata.py) & [`cohort_ledger.csv`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/metadata/cohort_ledger.csv)):** Removed the obsolete `7.2` "protocol label explicitly marked assumed" special-case string after `WS6` proved `7.2` is explicitly present on Page 5 of `annotations.pdf`.
+- **`A21` ([`claim_gate_status.json`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/metadata/claim_gate_status.json)):** Updated `as_of` to `2026-10-18`, set `equivalence_margin_tost_rmse_bpm = 0.5`, and added the `WS4` TOST and `WS8` controlled benchmark evidence.

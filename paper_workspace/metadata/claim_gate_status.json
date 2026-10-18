@@ -1,5 +1,5 @@
 {
-  "as_of": "2026-10-11",
+  "as_of": "2026-10-18",
   "author_contact_available": false,
   "exact_reproduction": {
     "status": "blocked",
@@ -7,8 +7,8 @@
   },
   "independent_internal_comparison": {
     "status": "exploratory_complete",
-    "evidence": "Four predefined local cohort variants were evaluated with 33 fresh provenance-valid caches and deterministic bootstrap intervals.",
-    "claim_allowed": "HPSS is a promising faster candidate in this internal reconstruction."
+    "evidence": "Four predefined local cohort variants (plus C(9,7)=36 prone combinatorics) were evaluated with 33 fresh provenance-valid caches, formal TOST equivalence tests (delta=+-0.50 bpm, alpha=0.05, p_TOST<=0.0456 across all 4 cohorts; delta=+-0.25 bpm passed on PAPER_18 and Retained-23), 10,000-resample BCa/clustered bootstrap intervals, and a controlled single-thread timing benchmark (6.11-6.43x filter speedup, 9.16x core solver speedup).",
+    "claim_allowed": "HPSS is formally TOST-equivalent to NMF within +-0.50 bpm (alpha=0.05) across all 4 cohort variants (and within +-0.25 bpm on PAPER_18 and Retained-23) while running 6.1-6.4x faster (9.2x core solver) in this internal reconstruction."
   },
   "generalizable_superiority": {
     "status": "not_evaluable",
@@ -19,5 +19,6 @@
     "reason": "No clinical utility endpoint, prospective workflow study, safety analysis, or target-hardware validation is available."
   },
   "superiority_margin_rmse_bpm": null,
+  "equivalence_margin_tost_rmse_bpm": 0.5,
   "analysis_plan": "paper_workspace/metadata/analysis_plan_v1.md"
 }

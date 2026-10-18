@@ -1,0 +1,52 @@
+{
+  "all_clean": true,
+  "num_checks": 5,
+  "checks": [
+    {
+      "file": "README.md",
+      "forbidden_tokens_checked": [
+        "Butterworth",
+        "25 Hz",
+        "14.6%",
+        "16.0%",
+        "6,245",
+        "6,042"
+      ],
+      "hits": [],
+      "passed": true
+    },
+    {
+      "file": "paper_workspace/outputs/professor_audit.html",
+      "forbidden_tokens_checked": [
+        "10/10",
+        "14.6%",
+        "16.0%",
+        "6.3\u20136.9\u00d7"
+      ],
+      "hits": [],
+      "passed": true
+    },
+    {
+      "file": "paper_workspace/outputs/poster.html",
+      "forbidden_tokens_checked": [
+        "37.8 ms",
+        "5.5 ms",
+        "github.com/medical_radar"
+      ],
+      "hits": [],
+      "passed": true
+    },
+    {
+      "file": "paper_workspace/metadata/cohort_ledger.csv",
+      "forbidden_tokens_checked": [
+        "protocol label explicitly marked assumed"
+      ],
+      "hits": [],
+      "passed": true
+    },
+    {
+      "file": "paper_workspace/metadata/claim_gate_status.json",
+      "passed": true
+    }
+  ]
+}

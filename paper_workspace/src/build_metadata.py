@@ -22,9 +22,8 @@ def sha256(path: Path) -> str:
 
 
 def source_label(measurement: str) -> str:
-    if measurement == "7.2":
-        return "annotations.pdf transcription; protocol label explicitly marked assumed"
     return "annotations.pdf transcription in protocols.py"
+
 
 
 def build_rows():

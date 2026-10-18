@@ -276,7 +276,7 @@ def plot_cohort_benchmark():
         ax_time.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.4,
                      f"{t:.1f} ms", ha="center", va="bottom", fontsize=10, fontweight="bold")
     ax_time.set_ylabel("Execution Time per 30-s Window (ms)", fontsize=10)
-    ax_time.set_title(f"(d) Measured Python latency (HPSS/NMF = {speedup:.2f}×)", fontsize=11)
+    ax_time.set_title(f"(d) Measured Python latency (NMF/HPSS = {speedup:.2f}×)", fontsize=11)
     ax_time.set_ylim(0, max(times_ms) * 1.35)
     ax_time.grid(True, axis="y", alpha=0.3)
     ax_time.annotate(f"{speedup:.2f}× lower measured time\n(cohort mean)",

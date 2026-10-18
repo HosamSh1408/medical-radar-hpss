@@ -348,7 +348,7 @@
           <li><strong>Soft Masking &amp; Env Norm:</strong> M<sub>harm</sub> = S<sub>harm</sub>² / (S<sub>harm</sub>² + S<sub>perc</sub>² + ε), followed by per-frame envelope normalization.</li>
         </ul>
         <div class="callout callout-green">
-          <strong>Measured engineering result:</strong> HPSS matches NMF accuracy across all 4 cohort variants while running <strong>~6.9× faster</strong> in Python with zero iterative convergence failures.
+          <strong>Measured engineering result:</strong> HPSS matches NMF accuracy across all 4 cohort variants while running <strong>~6.4× faster</strong> for the full filter block (<strong>9.2× faster</strong> core solver) in Python with zero iterative convergence failures.
         </div>
       </div>
 
@@ -388,7 +388,7 @@
               <td class="num">67.1%</td>
               <td class="num">85.4%</td>
               <td class="num">6.86</td>
-              <td class="num">37.8 ms</td>
+              <td class="num">17.8 ms</td>
             </tr>
             <tr style="background: #f0fdf4; font-weight: 600;">
               <td><strong>ALL (18)</strong></td>
@@ -396,7 +396,7 @@
               <td class="num">67.3%</td>
               <td class="num">85.8%</td>
               <td class="num">6.80</td>
-              <td class="num">5.5 ms</td>
+              <td class="num">2.8 ms</td>
             </tr>
             <tr>
               <td><strong>Prone (7)</strong></td>
@@ -412,7 +412,7 @@
               <td class="num">74.9%</td>
               <td class="num">91.7%</td>
               <td class="num">5.65</td>
-              <td class="num">37.8 ms</td>
+              <td class="num">17.8 ms</td>
             </tr>
             <tr style="background: #f0fdf4; font-weight: 600;">
               <td><strong>Prone (7)</strong></td>
@@ -420,7 +420,7 @@
               <td class="num">74.4%</td>
               <td class="num">92.4%</td>
               <td class="num">5.62</td>
-              <td class="num">5.5 ms</td>
+              <td class="num">2.8 ms</td>
             </tr>
             <tr style="background: #ecfdf5; font-weight: 700;">
               <td><strong>Prone MinMove</strong></td>
@@ -428,7 +428,7 @@
               <td class="num">75.4% / 76.0%</td>
               <td class="num">93.5% / 93.3%</td>
               <td class="num">5.33 / 5.34</td>
-              <td class="num">5.5 / 37.8 ms</td>
+              <td class="num">2.8 / 17.8 ms</td>
             </tr>
           </tbody>
         </table>
@@ -447,7 +447,7 @@
         <ul>
           <li><strong>Audit status:</strong> Fixing STFT drift leakage and post-mitigation amplitude holes makes both NMF (6.86 bpm) and HPSS (6.80 bpm) beat Raw NLS (7.49 bpm) across every scenario.</li>
           <li><strong>Clinical Feasibility:</strong> Contactless radar achieves &gt;92.4% Acc@10 (93.5% on minimal-movement windows) and ~5.3–5.6 bpm RMSE on prone preterm infants.</li>
-          <li><strong>Engineering result:</strong> HPSS matches NMF accuracy across all 4 cohort variants while running ~6.9× faster in Python; external and embedded validation remain next steps.</li>
+          <li><strong>Engineering result:</strong> HPSS matches NMF accuracy across all 4 cohort variants while running ~6.4× faster for the full filter block (9.2× faster core solver) in Python; external and embedded validation remain next steps.</li>
         </ul>
       </div>
 
@@ -457,7 +457,7 @@
 
   <!-- Poster Footer -->
   <footer>
-    <div><strong>Repository:</strong> github.com/medical_radar &nbsp;|&nbsp; Unified CLI: <code>python3 main.py --all</code></div>
+    <div><strong>Repository:</strong> github.com/HosamSh1408/medical-radar-hpss &nbsp;|&nbsp; Unified CLI: <code>python3 main.py --all</code></div>
     <div>Presented for Academic Examination &bull; Biomedical Signal Processing &amp; Radar Sensing</div>
   </footer>
 </div>

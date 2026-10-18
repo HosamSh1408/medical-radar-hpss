@@ -1,7 +1,7 @@
 # Contactless Neonatal Radar Respiration Monitoring: Beltrão Reimplementation & HPSS Extension
 
 [![Pipeline Version](https://img.shields.io/badge/pipeline-main--v3--audit--fix--2-blue)](#reproducibility--execution-guide)
-[![Tests](https://img.shields.io/badge/tests-18%2F18%20passing-brightgreen)](#reproducibility--execution-guide)
+[![Tests](https://img.shields.io/badge/tests-19%2F19%20passing-brightgreen)](#reproducibility--execution-guide)
 [![Provenance Caches](https://img.shields.io/badge/caches-33%2F33%20SHA256--verified-success)](#reproducibility--execution-guide)
 
 An audited, cryptographically provenance-locked academic codebase for **contactless neonatal breathing rate estimation** using $24\text{ GHz}$ continuous-wave (CW) interferometer radar in the Neonatal Intensive Care Unit (NICU).
@@ -89,7 +89,7 @@ medical_radar/
         ├── reconstruction_multiverse.py # 4-cohort multiverse & bootstrap CI evaluator
         ├── plot_figs.py               # Beltrão reproduction figure generator
         ├── plot_nmf_vs_hpss.py        # NMF vs HPSS comparative figure generator
-        ├── test_pipeline.py           # 15-check unit, mathematical, provenance & golden-value regression test suite
+        ├── test_pipeline.py           # 19-check unit, mathematical, provenance & Phase 1–4 audit regression test suite
         ├── requirements.txt           # Core Python dependencies
         └── requirements-lock.txt      # Pinned reproducible environment (Python 3.9.6)
 ```
@@ -109,7 +109,7 @@ pip install -r paper_workspace/src/requirements-lock.txt
 All tasks are orchestrated through [`main.py`](file:///Users/hosamshibly/Downloads/medical_radar/main.py):
 
 ```bash
-# 1. Run the 15-check unit, mathematical, provenance & golden-value regression test suite
+# 1. Run the 19-check unit, mathematical, provenance & Phase 1–4 audit regression test suite
 python3 main.py --test
 
 # 2. Run the 4-way A/B comparison on anchor session 7.3

@@ -1,0 +1,10 @@
+test_category,test_name,metric_name,nmf_value,hpss_value,nmf_rmse_bpm,hpss_rmse_bpm,max_abs_diff_bpm,passed,notes
+negative_control,shuffled_reference_paper18,acc6_pct_and_rmse_bpm,36.663,37.285,14.0032,13.9916,0.011533,True,Shuffled reference collapses Acc@6 by ~30 pp (67.3% -> 37.3%) and doubles RMSE (6.80 -> 14.00 bpm)
+negative_control,white_gaussian_noise_30win,acc6_pct_and_rmse_bpm,20.0,13.3333,29.1502,31.0629,1.912727,True,"Complex WGN fails to track physiological span [25, 110] bpm (Acc@6 < 20%, RMSE > 25 bpm)"
+positive_control,pure_tone_60bpm_recovery,estimate_bpm,60.0,60.0,0.0,0.0,0.0,True,"Exact 60.000000 bpm recovery (0.000000 bpm error) across Raw NLS, NMF, and HPSS"
+invariance,scale_up_100x,estimate_bpm,52.955172,53.013793,0.0,0.0,0.0,True,"Linear amplitude scaling x100 (baseline NMF=52.96, HPSS=53.01 bpm)"
+invariance,scale_down_0.01x,estimate_bpm,52.955172,53.013793,0.0,0.0,0.0,True,"Linear amplitude scaling x0.01 (baseline NMF=52.96, HPSS=53.01 bpm)"
+invariance,phase_rotation_60deg,estimate_bpm,52.955172,53.013793,0.0,0.0,0.0,True,"Global phase rotation exp(j*pi/3) (baseline NMF=52.96, HPSS=53.01 bpm)"
+invariance,sign_flip_neg_iq,estimate_bpm,52.955172,53.013793,0.0,0.0,0.0,True,"Simultaneous I/Q sign inversion (-I, -Q) (baseline NMF=52.96, HPSS=53.01 bpm)"
+invariance,channel_swap_iq,estimate_bpm,52.955172,53.013793,0.0,0.0,0.0,True,"I<->Q quadrature channel swap (complex conjugation) (baseline NMF=52.96, HPSS=53.01 bpm)"
+invariance,time_reversal_symmetry,estimate_bpm,52.955172,53.013793,0.0,0.0,0.0,True,"Time-reversed stationary window x[-n] (baseline NMF=52.96, HPSS=53.01 bpm)"

@@ -88,10 +88,10 @@
 <body>
   <header class="hero">
     <div class="wrap">
-      <div class="eyebrow">Final audit · professor briefing · 17 October 2026</div>
+      <div class="eyebrow">Final audit · professor briefing · 18 October 2026</div>
       <h1>Contactless neonatal respiration radar<br><span style="color:#9fb8ff">reimplementation + HPSS extension</span></h1>
       <p>An evidence-first walkthrough of the code, the measurements, the audit controls, and exactly what the results do—and do not—support.</p>
-      <div class="meta">Repository: medical_radar · 33 paired measurements · 7,105 valid windows in the full local pool · 10/10 tests passed</div>
+      <div class="meta">Repository: medical_radar · 33 paired measurements · 7,105 valid windows in the full local pool · 19/19 tests passed</div>
     </div>
   </header>
 
@@ -104,11 +104,11 @@
       <div class="eyebrow">01 · Executive verdict</div>
       <h2>The project is technically credible, scientifically bounded.</h2>
       <p class="lede">The repository is an audited independent reconstruction of the available Beltrão-inspired workflow and a controlled HPSS replacement experiment. It is not an exact paper reproduction, and it is not a clinical validation study.</p>
-      <div class="callout"><strong>Professor-level conclusion:</strong> Both NMF and HPSS genuinely improve over raw NLS (reducing PAPER_18 RMSE from 7.49 bpm to 6.86 and 6.80 bpm, respectively), and HPSS achieves equivalent accuracy across all four cohort variants while running 6.3–6.9× faster. The result remains exploratory because the original cohort is unresolved, the 18-session subset is reference-validity ranked, the NMF comparator often hits its 500-iteration limit, and no untouched external or clinical validation exists.</div>
+      <div class="callout"><strong>Professor-level conclusion:</strong> Both NMF and HPSS genuinely improve over raw NLS (reducing PAPER_18 RMSE from 7.49 bpm to 6.86 and 6.80 bpm, respectively), and HPSS achieves formal TOST statistical equivalence ($\delta = \pm 0.50\text{ bpm}, \alpha = 0.05$) across all four cohort variants ($p_{\text{TOST}} \le 0.0456$; and within $\pm 0.25\text{ bpm}$ on PAPER_18 and Retained-23) while running 6.4× faster for the full filter block (9.2× faster core solver). The result remains exploratory because the original cohort is unresolved, the 18-session subset is reference-validity ranked, the NMF comparator often hits its 500-iteration limit, and no untouched external or clinical validation exists.</div>
       <div class="grid" style="margin-top:22px">
-        <div class="card span-3"><div class="metric">10/10</div><div class="metric-label">numerical and regression tests pass</div></div>
+        <div class="card span-3"><div class="metric">19/19</div><div class="metric-label">numerical and regression tests pass</div></div>
         <div class="card span-3"><div class="metric">33/33</div><div class="metric-label">local paired caches pass provenance checks</div></div>
-        <div class="card span-3"><div class="metric">6.9×</div><div class="metric-label">faster measured separation stage for HPSS</div></div>
+        <div class="card span-3"><div class="metric">6.4×</div><div class="metric-label">faster measured separation stage for HPSS (9.2× core)</div></div>
         <div class="card span-3"><div class="metric">L2 ✕</div><div class="metric-label">exact reproduction claim blocked</div></div>
       </div>
     </section>
@@ -148,11 +148,11 @@
       <table>
         <thead><tr><th>Audit dimension</th><th>Decision</th><th>Evidence</th><th>Why it matters</th></tr></thead>
         <tbody>
-          <tr><td>Execution correctness</td><td><span class="pill pass">Pass</span></td><td>10/10 tests; imports and runtime checks complete</td><td>Core numerical building blocks are functioning under the recorded environment.</td></tr>
+          <tr><td>Execution correctness</td><td><span class="pill pass">Pass</span></td><td>19/19 tests; imports and runtime checks complete</td><td>Core numerical building blocks are functioning under the recorded environment.</td></tr>
           <tr><td>Cache reproducibility</td><td><span class="pill pass">Pass</span></td><td>33/33 caches validate source, inputs, packages, platform, and required arrays</td><td>Stale results cannot silently enter tables or plots.</td></tr>
           <tr><td>Input mapping</td><td><span class="pill partial">Pass + assumptions</span></td><td>35 radar files, 34 EDF files, 33 paired local measurements</td><td>Missing files and inferred metadata remain explicit.</td></tr>
           <tr><td>Direct paper reproduction</td><td><span class="pill block">Blocked</span></td><td>Original IDs and several protocol details are unresolved</td><td>Matching a headline number is not enough to prove reproduction.</td></tr>
-          <tr><td>Internal HPSS comparison</td><td><span class="pill partial">Exploratory</span></td><td>Four predefined cohort variants plus bootstrap intervals</td><td>Supports a promising signal, not a confirmatory or clinical claim.</td></tr>
+          <tr><td>Internal HPSS comparison</td><td><span class="pill partial">Exploratory</span></td><td>Four predefined cohort variants plus TOST &amp; bootstrap intervals</td><td>Supports a promising signal, not a confirmatory or clinical claim.</td></tr>
           <tr><td>Generalization</td><td><span class="pill block">Not tested</span></td><td>No untouched site/device/subject dataset</td><td>Internal performance may not transfer.</td></tr>
           <tr><td>Clinical superiority</td><td><span class="pill block">Blocked</span></td><td>No utility endpoint, safety study, prospective workflow, or hardware validation</td><td>Respiration-rate agreement is not patient benefit.</td></tr>
         </tbody>
@@ -160,14 +160,14 @@
       <div class="grid" style="margin-top:18px">
         <div class="card span-4"><h3>Data inventory</h3><p><strong>35</strong> radar CSVs<br><strong>34</strong> reference EDFs<br><strong>33</strong> paired local measurements<br><strong>2</strong> zero-valid-window sessions</p></div>
         <div class="card span-4"><h3>Evaluation population</h3><p><strong>5,466</strong> valid windows in the active 18-session benchmark<br><strong>7,105</strong> valid windows across all paired local sessions</p></div>
-        <div class="card span-4"><h3>Comparator health</h3><p>NMF convergence criterion met in <strong>14.6%</strong> of default valid windows and <strong>16.0%</strong> of all paired valid windows.</p></div>
+        <div class="card span-4"><h3>Comparator health</h3><p>NMF convergence criterion met in <strong>10.7%</strong> of default valid windows (583/5,466) and <strong>12.5%</strong> of all paired valid windows (891/7,105).</p></div>
       </div>
     </section>
 
     <section id="results">
       <div class="eyebrow">04 · Results that survive the audit</div>
-      <h2>HPSS matches NMF across all cohort variants while running 6.3–6.9× faster.</h2>
-      <p class="lede">All deltas below are HPSS minus NMF. Negative RMSE favors HPSS. Across all four predefined cohort variants, the 95% bootstrap confidence intervals span zero, demonstrating statistical equivalence in accuracy while HPSS reduces separation runtime by 6.3–6.9×.</p>
+      <h2>HPSS matches NMF across all cohort variants while running 6.4× faster (9.2× core solver).</h2>
+      <p class="lede">All deltas below are HPSS minus NMF. Negative RMSE favors HPSS. Formal TOST ($\delta = \pm 0.50\text{ bpm}, \alpha = 0.05$) passes across all four predefined cohort variants ($p_{\text{TOST}} \le 0.0456$), while HPSS reduces separation runtime by 6.4× (2.8 ms vs. 17.8 ms; 9.2× core solver).</p>
       <table>
         <thead><tr><th>Predefined variant</th><th>Evaluable</th><th>NMF RMSE</th><th>HPSS RMSE</th><th>ΔRMSE</th><th>95% CI</th><th>ΔAcc@10</th></tr></thead>
         <tbody>
@@ -211,8 +211,9 @@ mask_s = s_harm**gamma / (s_harm**gamma + s_perc**gamma + EPS)
 mask = np.fft.ifftshift(mask_s, axes=0)
 mag_filt = mask * mag</code></pre>
       <div class="code-title"><a href="../src/provenance.py">paper_workspace/src/provenance.py</a> · fail-closed cache policy</div>
-      <pre><code>required = {"est", "est_hpss", "ref", "valid", "nmf_converged",
-            "lag", "corr", "t_nmf", "t_hpss", "provenance_json"}
+      <pre><code>required = {"est", "est_hpss", "est_dft", "est_nls", "ref", "valid",
+            "minmove", "nmf_converged", "lag", "corr", "t_nmf", "t_hpss",
+            "provenance_json"}
 if not required.issubset(set(z.files)):
     return False
 return stored == provenance_json(measurement)</code></pre>
