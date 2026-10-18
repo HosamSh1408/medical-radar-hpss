@@ -253,10 +253,13 @@ Reproduced via `python3 main.py --multiverse` (stored in [`paper_workspace/outpu
    * **33** locally paired measurements mapped in [`data_loader.py`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/src/data_loader.py).
    * Unpaired files: `1.2` and `3.2` have radar CSVs but no reference EDFs; `10.4` has an EDF but no radar CSV.
    * Zero-valid-window sessions: `1.3` and `5.1` yield $0$ valid windows under the active saturation gate (a window is valid iff it contains **zero** seconds with `|V| >= 2.99`; any single saturated second rejects the whole 30-s window) and are transparently logged as non-evaluable (`31/33` evaluable in `all_paired_local`).
-2. **Protocol Transcription Note:**
-   * Measurement `7.2` has no explicit row in `annotations.pdf` and is explicitly marked as `assumed` (`supine, single, closed`) in [`protocols.py`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/src/protocols.py) and [`cohort_ledger.csv`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/metadata/cohort_ledger.csv).
+2. **Protocol Transcription Verification (`annotations.pdf` 36/36 Exact Match):**
+   * Visual and OCR inspection of [`beltrao_data/annotations.pdf`](file:///Users/hosamshibly/Downloads/medical_radar/beltrao_data/annotations.pdf) (Supplementary Tables 2a–2d, Pages 3–6) confirms a **36/36 exact match** with `MEASURE_INFO` in [`protocols.py`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/src/protocols.py) (including row `7.2` on Page 5: `co-bedding = yes (twins)`, `supine = x`, `lid = closed`).
 3. **NMF Convergence Diagnostic:**
    * `scikit-learn` NMF (`K=11, init='nndsvda', max_iter=500, tol=1e-4`) meets its stopping tolerance before 500 iterations in **10.7%** of valid windows in `PAPER_18` (**12.5%** across all 31 evaluable sessions). Rather than hiding `ConvergenceWarning`, [`rbm_nmf.py`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/src/rbm_nmf.py) records `nmf_converged` in every cache file.
+4. **Synchronization Lag-Leakage & Motion-Severity Audit (`audit/`):**
+   * **Branch-Neutral & Symmetric Lag Verification (`WS3`):** In the default evaluation (`active_nmf_synced`), the fine cross-correlation lag (`meta_lag ± 60 s`) is selected using `NLS+NMF` predictions, giving NMF a one-sided selection advantage. When evaluated under **symmetric per-method own-lag** (`per_method_own_synced`) or **branch-neutral raw-NLS lag** (`branch_neutral_raw_nls_synced`), `HPSS+NLS` achieves lower RMSE than `NLS+NMF` across **all four cohort definitions** (`PAPER_18`, `retained23`, `pool30`, and `all_paired_local`; e.g., `6.785` vs. `6.863 bpm` on `PAPER_18` under own-lag, and `7.135` vs. `7.301 bpm` under branch-neutral raw-NLS lag).
+   * **Motion-Severity Partition (`WS2`):** On the `4,468 / 5,466` (`81.7%`) minimal-movement windows of `PAPER_18` (`n_removed <= 2`, reproducing Fig. 7), `NLS+NMF` and `HPSS+NLS` are nearly tied (`6.582` vs. `6.604 bpm`). On the **998 heavy-movement windows (`n_removed > 2`)**, `HPSS+NLS` outperforms `NLS+NMF` by **−0.488 bpm** (`7.561` vs. `8.050 bpm`).
 
 ---
 

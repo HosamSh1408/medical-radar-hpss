@@ -116,3 +116,70 @@ python3 main.py --multiverse                          # CSV + ledger
 
    - **Key Scientific Insight:** On calm/minimal-movement windows (whether selected by NMF's `n_removed <= 2` or by the branch-neutral `|NLS - DFT| <= 6 bpm` criterion), `NLS+NMF` and `HPSS+NLS` are within `0.02–0.06 bpm` of each other (`6.58` vs. `6.60 bpm`). On the **998 heavy-movement windows** (`n_removed > 2`), where raw NLS degrades to `9.10 bpm`, **HPSS outperforms NMF by `0.488 bpm` (`7.56` vs. `8.05 bpm`)**.
 
+---
+
+# Phase 2 Findings (`WS3`, `WS6`, `WS7`)
+
+Reproducible runner: [`paper_workspace/src/audit_phase2_ws3_ws6_ws7.py`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/src/audit_phase2_ws3_ws6_ws7.py) (pinned by `test_phase2_ws3_ws6_ws7_leakage_and_ingestion` in [`paper_workspace/src/test_pipeline.py`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/src/test_pipeline.py)).
+
+## WS3 — Synchronization Lag-Leakage & Evaluation Protocol Audit
+
+1. **Asymmetric Lag-Selection Bias in `run_measurement.py` (`audit/phase2_ws3_lag_leakage_summary.csv` & `audit/phase2_ws3_session_lags.csv`):**
+   - In the active pipeline (`active_nmf_synced`), the fine cross-correlation lag (`meta_lag ± 60 s`) is selected to maximize correlation between `est_nmf` and `ref_w`, and that NMF-selected lag is then applied to all 4 methods (`DFT`, `NLS`, `NLS+NMF`, `HPSS+NLS`). This gives `NLS+NMF` a one-sided selection advantage.
+   - To quantify this bias, all 4 methods were evaluated across all 4 cohorts (`PAPER_18`, `retained23`, `pool30`, `all_paired_local`) under **5 synchronization regimes**:
+
+| Cohort | Synchronization Regime | `DFT` RMSE | `Raw NLS` RMSE | `NLS+NMF` RMSE | `HPSS+NLS` RMSE | $\Delta\text{RMSE}$ (HPSS−NMF) | $\Delta\text{Acc@10}$ (pp) |
+| :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| **`PAPER_18` ($N=18$)** | `active_nmf_synced` (NMF lag) | 10.107 | 7.487 | 6.863 | **6.798** | **−0.065 bpm** | **+0.39 pp** |
+| **`PAPER_18` ($N=18$)** | `hpss_synced` (HPSS lag) | 9.983 | 7.385 | 7.019 | **6.785** | **−0.234 bpm** | **+0.77 pp** |
+| **`PAPER_18` ($N=18$)** | `branch_neutral_raw_nls_synced` | 9.927 | 7.144 | 7.301 | **7.135** | **−0.166 bpm** | −0.10 pp |
+| **`PAPER_18` ($N=18$)** | `per_method_own_synced` (symmetric) | 9.496 | 7.144 | 6.863 | **6.785** | **−0.078 bpm** | **+0.57 pp** |
+| **`PAPER_18` ($N=18$)** | `pure_metadata_clock_lag` | 10.760 | 8.407 | **7.955** | 7.963 | +0.008 bpm | −0.14 pp |
+| **`retained23` ($N=23$)** | `active_nmf_synced` (NMF lag) | 11.754 | 8.633 | **7.796** | 7.821 | +0.025 bpm | **+0.19 pp** |
+| **`retained23` ($N=23$)** | `branch_neutral_raw_nls_synced` | 11.289 | 8.273 | 8.083 | **7.974** | **−0.110 bpm** | −0.04 pp |
+| **`retained23` ($N=23$)** | `per_method_own_synced` (symmetric) | 10.838 | 8.273 | 7.796 | **7.616** | **−0.181 bpm** | **+2.10 pp** |
+| **`pool30` ($N=28$)** | `active_nmf_synced` (NMF lag) | 12.841 | 8.863 | 8.181 | **8.085** | **−0.096 bpm** | −0.28 pp |
+| **`pool30` ($N=28$)** | `branch_neutral_raw_nls_synced` | 11.878 | 8.172 | 8.074 | **7.817** | **−0.256 bpm** | **+0.25 pp** |
+| **`pool30` ($N=28$)** | `per_method_own_synced` (symmetric) | 10.816 | 8.172 | 8.181 | **7.428** | **−0.754 bpm** | **+4.71 pp** |
+| **`all_paired_local` ($N=31$)** | `active_nmf_synced` (NMF lag) | 13.121 | 9.248 | **8.349** | 8.361 | +0.012 bpm | −0.35 pp |
+| **`all_paired_local` ($N=31$)** | `branch_neutral_raw_nls_synced` | 12.251 | 8.624 | 8.252 | **8.119** | **−0.133 bpm** | **+0.13 pp** |
+| **`all_paired_local` ($N=31$)** | `per_method_own_synced` (symmetric) | 11.292 | 8.624 | 8.349 | **7.766** | **−0.583 bpm** | **+4.16 pp** |
+
+   - **Verdict on Lag-Selection Bias:** The default `active_nmf_synced` lag actually *penalizes* `HPSS+NLS` by `+0.013 bpm` on `PAPER_18` (`6.798` vs. `6.785 bpm`) and up to `+0.658 bpm` on `pool30` (`8.085` vs. `7.428 bpm`; on session `12.1`, NMF's cross-correlation locks onto a spurious lag `-116 s` with `24.09 bpm` RMSE whereas HPSS locks onto `-20 s` with `4.80 bpm` RMSE). Under both **branch-neutral raw-NLS synchronization** and **symmetric per-method own-lag synchronization**, **`HPSS+NLS` achieves lower RMSE than `NLS+NMF` across all four cohorts**.
+
+2. **Threshold & Gating Convention Checks (`PAPER_18`):**
+   - **Strict (`<`) vs. Inclusive (`<=`) Accuracy Thresholds:** Because continuous floating-point BPM predictions never land on `|err| == 10.0` exactly, `Acc10 (< 10)` and `Acc10 (<= 10)` are identical to 4 decimal places (`85.3685%` for NMF, `85.7538%` for HPSS).
+   - **Bland-Altman `ddof=0` vs. `ddof=1`:** Mean session SD on `PAPER_18` changes by only `0.0121 bpm` (`6.2038 bpm` for `ddof=0` vs. `6.2159 bpm` for `ddof=1`).
+   - **Saturation Gating Sensitivity (`PAPER_18`):**
+     - Active strict `0%` saturation over full 30-s window (`|V| >= 2.99 V`): **`5,466` valid windows**.
+     - Allowing `<= 1 s` saturated per 30-s window (`|V| >= 2.99 V`): **`6,778` valid windows**.
+     - Gating only the center `2-s` stride step (`|V| >= 2.99 V`): **`10,972` valid windows**.
+     - Tightening threshold to `|V| >= 2.55 V` (`0%` saturation over 30 s): **`4,486` valid windows** (bracketing the paper's `~4,964` window count).
+
+## WS6 — Data Ingestion, EDF/CSV Schema & `annotations.pdf` Audit
+
+1. **Full 33-Pair CSV & EDF Verification (`audit/phase2_ws6_ingestion_overlap_audit.csv`):**
+   - Across all 33 paired sessions:
+     - `csv_col11_12_exact_match = True` (33/33): Named columns `"I value"` and `"Q value"` in `data_loader.load_radar` are bit-identical to MATLAB `readRadarRaw.m` 1-based columns `11` and `12` (`df.iloc[:, 10]` and `df.iloc[:, 11]`), with `0` NaN/Inf samples across all 35 radar CSVs.
+     - `edf_labels_resp_idx1_rate_idx8 = True` (33/33): Every reference EDF has `"Resp"` at index `1` (`256 Hz`) and `"RespRate"` at index `8` (`1 Hz`).
+     - `edf_header_eq_filename_ts = True` (33/33): Every EDF internal header start datetime (`getStartdatetime()`) equals the filename timestamp to the second.
+   - **Exact Temporal Overlap Proof for `ZERO_OVERLAP = {'1.1', '2.1', '2.2'}`:**
+     - `1.1`: Radar `[11:18:16, 11:42:50]` (`1474 s`) vs. EDF `[12:11:39, 12:41:40]` (`1801 s`) → clock offset `−3203 s` (`53.4 min` gap), true overlap = **`0.0 s`**.
+     - `2.1`: Radar `[09:56:58, 10:21:50]` (`1492 s`) vs. EDF `[10:48:50, 11:18:52]` (`1802 s`) → clock offset `−3112 s` (`51.9 min` gap), true overlap = **`0.0 s`**.
+     - `2.2`: Radar `[11:49:18, 12:14:09]` (`1491 s`) vs. EDF `[12:46:40, 13:13:04]` (`1584 s`) → clock offset `−3442 s` (`57.4 min` gap), true overlap = **`0.0 s`**.
+     - All remaining 30 paired sessions (`pool30`) have positive temporal overlap between `1361 s` and `1501 s`.
+
+2. **Resolution of `annotations.pdf` Transcription (`36/36` Exact Match & Fix `A15`):**
+   - Visual and OCR inspection of [`beltrao_data/annotations.pdf`](file:///Users/hosamshibly/Downloads/medical_radar/beltrao_data/annotations.pdf) (Pages 3–6, Supplementary Tables 2a–2d) confirmed a **36/36 exact match** with `MEASURE_INFO` in [`paper_workspace/src/protocols.py`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/src/protocols.py).
+   - Specifically, row `7.2` on Page 5 (Supplementary Table 2c) explicitly lists `co-bedding = yes (twins=True)`, `supine = x`, `lid = closed`. The legacy note in `RESEARCH_AND_ENGINEERING_LOG.md:256-257` claiming `7.2` was missing from `annotations.pdf` has been corrected (`A15` in `audit/DOC_TRUTH_TABLE.csv`).
+
+## WS7 — Cohort Reconciliation & SHA-256 Ledger Audit
+
+1. **Cohort Funnel Reconciliation (`36 -> 30 -> 27 -> 18`):**
+   - **36 nominal sessions** ($12\text{ patients} \times 3\text{ sessions}$).
+   - **30 sessions (`Patients 03–12`):** Supplementary Fig. 1 (Page 2 of `annotations.pdf`) shows Patients `01` and `02` ($6$ sessions) were recorded at `40–44 cm` during initial distance adjustments; excluding them leaves $30$ sessions in Patients `03–12` (`45–50 cm`).
+   - **27 sequences ($675\text{ min} = 20,250\text{ windows}$):** In Patients `03–12`, excluding missing files (`3.2` missing EDF, `10.3` missing radar CSV) and the single side-posture session (`3.3`) leaves **exactly 27 paired supine/prone sessions** ($27 \times 25\text{ min} = 675\text{ min} = 20,250\text{ windows}$ at $2\text{-s}$ stride).
+   - **Unique 4 Twin Sessions in `PAPER_18`:** Within Patients `03–12`, there are **only 4 twin measurements (`7.2, 7.3, 8.2, 8.3`)**, proving that `PAPER_18` contains the exact 4 twin sessions from Beltrão et al.'s Fig. 7.
+   - **Strict Subset Hierarchy & SHA-256 Ledger:** Verified `PAPER_18 (18) < retained23 (23) < pool30 (30) < local_pool (33)` and confirmed 100% SHA-256 digest match across all 66 files in [`paper_workspace/outputs/audits/cohort_audit_ledger.csv`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/outputs/audits/cohort_audit_ledger.csv).
+
+

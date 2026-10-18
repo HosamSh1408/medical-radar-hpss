@@ -22,3 +22,5 @@ T6,cohort.py:31-34,PAPER_18 = 18 sessions; local pool = 33 paired,Confirmed; pin
 T7,reconstruction_multiverse.py:23,Bootstrap seed 20261011 (deterministic CIs),Confirmed in code,TRUE,-,No action
 T8,LOG:30,HPSS and NMF are 'statistically equivalent' in accuracy across all cohort variants,"Delta-RMSE spans [-0.096,+0.025] with CIs spanning zero, but this is a non-superiority/equivalence-adjacent statement without a pre-registered equivalence margin",OVERSTATED,High,Deferred to WS4 (claim-strength calibration) per AUDIT_PLAN
 T9,Log:50-51,"PAPER_18 is outcome-ranked (reference-validity), not the paper's original IDs",Explicitly acknowledged; L2 claim marked BLOCKED,TRUE,-,No action
+A15,LOG:256-257,"Measurement 7.2 has no explicit row in annotations.pdf and is assumed (supine, single, closed)","annotations.pdf Page 5 (Supp. Table 2c) explicitly lists 7.2 as co-bedding=yes (twins=True), supine=x, lid=closed, matching protocols.py:13 (36/36 exact match)",FALSE,Low,Fixed LOG:256-257 in Phase 2 (WS6)
+

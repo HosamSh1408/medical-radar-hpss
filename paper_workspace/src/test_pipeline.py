@@ -298,6 +298,83 @@ def test_phase1_ws1_ws2_cleanroom_and_symmetry():
     print("phase1 ws1/ws2 cleanroom & symmetry ok")
 
 
+def test_phase2_ws3_ws6_ws7_leakage_and_ingestion():
+    import csv
+    import pandas as pd
+    import pyedflib
+    from .audit_phase2_ws3_ws6_ws7 import (
+        AUDIT_DIR,
+        audit_ws7_cohort_reconciliation,
+        ANNOTATIONS_PDF_TRUTH,
+    )
+    from .protocols import MEASURE_INFO
+    from .cohort import PAPER_18, retained23, pool30, local_pool
+    from .data_loader import MEASURE_TO_RADAR, MEASURE_TO_REF
+    from .evaluation import sync_arrays
+    from .run_batch import CACHE
+
+    # 1. WS3: Verify lag-leakage summary across all 5 regimes & 4 cohorts
+    ws3_csv = AUDIT_DIR / "phase2_ws3_lag_leakage_summary.csv"
+    with open(ws3_csv, "r", encoding="utf-8") as f:
+        summary_rows = list(csv.DictReader(f))
+    by_key = {(r["cohort"], r["lag_regime"]): r for r in summary_rows}
+    assert float(by_key[("PAPER_18", "active_nmf_synced")]["delta_rmse_hpss_minus_nmf"]) == -0.0648
+    assert float(by_key[("PAPER_18", "per_method_own_synced")]["delta_rmse_hpss_minus_nmf"]) == -0.0775
+    assert float(by_key[("PAPER_18", "branch_neutral_raw_nls_synced")]["delta_rmse_hpss_minus_nmf"]) == -0.1661
+    for c_name in ("PAPER_18", "retained23", "pool30", "all_paired_local"):
+        assert float(by_key[(c_name, "per_method_own_synced")]["delta_rmse_hpss_minus_nmf"]) < 0.0
+        assert float(by_key[(c_name, "branch_neutral_raw_nls_synced")]["delta_rmse_hpss_minus_nmf"]) < 0.0
+
+    # 2. WS3: Verify strict (<10) vs inclusive (<=10) Acc10 & Bland-Altman ddof directly from PAPER_18 caches
+    lt_nmf, le_nmf, lt_hpss, le_hpss, sd0, sd1 = [], [], [], [], [], []
+    for m in PAPER_18:
+        with np.load(CACHE / f"{m}.npz", allow_pickle=False) as z:
+            v = np.asarray(z["valid"], bool)
+            r = np.asarray(z["ref"], float)[v]
+            en = np.asarray(z["est"], float)[v]
+            eh = np.asarray(z["est_hpss"], float)[v]
+        dn = en - r
+        dh = eh - r
+        lt_nmf.append(float(np.mean(np.abs(dn) < 10.0) * 100.0))
+        le_nmf.append(float(np.mean(np.abs(dn) <= 10.0) * 100.0))
+        lt_hpss.append(float(np.mean(np.abs(dh) < 10.0) * 100.0))
+        le_hpss.append(float(np.mean(np.abs(dh) <= 10.0) * 100.0))
+        sd0.append(float(np.std(dn, ddof=0)))
+        sd1.append(float(np.std(dn, ddof=1)))
+    assert round(float(np.mean(lt_nmf)), 4) == round(float(np.mean(le_nmf)), 4) == 85.3685
+    assert round(float(np.mean(lt_hpss)), 4) == round(float(np.mean(le_hpss)), 4) == 85.7538
+    assert round(float(np.mean(sd0)), 4) == 6.2038 and round(float(np.mean(sd1)), 4) == 6.2159
+
+    # 3. WS6: Live verification on tracked Session 7.3 CSV/EDF + 36/36 annotations.pdf + 33-session audit CSV
+    assert len(ANNOTATIONS_PDF_TRUTH) == 36
+    assert MEASURE_INFO == ANNOTATIONS_PDF_TRUTH
+    df73 = pd.read_csv(C.RADAR_DIR / (MEASURE_TO_RADAR["7.3"] + ".csv"), skiprows=2)
+    assert np.array_equal(df73["I value"].to_numpy(float), df73.iloc[:, 10].to_numpy(float))
+    assert np.array_equal(df73["Q value"].to_numpy(float), df73.iloc[:, 11].to_numpy(float))
+    rdr = pyedflib.EdfReader(str(C.REF_DIR / (MEASURE_TO_REF["7.3"] + ".edf")))
+    try:
+        assert rdr.getSignalLabels()[1].strip() == "Resp" and rdr.getSignalLabels()[8].strip() == "RespRate"
+        assert int(rdr.getSampleFrequency(1)) == 256 and int(rdr.getSampleFrequency(8)) == 1
+    finally:
+        rdr.close()
+    ws6_csv = AUDIT_DIR / "phase2_ws6_ingestion_overlap_audit.csv"
+    with open(ws6_csv, "r", encoding="utf-8") as f:
+        ws6_rows = list(csv.DictReader(f))
+    assert len(ws6_rows) == 33
+    assert all(r["csv_col11_12_exact_match"] == "True" and r["csv_all_finite"] == "True" for r in ws6_rows)
+    assert all(r["edf_labels_resp_idx1_rate_idx8"] == "True" and r["edf_fs_256_and_1"] == "True" for r in ws6_rows)
+    assert [r["measurement"] for r in ws6_rows if r["is_zero_overlap"] == "True"] == ["1.1", "2.1", "2.2"]
+
+    # 4. WS7: cohort hierarchy, unique 4 twins in Pat 03-12, and SHA-256 ledger reconciliation
+    ws7 = audit_ws7_cohort_reconciliation()
+    assert ws7["hierarchy_valid"] is True
+    assert ws7["pat3_12_paired_non_side_count"] == 27
+    assert ws7["pat3_12_twins_uniquely_determined"] == ["7.2", "7.3", "8.2", "8.3"]
+    assert ws7["ledger_sha256_exact_match"] is True
+    assert set(PAPER_18) < set(retained23()) < set(pool30()) < set(local_pool())
+    print("phase2 ws3/ws6/ws7 leakage, ingestion & cohort reconciliation ok")
+
+
 if __name__ == "__main__":
     test_csd_preserves_fundamental()
     test_nmf_removes_spike()
@@ -315,5 +392,7 @@ if __name__ == "__main__":
     test_golden_paper18_metrics()
     test_golden_multiverse_csv_matches_caches()
     test_phase1_ws1_ws2_cleanroom_and_symmetry()
+    test_phase2_ws3_ws6_ws7_leakage_and_ingestion()
     print("ALL TESTS PASSED")
+
 
