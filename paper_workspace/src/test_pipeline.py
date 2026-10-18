@@ -260,6 +260,44 @@ def test_golden_multiverse_csv_matches_caches():
     print("golden multiverse CSV matches caches")
 
 
+def test_phase1_ws1_ws2_cleanroom_and_symmetry():
+    from .audit_phase1_ws1_ws2 import (
+        audit_ws1_csd_and_psd_folding,
+        audit_ws2_identity_mask_symmetry,
+        audit_ws2_minmove_symmetry,
+        cleanroom_nls_vandermonde_eq16,
+        cleanroom_nls_exact_dtft_eq17,
+    )
+    from .data_loader import load_radar
+    ws1 = audit_ws1_csd_and_psd_folding()
+    assert ws1["csd_max_diff_vs_cleanroom"] < 1e-14
+    assert abs(ws1["jacobi_anger_pos_neg_sideband_ratio"] - 1.0) < 1e-3
+    assert ws1["imbalanced_iq_folded_nls_err_bpm"] < 0.2
+
+    # Clean-room Eq. 16 (Vandermonde) & Eq. 17 (exact DTFT) vs active NLS on real window
+    bI, bQ = load_radar("7.3")
+    d = bandpass(csd(bI[:480], bQ[:480]))
+    fc = autocorr_coarse(d)
+    f_act, _, _ = nls_estimate(d, fc)
+    f_eq16 = cleanroom_nls_vandermonde_eq16(d, fc, two_sided=True)
+    f_eq17 = cleanroom_nls_exact_dtft_eq17(d, fc, folded=True)
+    assert abs(f_act - f_eq16) <= 0.1 + 1e-6, (f_act, f_eq16)
+    assert abs(f_act - f_eq17) <= 0.1 + 1e-6, (f_act, f_eq17)
+
+    # WS2: bit-exact upstream/downstream symmetry under identity mask
+    sym = audit_ws2_identity_mask_symmetry()
+    assert sym["max_waveform_diff"] == 0.0 and sym["max_freq_diff_bpm"] == 0.0
+
+    # WS2 & T5: verify Fig. 7 minimal-movement counts and heavy-movement HPSS gain
+    mm_rows, t5 = audit_ws2_minmove_symmetry()
+    assert t5["ALL"]["n_valid"] == 5466 and t5["ALL"]["n_minmove"] == 4468
+    assert t5["supine"]["n_minmove"] == 2615 and t5["prone"]["n_minmove"] == 1853
+    assert t5["single"]["n_minmove"] == 3216 and t5["twins"]["n_minmove"] == 1252
+    by_sub = {r["subset_definition"]: r for r in mm_rows}
+    assert by_sub["nmf_heavymove_gt2_bases"]["delta_rmse_hpss_minus_nmf"] < -0.4
+    print("phase1 ws1/ws2 cleanroom & symmetry ok")
+
+
 if __name__ == "__main__":
     test_csd_preserves_fundamental()
     test_nmf_removes_spike()
@@ -276,5 +314,6 @@ if __name__ == "__main__":
     test_golden_cohort_counts()
     test_golden_paper18_metrics()
     test_golden_multiverse_csv_matches_caches()
+    test_phase1_ws1_ws2_cleanroom_and_symmetry()
     print("ALL TESTS PASSED")
 

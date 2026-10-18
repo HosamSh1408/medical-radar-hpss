@@ -1,0 +1,9 @@
+variant,n_valid,rmse_bpm,acc6_pct,acc10_pct,bias_bpm,mean_abs_diff_vs_baseline_bpm,max_abs_diff_vs_baseline_bpm
+Raw_NLS_Active_FFT32768_Folded_Eq17,594,4.4936,83.5,94.11,0.8973,0.0,0.0
+Raw_NLS_Cleanroom_Exact_DTFT_Folded_Eq17,594,4.4973,83.33,94.11,0.9106,0.0335,3.3
+Raw_NLS_Cleanroom_Exact_Vandermonde_Eq16_2Sided,594,4.4957,83.33,94.11,0.9106,0.03653,3.3
+Raw_NLS_Cleanroom_Exact_DTFT_OneSided_PosOnly,594,4.6309,82.15,94.61,0.9308,0.55976,9.9
+Raw_NLS_Autocorr_MedianGap_NoLag0,594,5.6281,79.97,92.76,1.8004,1.07627,33.11549
+Raw_NLS_Kaiser_129Taps_vs_64Taps,594,4.6742,81.99,93.77,-0.015,1.15678,24.02553
+NMF_NLS_Active_Cached,594,4.8489,81.65,93.94,1.5459,0.0,0.0
+HPSS_NLS_Active_Cached,594,4.7886,82.15,94.11,1.3619,0.93668,19.04779

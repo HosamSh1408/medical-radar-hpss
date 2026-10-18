@@ -1,0 +1,5 @@
+subset_definition,n_valid_windows,dft_rmse,nls_rmse,nmf_rmse,hpss_rmse,delta_rmse_hpss_minus_nmf,nmf_acc10,hpss_acc10
+all_valid_windows,5466,10.106,7.487,6.863,6.798,-0.065,85.37,85.75
+nmf_minmove_le2_bases (Fig.7),4468,9.731,7.122,6.583,6.605,0.022,86.55,86.57
+nmf_heavymove_gt2_bases,998,11.708,9.1,8.046,7.559,-0.488,80.02,82.82
+branch_neutral_raw_consensus (|NLS-DFT|<=6),4137,7.407,7.128,6.495,6.559,0.064,87.13,86.76

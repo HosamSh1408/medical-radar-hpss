@@ -17,7 +17,7 @@ T1,config.py:51-52; filtering.py,Breathing band is 0.3-3.0 Hz,Matches Beltao et 
 T2,config.py:21-22; data_loader.py:103-104,"Reference Resp @256 Hz, RespRate @1 Hz",Empirically confirmed on 7.3 EDF and pinned by test_golden_reference_sampling_rates,TRUE,-,No action
 T3,README.md:23; LOG:205-206,"PAPER_18: NMF RMSE 6.86, HPSS 6.80 bpm",Recomputed per-session-mean RMSE 6.8628/6.7980 from caches; pinned by test_golden_paper18_metrics,TRUE,-,No action
 T4,README.md:34; LOG:239,"all_paired_local: 31/33 evaluable, 7,105 windows",Matches multiverse CSV and cache valid-mask sums,TRUE,-,No action
-T5,LOG:224,"Fig.7 minimal-movement subset is 4,468/5,466 = 81.7%",Not re-verified in Phase 0 (minmove mask exists in caches); deferred to WS6,UNVERIFIED,Low,Re-verify in WS6
+T5,LOG:224,"Fig.7 minimal-movement subset is 4,468/5,466 = 81.7%","Verified from caches across all 5 scenarios (ALL=4468/5466=81.74%, supine=2615, prone=1853, single=3216, twins=1252); pinned by test_phase1_ws1_ws2_cleanroom_and_symmetry",TRUE,-,Verified in Phase 1 (WS2)
 T6,cohort.py:31-34,PAPER_18 = 18 sessions; local pool = 33 paired,Confirmed; pinned by test_golden_cohort_counts,TRUE,-,No action
 T7,reconstruction_multiverse.py:23,Bootstrap seed 20261011 (deterministic CIs),Confirmed in code,TRUE,-,No action
 T8,LOG:30,HPSS and NMF are 'statistically equivalent' in accuracy across all cohort variants,"Delta-RMSE spans [-0.096,+0.025] with CIs spanning zero, but this is a non-superiority/equivalence-adjacent statement without a pre-registered equivalence margin",OVERSTATED,High,Deferred to WS4 (claim-strength calibration) per AUDIT_PLAN
