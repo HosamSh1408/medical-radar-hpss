@@ -1,0 +1,325 @@
+{
+  "source_paper_doi": "10.1038/s41597-024-02946-5",
+  "collection_id": 6809370,
+  "collection_doi": "10.6084/m9.figshare.c.6809370.v1",
+  "collection_title": "A Time-of-Flight and radar dataset of a neonatal thorax simulator with synchronized reference sensor signals for respiratory rate detection",
+  "articles_count": 21,
+  "total_gb": 33.894,
+  "articles": [
+    {
+      "id": 24055800,
+      "doi": "10.6084/m9.figshare.24055800.v1",
+      "title": "Respiratory rate 10BPM deep",
+      "files": [
+        {
+          "id": 42187674,
+          "name": "10BPM_deep.zip",
+          "size": 1829514012,
+          "download_url": "https://ndownloader.figshare.com/files/42187674",
+          "supplied_md5": "359150bd2f489ab286d3c585dd6e7d6c"
+        }
+      ],
+      "total_mb": 1744.76
+    },
+    {
+      "id": 24056067,
+      "doi": "10.6084/m9.figshare.24056067.v1",
+      "title": "Respiratory rate 10BPM normal",
+      "files": [
+        {
+          "id": 42187965,
+          "name": "10BPM_normal.zip",
+          "size": 1812473124,
+          "download_url": "https://ndownloader.figshare.com/files/42187965",
+          "supplied_md5": "73a1b89bd628e4a0bc093f320ae482c5"
+        }
+      ],
+      "total_mb": 1728.51
+    },
+    {
+      "id": 24056127,
+      "doi": "10.6084/m9.figshare.24056127.v1",
+      "title": "Respiratory rate 20BPM deep",
+      "files": [
+        {
+          "id": 42188061,
+          "name": "20BPM_deep.zip",
+          "size": 1813996579,
+          "download_url": "https://ndownloader.figshare.com/files/42188061",
+          "supplied_md5": "905c2d4480e34c7f8450e4dc3c17f0e9"
+        }
+      ],
+      "total_mb": 1729.96
+    },
+    {
+      "id": 24056202,
+      "doi": "10.6084/m9.figshare.24056202.v1",
+      "title": "Respiratory rate 20BPM normal",
+      "files": [
+        {
+          "id": 42188199,
+          "name": "20BPM_normal.zip",
+          "size": 1814317212,
+          "download_url": "https://ndownloader.figshare.com/files/42188199",
+          "supplied_md5": "0b6c0857ca12ce4c81e0264fcdd83f0b"
+        }
+      ],
+      "total_mb": 1730.27
+    },
+    {
+      "id": 24056322,
+      "doi": "10.6084/m9.figshare.24056322.v1",
+      "title": "Respiratory rate 30BPM deep",
+      "files": [
+        {
+          "id": 42188379,
+          "name": "30BPM_deep.zip",
+          "size": 1816698482,
+          "download_url": "https://ndownloader.figshare.com/files/42188379",
+          "supplied_md5": "2da1fc0ddd7b92321497080117012b42"
+        }
+      ],
+      "total_mb": 1732.54
+    },
+    {
+      "id": 24056457,
+      "doi": "10.6084/m9.figshare.24056457.v1",
+      "title": "Respiratory rate 30BPM normal",
+      "files": [
+        {
+          "id": 42188613,
+          "name": "30BPM_normal.zip",
+          "size": 1815358288,
+          "download_url": "https://ndownloader.figshare.com/files/42188613",
+          "supplied_md5": "75b417823dee764eba31a81a0df17731"
+        }
+      ],
+      "total_mb": 1731.26
+    },
+    {
+      "id": 24056652,
+      "doi": "10.6084/m9.figshare.24056652.v1",
+      "title": "Respiratory rate 40BPM deep",
+      "files": [
+        {
+          "id": 42188847,
+          "name": "40BPM_deep.zip",
+          "size": 1823594445,
+          "download_url": "https://ndownloader.figshare.com/files/42188847",
+          "supplied_md5": "49d13b904e117ab44296f6b41eda8d8b"
+        }
+      ],
+      "total_mb": 1739.12
+    },
+    {
+      "id": 24056784,
+      "doi": "10.6084/m9.figshare.24056784.v1",
+      "title": "Respiratory rate 40BPM normal",
+      "files": [
+        {
+          "id": 42189072,
+          "name": "40BPM_normal.zip",
+          "size": 1817018260,
+          "download_url": "https://ndownloader.figshare.com/files/42189072",
+          "supplied_md5": "00294f7371b3ac26d9cd203008d188a9"
+        }
+      ],
+      "total_mb": 1732.84
+    },
+    {
+      "id": 24057594,
+      "doi": "10.6084/m9.figshare.24057594.v1",
+      "title": "Respiratory rate 45BPM deep",
+      "files": [
+        {
+          "id": 42191160,
+          "name": "45BPM_deep.zip",
+          "size": 1818920717,
+          "download_url": "https://ndownloader.figshare.com/files/42191160",
+          "supplied_md5": "a0f574ff524f0d9a4084263866dbaaeb"
+        }
+      ],
+      "total_mb": 1734.66
+    },
+    {
+      "id": 24057816,
+      "doi": "10.6084/m9.figshare.24057816.v1",
+      "title": "Respiratory rate 45BPM normal",
+      "files": [
+        {
+          "id": 42191469,
+          "name": "45BPM_normal.zip",
+          "size": 1816122131,
+          "download_url": "https://ndownloader.figshare.com/files/42191469",
+          "supplied_md5": "3a30021b71bdbd2d404f9161bad92c7f"
+        }
+      ],
+      "total_mb": 1731.99
+    },
+    {
+      "id": 24057441,
+      "doi": "10.6084/m9.figshare.24057441.v1",
+      "title": "Respiratory rate 50BPM deep",
+      "files": [
+        {
+          "id": 42191037,
+          "name": "50BPM_deep.zip",
+          "size": 1821804203,
+          "download_url": "https://ndownloader.figshare.com/files/42191037",
+          "supplied_md5": "93bcf8d020c5e5570652bab4f6de4a78"
+        }
+      ],
+      "total_mb": 1737.41
+    },
+    {
+      "id": 24057999,
+      "doi": "10.6084/m9.figshare.24057999.v1",
+      "title": "Respiratory rate 50BPM normal",
+      "files": [
+        {
+          "id": 42191577,
+          "name": "50BPM_normal.zip",
+          "size": 1821269623,
+          "download_url": "https://ndownloader.figshare.com/files/42191577",
+          "supplied_md5": "ff1bb3d6cb569142be0e75d2fd7ec427"
+        }
+      ],
+      "total_mb": 1736.9
+    },
+    {
+      "id": 24058107,
+      "doi": "10.6084/m9.figshare.24058107.v1",
+      "title": "Respiratory rate 55BPM deep",
+      "files": [
+        {
+          "id": 42191772,
+          "name": "55BPM_deep.zip",
+          "size": 1819755904,
+          "download_url": "https://ndownloader.figshare.com/files/42191772",
+          "supplied_md5": "4671505845ddc8175efc257eecfaede9"
+        }
+      ],
+      "total_mb": 1735.45
+    },
+    {
+      "id": 24058170,
+      "doi": "10.6084/m9.figshare.24058170.v1",
+      "title": "Respiratory rate 55BPM normal",
+      "files": [
+        {
+          "id": 42192309,
+          "name": "55BPM_normal.zip",
+          "size": 1820114794,
+          "download_url": "https://ndownloader.figshare.com/files/42192309",
+          "supplied_md5": "2e1e5c0923fefb292fbc757d66b98944"
+        }
+      ],
+      "total_mb": 1735.8
+    },
+    {
+      "id": 24055611,
+      "doi": "10.6084/m9.figshare.24055611.v1",
+      "title": "Respiratory rate 5BPM deep",
+      "files": [
+        {
+          "id": 42187125,
+          "name": "05BPM_deep.zip",
+          "size": 1820603369,
+          "download_url": "https://ndownloader.figshare.com/files/42187125",
+          "supplied_md5": "3aeae1a687a4b6da96354b7d3c80d2f6"
+        }
+      ],
+      "total_mb": 1736.26
+    },
+    {
+      "id": 24055701,
+      "doi": "10.6084/m9.figshare.24055701.v1",
+      "title": "Respiratory rate 5BPM normal",
+      "files": [
+        {
+          "id": 42187284,
+          "name": "05BPM_normal.zip",
+          "size": 1813270359,
+          "download_url": "https://ndownloader.figshare.com/files/42187284",
+          "supplied_md5": "ff6c939b14bc408d38582d6476de227a"
+        }
+      ],
+      "total_mb": 1729.27
+    },
+    {
+      "id": 24058293,
+      "doi": "10.6084/m9.figshare.24058293.v1",
+      "title": "Respiratory rate 60BPM deep",
+      "files": [
+        {
+          "id": 42193203,
+          "name": "60BPM_deep.zip",
+          "size": 1834337664,
+          "download_url": "https://ndownloader.figshare.com/files/42193203",
+          "supplied_md5": "51cdc060d12ee3c4231bcc68f74f8d83"
+        }
+      ],
+      "total_mb": 1749.36
+    },
+    {
+      "id": 24058599,
+      "doi": "10.6084/m9.figshare.24058599.v1",
+      "title": "Respiratory rate 60BPM normal",
+      "files": [
+        {
+          "id": 42194370,
+          "name": "60BPM_normal.zip",
+          "size": 1820074918,
+          "download_url": "https://ndownloader.figshare.com/files/42194370",
+          "supplied_md5": "313167ff6e7b680216a673bf31816a11"
+        }
+      ],
+      "total_mb": 1735.76
+    },
+    {
+      "id": 24058683,
+      "doi": "10.6084/m9.figshare.24058683.v1",
+      "title": "Respiratory rate 80BPM deep",
+      "files": [
+        {
+          "id": 42195201,
+          "name": "80BPM_deep.zip",
+          "size": 1824009745,
+          "download_url": "https://ndownloader.figshare.com/files/42195201",
+          "supplied_md5": "db4d2444c729ab7c0b4ae7fae7465228"
+        }
+      ],
+      "total_mb": 1739.51
+    },
+    {
+      "id": 24058779,
+      "doi": "10.6084/m9.figshare.24058779.v1",
+      "title": "Respiratory rate 80BPM normal",
+      "files": [
+        {
+          "id": 42195924,
+          "name": "80BPM_normal.zip",
+          "size": 1820363710,
+          "download_url": "https://ndownloader.figshare.com/files/42195924",
+          "supplied_md5": "fe0d1df322250e9ba9677956d08b2e8f"
+        }
+      ],
+      "total_mb": 1736.03
+    },
+    {
+      "id": 24056274,
+      "doi": "10.6084/m9.figshare.24056274.v1",
+      "title": "Scripts dataset",
+      "files": [
+        {
+          "id": 42188283,
+          "name": "scripts.zip",
+          "size": 50218,
+          "download_url": "https://ndownloader.figshare.com/files/42188283",
+          "supplied_md5": "65b59d21f8bc5b60d9ed2f24312ac2bb"
+        }
+      ],
+      "total_mb": 0.05
+    }
+  ]
+}

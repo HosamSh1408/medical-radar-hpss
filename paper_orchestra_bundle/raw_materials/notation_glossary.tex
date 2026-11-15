@@ -1,0 +1,276 @@
+% =============================================================================
+% notation_glossary.tex
+% Single Authoritative Symbol, Macro, Python Identifier & Figure-Label Lock
+% Project : Non-Contact NICU Radar Breathing Monitoring (Master's Thesis)
+% Authors : Frozen across Python docstrings (paper_workspace/src/*.py),
+%           PaperOrchestra (google-research/paper-orchestra) dense inputs,
+%           Matplotlib/TikZ figures, and LaTeX thesis chapters.
+%
+% USAGE:
+%   1. In thesis main.tex PREAMBLE (loads macros only):
+%        \def\NOTATIONMACROSONLY{1}
+%        \input{paper_orchestra_bundle/raw_materials/notation_glossary.tex}
+%   2. In thesis Appendix / Nomenclature chapter BODY (prints full tables):
+%        \let\NOTATIONMACROSONLY\undefined
+%        \input{paper_orchestra_bundle/raw_materials/notation_glossary.tex}
+%   3. Requires standard LaTeX packages in parent document:
+%        amsmath, amssymb, booktabs, longtable, array
+% =============================================================================
+
+% -----------------------------------------------------------------------------
+% PART A: CANONICAL SEMANTIC LATEX MACROS (\providecommand avoids collisions)
+% -----------------------------------------------------------------------------
+
+% --- Physical & Radar Front-End Parameters (WP1) ---
+\providecommand{\speedLight}{c}
+\providecommand{\carrierFreq}{f_c}
+\providecommand{\radarLambda}{\lambda}
+\providecommand{\fsRadar}{f_s}
+\providecommand{\fsRefRaw}{f_{s,\mathrm{ref}}}
+\providecommand{\fsRefRate}{f_{s,\mathrm{rate}}}
+\providecommand{\nomRange}{d_0}
+\providecommand{\chestDisp}{d(t)}
+\providecommand{\chestDispResp}{d_{\mathrm{resp}}(t)}
+\providecommand{\chestDispCard}{d_{\mathrm{card}}(t)}
+\providecommand{\chestDispRBM}{d_{\mathrm{RBM}}(t)}
+\providecommand{\chestDispEst}{\hat{d}(t)}
+\providecommand{\phaseSig}{\phi(t)}
+\providecommand{\phaseZero}{\theta_0}
+\providecommand{\modIndex}{\beta_{\mathrm{mod}}}
+\providecommand{\besselJ}[2]{J_{#1}\!\left(#2\right)}
+\providecommand{\iqI}{b_I(t)}
+\providecommand{\iqQ}{b_Q(t)}
+\providecommand{\iqComplex}{z(t)}
+\providecommand{\iqGainImb}{g}
+\providecommand{\iqPhaseSkew}{\psi}
+\providecommand{\iqDcI}{c_I}
+\providecommand{\iqDcQ}{c_Q}
+\providecommand{\csdSignal}{x(t)}
+\providecommand{\csdClean}{\hat{x}(t)}
+\providecommand{\adPhase}{\hat{\phi}_{\mathrm{AD}}(t)}
+\providecommand{\dacmPhase}{\hat{\phi}_{\mathrm{DACM}}(t)}
+
+% --- Filtering, Windowing & STFT Decomposition (WP2) ---
+\providecommand{\winSec}{W}
+\providecommand{\updateSec}{\Delta_{\mathrm{upd}}}
+\providecommand{\winSamples}{N_w}
+\providecommand{\bandLow}{f_{\mathrm{low}}}
+\providecommand{\bandHigh}{f_{\mathrm{high}}}
+\providecommand{\firTaps}{M_{\mathrm{FIR}}}
+\providecommand{\kaiserBeta}{\beta_{\mathrm{K}}}
+\providecommand{\stftWin}{N_{\mathrm{win}}}
+\providecommand{\stftHop}{H_{\mathrm{stft}}}
+\providecommand{\stftNfft}{N_{\mathrm{FFT}}}
+\providecommand{\stftComplex}{X[k,m]}
+\providecommand{\stftMag}{\lvert X[k,m] \rvert}
+\providecommand{\stftPhase}{\angle X[k,m]}
+\providecommand{\stftMagFilt}{\lvert \hat{X}[k,m] \rvert}
+
+% --- NMF/RBM Baseline vs HPSS Variants (WP2) ---
+\providecommand{\nmfRank}{K_{\mathrm{NMF}}}
+\providecommand{\nmfW}{\mathbf{W}}
+\providecommand{\nmfH}{\mathbf{H}}
+\providecommand{\hoyerSpar}{\sigma_{\mathrm{Hoyer}}}
+\providecommand{\rbmAlpha}{\alpha_{\mathrm{RBM}}}
+\providecommand{\rbmSparThresh}{\tau_{\mathrm{Hoyer}}}
+\providecommand{\nRemoved}{n_{\mathrm{rem}}}
+\providecommand{\hpssHarm}{S_H}
+\providecommand{\hpssPerc}{S_P}
+\providecommand{\hpssMask}{M_H}
+\providecommand{\hpssMaskBand}{M_{H,\mathrm{band}}}
+\providecommand{\hpssLenH}{L_H}
+\providecommand{\hpssLenP}{L_P}
+\providecommand{\hpssGamma}{\gamma}
+\providecommand{\hpssEps}{\varepsilon}
+\providecommand{\hpssMargin}{\beta_{\mathrm{sep}}}
+\providecommand{\hpssKeptFrac}{\kappa_{\mathrm{kept}}}
+
+% --- Harmonic NLS, HQI & Viterbi State-Space Tracking (WP3) ---
+\providecommand{\psdFolded}{P(f)}
+\providecommand{\autocorrFn}{r_{\mathrm{ac}}[\tau]}
+\providecommand{\freqCoarse}{\hat{f}_{\mathrm{coarse}}}
+\providecommand{\nlsOrder}{L_k}
+\providecommand{\nlsRadius}{\Delta_{\mathrm{NLS}}}
+\providecommand{\nlsStep}{\delta_{\mathrm{NLS}}}
+\providecommand{\nlsCost}{\mathcal{J}_{\mathrm{NLS}}(f)}
+\providecommand{\brEst}{\hat{f}_b}
+\providecommand{\brRef}{f^{\mathrm{ref}}}
+\providecommand{\hqiScore}{\mathrm{HQI}(f)}
+\providecommand{\viterbiState}{q}
+\providecommand{\viterbiEmit}{p_{\mathrm{emit}}}
+\providecommand{\viterbiTrans}{A_{q',q}}
+\providecommand{\brVit}{\hat{f}_b^{\mathrm{Vit}}}
+
+% --- Synchronization, SQI & Selective Prediction (WP4) ---
+\providecommand{\syncLag}{\hat{\tau}_s}
+\providecommand{\satThresh}{\tau_{\mathrm{sat}}}
+\providecommand{\validMask}{v_{s,w}}
+\providecommand{\sqiScore}{\mathrm{SQI}_{s,w}}
+\providecommand{\covLevel}{c_{\mathrm{cov}}}
+\providecommand{\selRisk}{R(\covLevel)}
+\providecommand{\aurcMetric}{\mathrm{AURC}}
+\providecommand{\eaurcMetric}{\mathrm{E\text{-}AURC}}
+
+% --- Cohort Evaluation, Clustered Agreement & Statistics (WP5) ---
+\providecommand{\sessCount}{S}
+\providecommand{\winSetSess}{\mathcal{W}_s}
+\providecommand{\winErr}{e_{s,w}}
+\providecommand{\rmseSession}[1]{\mathrm{RMSE}_{#1}}
+\providecommand{\rmseSess}{\mathrm{RMSE}_{\mathrm{sess}}}
+\providecommand{\rmsePool}{\mathrm{RMSE}_{\mathrm{pool}}}
+\providecommand{\maeSess}{\mathrm{MAE}_{\mathrm{sess}}}
+\providecommand{\accTau}[1]{\mathrm{Acc}@#1}
+\providecommand{\rWithin}{r_{\mathrm{within}}}
+\providecommand{\rWithinSessMean}{\bar{r}_{\mathrm{within}}^{(\mathrm{sess})}}
+\providecommand{\baBias}{\hat{\mu}_d}
+\providecommand{\baLoaLo}{\mathrm{LoA}_{\mathrm{lo}}}
+\providecommand{\baLoaUp}{\mathrm{LoA}_{\mathrm{up}}}
+\providecommand{\pairedDelta}{\Delta_s}
+\providecommand{\tostMargin}{\Delta_{\mathrm{TOST}}}
+\providecommand{\constGlobal}{\mathrm{const}_{\mathrm{global}}}
+\providecommand{\constLoso}{\mathrm{const}_{\mathrm{LOSO}}}
+\providecommand{\oracleSd}{\overline{\mathrm{SD}}_{\mathrm{ref}}}
+
+
+% -----------------------------------------------------------------------------
+% PART B: PRINTABLE NOMENCLATURE TABLES (suppressed if \NOTATIONMACROSONLY set)
+% -----------------------------------------------------------------------------
+\ifdefined\NOTATIONMACROSONLY\else
+
+\section*{Master Notation Glossary and Code-to-Manuscript Contract}
+\label{sec:notation_glossary}
+
+{\sloppy
+This glossary freezes every mathematical symbol, LaTeX macro, Python identifier
+(\texttt{paper\_workspace/src/*.py}), and figure/plot axis label across the thesis
+and all \texttt{PaperOrchestra} generation passes. Symbols marked \textbf{[LOCKED-v1]}
+correspond to frozen provenance constants in \texttt{paper\_workspace/src/config.py}
+(\texttt{SHA-256} manifest across all $15$ core modules, \texttt{pipeline\_version = main-v3-audit-fix-2});
+symbols marked \textbf{[THESIS-NEW]} are introduced in work packages \texttt{WP1}--\texttt{WP5}
+(denoted \texttt{[WPx TODO]} where code is not yet implemented in \texttt{paper\_workspace/src/}).
+\par}
+
+\begingroup
+\footnotesize
+\setlength{\tabcolsep}{3.5pt}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.13\textwidth} >{\raggedright\arraybackslash}p{0.19\textwidth} >{\raggedright\arraybackslash}p{0.28\textwidth} >{\raggedright\arraybackslash}p{0.20\textwidth} >{\raggedright\arraybackslash}p{0.12\textwidth}@{}}
+\caption{Master Notation Contract: Physics, Demodulation, HPSS, Tracking, SQI, and Agreement Statistics.} \label{tab:master_notation} \\
+\toprule
+\textbf{Symbol} & \textbf{LaTeX Macro} & \textbf{Mathematical Definition \& Units} & \textbf{Python Identifier(s) \& Module} & \textbf{Figure / Prompt Label} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Symbol} & \textbf{LaTeX Macro} & \textbf{Mathematical Definition \& Units} & \textbf{Python Identifier(s) \& Module} & \textbf{Figure / Prompt Label} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{5}{r}{\textit{Continued on next page}} \\
+\endfoot
+\bottomrule
+\endlastfoot
+
+% --- 1. Physical Signal & CW I/Q Model ---
+\multicolumn{5}{l}{\textbf{1. Radar Physics, I/Q Baseband \& Jacobi--Anger Phase Model (WP1)}} \\
+$\carrierFreq, \speedLight$ & \texttt{\textbackslash carrierFreq}, \texttt{\textbackslash speedLight} & CW carrier frequency ($24\,\mathrm{GHz}$) and speed of light ($3\times 10^8\,\mathrm{m/s}$) \textbf{[LOCKED-v1]} & \texttt{FC\_HZ = 24e9} (\texttt{config.py}) & $f_c$ (GHz), $c$ \\
+$\radarLambda$ & \texttt{\textbackslash radarLambda} & RF carrier wavelength $\lambda = c/f_c = 0.0125\,\mathrm{m}$ ($12.5\,\mathrm{mm}$ in \texttt{config.py}) \textbf{[LOCKED-v1]} & \texttt{LAMBDA\_M}, \texttt{LAMBDA\_MM}, \texttt{lam} (\texttt{config.py}, \texttt{demod.py}) & $\lambda$ (mm) \\
+$\fsRadar$ & \texttt{\textbackslash fsRadar} & Decimated slow-time radar sampling rate ($16\,\mathrm{Hz}$) \textbf{[LOCKED-v1]} & \texttt{FS\_RADAR = 16} (\texttt{config.py}) & $f_s$ (Hz) \\
+$\fsRefRaw, \fsRefRate$ & \texttt{\textbackslash fsRefRaw}, \texttt{\textbackslash fsRefRate} & Reference EDF raw respiration waveform ($256\,\mathrm{Hz}$) and rate ($1\,\mathrm{Hz}$, $1\,\mathrm{bpm}$ res.) \textbf{[LOCKED-v1]} & \texttt{FS\_REF\_RAW = 256}, \texttt{FS\_REF\_RATE = 1} (\texttt{config.py}) & $f_{s,\mathrm{ref}}, f_{s,\mathrm{rate}}$ \\
+$\nomRange$ & \texttt{\textbackslash nomRange} & Static nominal antenna-to-chest standoff distance ($\mathrm{m}$) \textbf{[THESIS-NEW]} & \texttt{d\_0} (\texttt{WP1 TODO}) & $d_0$ (m) \\
+$\chestDisp$ & \texttt{\textbackslash chestDisp} & Net physiological chest-wall displacement ($\mathrm{m}$ or $\mathrm{mm}$) \textbf{[THESIS-NEW]} & \texttt{d\_true} (\texttt{WP1 TODO}; dist.\ from \texttt{d\_hat}) & $d(t)$ (mm) \\
+$\chestDispResp$, $\chestDispCard$, $\chestDispRBM$ & \texttt{\textbackslash chestDisp\allowbreak Resp}, \texttt{\textbackslash chestDisp\allowbreak Card}, \texttt{\textbackslash chestDisp\allowbreak RBM} & Respiratory, cardiogenic, and random-body-movement components summing to $\chestDisp$ \textbf{[THESIS-NEW]} & \texttt{WP1 TODO} synth simulator & $d_{\mathrm{resp}}$, $d_{\mathrm{card}}$, $d_{\mathrm{RBM}}$ \\
+$\phaseSig, \phaseZero$ & \texttt{\textbackslash phaseSig}, \texttt{\textbackslash phaseZero} & Total RF phase $\phaseSig = \phaseZero + \frac{4\pi}{\radarLambda}\chestDisp$ ($\mathrm{rad}$) and equilibrium carrier phase $\phaseZero = \frac{4\pi\nomRange}{\radarLambda}+\phi_{\mathrm{rf}} \pmod{2\pi}$ \textbf{[THESIS-NEW]} & \texttt{theta\_0} (\texttt{WP1 TODO} Jacobi--Anger / IQ calib) & $\phi(t), \theta_0$ (rad) \\
+$\iqI$, $\iqQ$, $\iqComplex$ & \texttt{\textbackslash iqI}, \texttt{\textbackslash iqQ}, \texttt{\textbackslash iqComplex} & ADC baseband channels ($\mathrm{V}$) and raw complex baseband $\iqComplex = \iqI + j\iqQ$ \textbf{[LOCKED-v1]} & \texttt{bI}, \texttt{bQ} (\texttt{demod.py}, \texttt{data\_\allowbreak loader.py}) & $b_I(t)$, $b_Q(t)$, $z(t)$ \\
+$\iqDcI, \iqDcQ, \iqGainImb, \iqPhaseSkew$ & \texttt{\textbackslash iqDcI}, \texttt{\textbackslash iqDcQ}, \texttt{\textbackslash iqGainImb}, \texttt{\textbackslash iqPhaseSkew} & Receiver I/Q DC offsets, gain ratio $A_Q/A_I$, and quadrature skew error ($\mathrm{rad}$) \textbf{[THESIS-NEW]} & \texttt{dc\_i, dc\_q, iq\_gain, iq\_skew} (\texttt{WP1 TODO}) & $(c_I, c_Q, g, \psi)$ \\
+$\csdSignal$ & \texttt{\textbackslash csdSignal} & Per-window mean-centered complex baseband $\csdSignal = (b_I - \bar{b}_I) + j(b_Q - \bar{b}_Q)$ via \texttt{csd()} \textbf{[LOCKED-v1]} & \texttt{x} (\texttt{demod.csd}, \texttt{run\_\allowbreak measurement.py}) & $x(t)$ (complex) \\
+$\adPhase$, $\dacmPhase$ & \texttt{\textbackslash adPhase}, \texttt{\textbackslash dacmPhase} & Unwrapped arctangent $\frac{\lambda}{4\pi}\mathrm{unwrap}(\mathrm{atan2}(\Delta b_Q,\Delta b_I))$ (\texttt{demod.ad}: unused in active scoring, audit A10) vs DACM phase \textbf{[v1 / WP1]} & \texttt{ad} (\texttt{demod.py}, unused); \texttt{phase\_\allowbreak dacm} (\texttt{WP1 TODO}) & $\hat{\phi}_{\mathrm{AD}}$, $\hat{\phi}_{\mathrm{DACM}}$ \\
+$\besselJ{n}{\modIndex}$ & \texttt{\textbackslash besselJ\{n\}\allowbreak\{\textbackslash modIndex\}} & $n$-th Bessel function of first kind at modulation depth $\modIndex = 4\pi A_r / \lambda$ \textbf{[THESIS-NEW]} & \texttt{scipy.\allowbreak special.jv} (\texttt{WP1 TODO} analyzer) & $J_n(\beta_{\mathrm{mod}})$ \\
+$\chestDispEst$ & \texttt{\textbackslash chestDispEst} & Bandpass-filtered complex signal from \texttt{bandpass()}: upstream \texttt{d\_raw}, Branch-A \texttt{d\_hat}, Branch-B \texttt{d\_hpss} \textbf{[LOCKED-v1]} & \texttt{d\_raw, d\_hat, d\_hpss} (\texttt{filtering.py}, \texttt{run\_measurement.py}) & $\hat{d}(t)$ (a.u.) \\
+
+% --- 2. Windowing, STFT & HPSS ---
+\multicolumn{5}{l}{\textbf{2. Windowing, STFT Representation, NMF Baseline \& HPSS Variants (WP2)}} \\
+$\winSec$, $\updateSec$, $\winSamples$ & \texttt{\textbackslash winSec}, \texttt{\textbackslash updateSec}, \texttt{\textbackslash winSamples} & Sliding analysis window $30\,\mathrm{s}$, hop $2\,\mathrm{s}$ ($28\,\mathrm{s}$ overlap), samples $\winSamples = 480$ \textbf{[LOCKED-v1]} & \texttt{WIN\_S, OVERLAP\_S, UPDATE\_S, WIN\_\allowbreak SAMPLES} (\texttt{config.py}) & $W=30\,\mathrm{s}$ \\
+$\bandLow$, $\bandHigh$, $\firTaps$, $\kaiserBeta$ & \texttt{\textbackslash bandLow}, \texttt{\textbackslash bandHigh}, \texttt{\textbackslash firTaps}, \texttt{\textbackslash kaiserBeta} & Zero-phase Kaiser FIR passband $[0.3, 3.0]\,\mathrm{Hz}$ ($18$--$180\,\mathrm{bpm}$), $64$ taps, $\beta_{\mathrm{K}}=6.5$ \textbf{[LOCKED-v1]} & \texttt{BAND\_\allowbreak LOW\_\allowbreak HZ, BAND\_\allowbreak HIGH\_\allowbreak HZ, FIR\_\allowbreak TAPS, KAISER\_\allowbreak BETA} & $[0.3, 3.0]\,\mathrm{Hz}$ \\
+$\stftWin$, $\stftHop$, $\stftNfft$ & \texttt{\textbackslash stftWin}, \texttt{\textbackslash stftHop}, \texttt{\textbackslash stftNfft} & STFT \emph{rectangular} window $48$ ($3\,\mathrm{s}$), hop $16$ ($1\,\mathrm{s}$), FFT size $256$ ($\Delta f=3.75\,\mathrm{bpm}$) \textbf{[LOCKED-v1]} & \texttt{STFT\_\allowbreak WIN, STFT\_\allowbreak HOP, STFT\_\allowbreak NFFT} (\texttt{config.py}, \texttt{rbm\_\allowbreak nmf.py}) & $48/16/256$ rect.\ STFT \\
+$\stftComplex$, $\stftMag$, $\stftPhase$, $\stftMagFilt$ & \texttt{\textbackslash stftComplex}, \texttt{\textbackslash stftMag}, \texttt{\textbackslash stftPhase}, \texttt{\textbackslash stftMag\allowbreak Filt} & Two-sided complex STFT ($256 \times T_f$), magnitude, wrapped phase, and post-\texttt{env\_\allowbreak normalize} magnitude ($\times\mathrm{clip}(\mathrm{med}(M_{\mathrm{frame}})/M_{\mathrm{frame}},$ $0.5, 2.0)$) \textbf{[LOCKED-v1]} & \texttt{X, mag, phase, mag\_\allowbreak filt} (\texttt{rbm\_\allowbreak nmf.py}, \texttt{hpss.py}) & $|X[k,m]|$, $|\hat{X}[k,m]|$ \\
+$\hpssLenH, \hpssLenP$ & \texttt{\textbackslash hpssLenH}, \texttt{\textbackslash hpssLenP} & Horizontal (time) and vertical (frequency) median kernel lengths ($7$ frames, $21$ bins) \textbf{[LOCKED-v1]} & \texttt{L\_HARM = 7}, \texttt{L\_PERC = 21} (\texttt{hpss.py}) & $(L_H, L_P)$ \\
+$\hpssHarm$ & \texttt{\textbackslash hpssHarm} & Harmonic spectrogram estimate via time-axis median filter $\mathrm{med}_{m}(|X[k,m]|; \hpssLenH)$ \textbf{[LOCKED-v1]} & \texttt{s\_harm} (\texttt{hpss.hpss\_filter}) & $S_H[k,m]$ \\
+$\hpssPerc$ & \texttt{\textbackslash hpssPerc} & Percussive/motion spectrogram estimate via freq-axis median filter $\mathrm{med}_{k}(|X[k,m]|; \hpssLenP)$ \textbf{[LOCKED-v1]} & \texttt{s\_perc} (\texttt{hpss.hpss\_filter}) & $S_P[k,m]$ \\
+$\hpssGamma, \hpssEps, \hpssMargin$ & \texttt{\textbackslash hpssGamma}, \texttt{\textbackslash hpssEps}, \texttt{\textbackslash hpssMargin} & Wiener power exponent ($\gamma=2.0$), stabilizer ($\varepsilon=10^{-12}$) \textbf{[LOCKED-v1]}; Driedger separation factor $\beta_{\mathrm{sep}}$ \textbf{[THESIS-NEW]} & \texttt{GAMMA = 2.0}, \texttt{EPS = 1e-12} (\texttt{hpss.py}); \texttt{WP2 TODO} & $\gamma, \varepsilon, \beta_{\mathrm{sep}}$ \\
+$\hpssMask$ & \texttt{\textbackslash hpssMask} & Harmonic soft Wiener mask $\hpssMask = \hpssHarm^\gamma / (\hpssHarm^\gamma + \hpssPerc^\gamma + \varepsilon) \in [0,1]$ on two-sided \texttt{fftshift} STFT \textbf{[LOCKED-v1]} & \texttt{mask, mask\_s} (\texttt{hpss.hpss\_filter}) & $M_H[k,m]$ \\
+$\hpssMaskBand$ & \texttt{\textbackslash hpssMaskBand} & Proposed band-restricted or directional harmonic mask restricted to $|f_k| \in [\bandLow, \bandHigh]$ \textbf{[THESIS-NEW]} & \texttt{WP2 TODO} (dist.\ from \texttt{v1} \texttt{mask\_s}) & $M_{H,\mathrm{band}}$ \\
+$\nmfRank, \nmfW, \nmfH$ & \texttt{\textbackslash nmfRank}, \texttt{\textbackslash nmfW}, \texttt{\textbackslash nmfH} & Baseline NMF rank ($K_{\mathrm{NMF}}=11$), basis dictionary $\nmfW \in \mathbb{R}_{\ge 0}^{F\times K}$, temporal activations $\nmfH \in \mathbb{R}_{\ge 0}^{K\times T_f}$ \textbf{[LOCKED-v1]} & \texttt{NMF\_K = 11}, \texttt{W}, \texttt{H} (\texttt{config.py}, \texttt{rbm\_nmf.py}) & $\mathbf{W}, \mathbf{H}$ \\
+$\rbmAlpha$, $\hoyerSpar$, $\rbmSparThresh$, $\nRemoved$ & \texttt{\textbackslash rbmAlpha}, \texttt{\textbackslash hoyerSpar}, \texttt{\textbackslash rbmSpar\allowbreak Thresh}, \texttt{\textbackslash nRemoved} & \texttt{beltrao\_\allowbreak tuned} thresh $\alpha_{\mathrm{RBM}}=3.0$ (top-3 frac $>0.6$); \texttt{attached\_\allowbreak locked} row Hoyer sparsity $>\tau_{\mathrm{Hoyer}}=0.55$ ($\&\ \max h_k > 2\bar{H}$); removed NMF basis count $n_{\mathrm{rem}}$ ($>2\Rightarrow$ heavy move) \textbf{[LOCKED-v1]} & \texttt{RBM\_\allowbreak ALPHA}, \texttt{hoyer\_\allowbreak sparsity}, \texttt{s\_thresh=0.55}, \texttt{n\_removed} (\texttt{rbm\_\allowbreak nmf.py}) & $\sigma_{\mathrm{Hoyer}}$, $\tau_{\mathrm{Hoyer}}$, $n_{\mathrm{rem}}$ \\
+$\csdClean$, $\hpssKeptFrac$ & \texttt{\textbackslash csdClean}, \texttt{\textbackslash hpssKept\allowbreak Frac} & ISTFT-reconstructed complex signal and pre-\texttt{env\_\allowbreak normalize} full-spectrum $L_1$ magnitude fraction $\sum|\hat{X}_{\mathrm{raw}}|/\sum|X|$ \textbf{[LOCKED-v1]} & \texttt{x\_hat}, \texttt{kept\_\allowbreak frac} (\texttt{hpss.\allowbreak mitigate\_\allowbreak hpss}) & $\hat{x}(t)$, $\kappa_{\mathrm{kept}}$ \\
+
+% --- 3. Estimation, HQI & Viterbi ---
+\multicolumn{5}{l}{\textbf{3. Spectral/NLS Estimation, HQI Disambiguation \& Viterbi Tracking (WP3)}} \\
+$\psdFolded$, $\autocorrFn$, $\freqCoarse$ & \texttt{\textbackslash psdFolded}, \texttt{\textbackslash autocorrFn}, \texttt{\textbackslash freqCoarse} & Folded PSD ($|X(+f)|^2+|X(-f)|^2$), normalized autocorr of $\chestDispEst$, and coarse breathing peak ($\mathrm{Hz}$, prom.\ $\ge 0.10$) \textbf{[LOCKED-v1]} & \texttt{Pf}, \texttt{r}, \texttt{f\_coarse} (\texttt{estimation.py}, \texttt{filtering.py}) & $\hat{f}_{\mathrm{coarse}}$ (bpm) \\
+$\nlsOrder$, $\nlsRadius$, $\nlsStep$, $\nlsCost$ & \texttt{\textbackslash nlsOrder}, \texttt{\textbackslash nlsRadius}, \texttt{\textbackslash nlsStep}, \texttt{\textbackslash nlsCost} & Harmonic NLS order ($L_k=2$), coarse radius ($\pm 5\,\mathrm{bpm}$), step ($0.1\,\mathrm{bpm}$), objective $\sum_{\ell=1}^{L_k} w_\ell P(\ell f)$ \textbf{[LOCKED-v1]} & \texttt{NLS\_\allowbreak LK = 2}, \texttt{NLS\_\allowbreak RADIUS\_\allowbreak BPM = 5.0}, \texttt{NLS\_\allowbreak GRID\_\allowbreak STEP\_\allowbreak BPM = 0.1}, \texttt{score} & $\mathcal{J}_{\mathrm{NLS}}(f)$, $L_k=2$ \\
+$\brEst$ & \texttt{\textbackslash brEst} & Window-level breathing rate estimate ($\mathrm{bpm}$, $60\hat{f}_b$) from NMF/HPSS/NLS/DFT branch \textbf{[LOCKED-v1]} & \texttt{bestf} (\texttt{estimation.py}); \texttt{est, est\_\allowbreak hpss, est\_\allowbreak nls, est\_\allowbreak dft} (\texttt{cache}) & $\hat{f}_b$ (bpm) \\
+$\hqiScore$ & \texttt{\textbackslash hqiScore} & Harmonic Quality Index disambiguating fundamental vs $0.5\times$/$2\times$ octave errors \textbf{[THESIS-NEW]} & \texttt{hqi} (\texttt{WP3 TODO} estimator) & $\mathrm{HQI}(f)$ \\
+$\viterbiState$, $\viterbiEmit$, $\viterbiTrans$, $\brVit$ & \texttt{\textbackslash viterbiState}, \texttt{\textbackslash viterbiEmit}, \texttt{\textbackslash viterbiTrans}, \texttt{\textbackslash brVit} & HMM breathing-rate state grid, emission likelihood, transition matrix, and Viterbi path ($\mathrm{bpm}$) \textbf{[THESIS-NEW]} & \texttt{states\_\allowbreak bpm, log\_\allowbreak emit, log\_\allowbreak trans, est\_\allowbreak viterbi} (\texttt{WP3 TODO}) & $q$, $A_{q',q}$, $\hat{f}_b^{\mathrm{Vit}}$ \\
+
+% --- 4. Sync, SQI & Selective Prediction ---
+\multicolumn{5}{l}{\textbf{4. Reference Alignment, Signal Quality Indices \& Selective Prediction (WP4)}} \\
+$\syncLag$ & \texttt{\textbackslash syncLag} & Metadata-anchored cross-correlation radar-vs-EDF alignment lag ($\pm 60\,\mathrm{s}$ search) \textbf{[LOCKED-v1]} & \texttt{lag}, \texttt{lag\_s} (\texttt{evaluation.\allowbreak sync\_\allowbreak arrays}, \texttt{cache}) & $\hat{\tau}_s$ (s) \\
+$\satThresh$, $\validMask$, $\brRef$ & \texttt{\textbackslash satThresh}, \texttt{\textbackslash validMask}, \texttt{\textbackslash brRef} & ADC saturation cutoff ($2.99$, zero saturated seconds allowed), window validity boolean, and $30\,\mathrm{s}$ mean ref BR ($\mathrm{bpm}$) \textbf{[LOCKED-v1]} & \texttt{sat\_\allowbreak thresh=2.99}, \texttt{valid}, \texttt{vwin}, \texttt{ref} (\texttt{evaluation.py}) & $f^{\mathrm{ref}}_{s,w}$ (bpm) \\
+$\sqiScore$ & \texttt{\textbackslash sqiScore} & Interpretable continuous Signal Quality Index for window $w$ in session $s$, $\sqiScore \in [0, 1]$ \textbf{[THESIS-NEW]} & \texttt{sqi} (\texttt{WP4 TODO} selective gating) & $\mathrm{SQI} \in [0, 1]$ \\
+$\covLevel$, $\selRisk$, $\aurcMetric$, $\eaurcMetric$ & \texttt{\textbackslash covLevel}, \texttt{\textbackslash selRisk}, \texttt{\textbackslash aurcMetric}, \texttt{\textbackslash eaurcMetric} & Retention coverage, risk at coverage $c_{\mathrm{cov}}$ ($\mathrm{RMSE}^2$/$\mathrm{MAE}$), Area Under Risk--Coverage Curve, and Excess-AURC \textbf{[THESIS-NEW]} & \texttt{coverage, risk, aurc, e\_aurc} (\texttt{WP4 TODO}) & $\mathrm{AURC}$, $c_{\mathrm{cov}}$ \\
+
+% --- 5. Statistical Evaluation ---
+\multicolumn{5}{l}{\textbf{5. Cohort Performance, Agreement \& Hypothesis Testing Metrics (WP5)}} \\
+$\sessCount$, $\winSetSess$, $\winErr$ & \texttt{\textbackslash sessCount}, \texttt{\textbackslash winSetSess}, \texttt{\textbackslash winErr} & Valid sessions in cohort, valid window index set $\winSetSess$, and signed error $\hat{f}_{b,s,w} - f^{\mathrm{ref}}_{s,w}$ ($\mathrm{bpm}$) & \texttt{len(sess)}, \texttt{v}, \texttt{err\_n / err\_h} (\texttt{final\_\allowbreak review.py}) & $e_{s,w}$ (bpm) \\
+$\rmseSession{s}$ & \texttt{\textbackslash rmseSession\allowbreak \{s\}} & Within-session Root Mean Squared Error $\sqrt{\frac{1}{|\winSetSess|}\sum_{w\in\winSetSess} e_{s,w}^2}$ ($\mathrm{bpm}$) \textbf{[LOCKED-v1]} & \texttt{\_\allowbreak per\_\allowbreak session\_\allowbreak rmse(\allowbreak sess, key)} (\texttt{final\_\allowbreak review.py}) & $\mathrm{RMSE}_s$ (bpm) \\
+$\rmseSess$, $\maeSess$ & \texttt{\textbackslash rmseSess}, \texttt{\textbackslash maeSess} & Equal-session macro-averages $\frac{1}{S}\sum_{s=1}^S \rmseSession{s}$ and $\mathrm{MAE}_{\mathrm{sess}}$ ($\mathrm{bpm}$; \texttt{final\_\allowbreak review.py} also reports session median) \textbf{[LOCKED-v1]} & \texttt{baselines[c][b]}, \texttt{rmse\_\allowbreak *\_\allowbreak per\_\allowbreak window}, \texttt{mae\_\allowbreak *\_\allowbreak session\_\allowbreak median} & $\mathrm{RMSE}_{\mathrm{sess}}$, $\mathrm{MAE}_{\mathrm{sess}}$ \\
+$\rmsePool$ & \texttt{\textbackslash rmsePool} & Window-pooled RMSE $\sqrt{\frac{1}{\sum_s|\winSetSess|}\sum_{s,w} e_{s,w}^2}$ ($\mathrm{bpm}$; dist.\ from $\rmseSess$) \textbf{[LOCKED-v1]} & \texttt{pooled\_\allowbreak rmse\_\allowbreak nmf\_\allowbreak hpss\_\allowbreak rawnls}, \texttt{scores()['rmse']} & $\mathrm{RMSE}_{\mathrm{pool}}$ (bpm) \\
+$\rWithin$ & \texttt{\textbackslash rWithin} & Bland--Altman (1995) ANCOVA pooled within-session Pearson correlation removing session means \textbf{[THESIS-NEW]} & \texttt{r\_\allowbreak within\_\allowbreak rmcorr} (\texttt{WP5 TODO} repeated-measures stats) & $r_{\mathrm{within}}$ \\
+$\rWithinSessMean$ & \texttt{\textbackslash rWithin\allowbreak SessMean} & Unweighted cohort mean of per-session Pearson $r_s$ computed in \texttt{final\_\allowbreak review.py} \textbf{[LOCKED-v1]} & \texttt{within\_\allowbreak session\_\allowbreak pearson\_\allowbreak r\_\allowbreak *\_\allowbreak mean} (\texttt{final\_\allowbreak review.py:\allowbreak 290-291}) & $\bar{r}_{\mathrm{within}}^{(\mathrm{sess})}$ \\
+$\accTau{\delta}$ & \texttt{\textbackslash accTau\allowbreak \{\textbackslash delta\}} & Percentage of windows with $|\winErr| < \delta\,\mathrm{bpm}$ for $\delta \in \{3, 6, 10\}$ \textbf{[LOCKED-v1]} & \texttt{acc3, acc6, acc10} (\texttt{evaluation.\allowbreak scores:193}) & $\mathrm{Acc}@\delta$ (\%) \\
+$\baBias$, $\baLoaLo$, $\baLoaUp$ & \texttt{\textbackslash baBias}, \texttt{\textbackslash baLoaLo}, \texttt{\textbackslash baLoaUp} & Mean error bias and $\pm 1.96\,\mathrm{SD}$ Limits of Agreement (clustered ANOVA for final thesis) & \texttt{bias, loa\_lo, loa\_up} (\texttt{evaluation.py}); \texttt{bland\_\allowbreak altman\_\allowbreak pooled\_\allowbreak *} & Bias $\pm 1.96\,\mathrm{SD}$ \\
+$\pairedDelta$, $\tostMargin$ & \texttt{\textbackslash pairedDelta}, \texttt{\textbackslash tostMargin} & Paired delta $\rmseSession{\mathrm{new},s} - \rmseSession{\mathrm{base},s}$ and pre-registered TOST bound $0.50\,\mathrm{bpm}$ \textbf{[LOCKED-v1]} & \texttt{delta}, \texttt{TOST\_\allowbreak MARGIN = 0.50} (\texttt{final\_\allowbreak review.py}) & $\Delta_s$, $\Delta_{\mathrm{TOST}}$ \\
+$\constGlobal$, $\constLoso$, $\oracleSd$ & \texttt{\textbackslash constGlobal}, \texttt{\textbackslash constLoso}, \texttt{\textbackslash oracleSd} & In-sample pooled mean baseline, zero-leakage LOSO median predictor, and within-session reference SD oracle & \texttt{const\_\allowbreak global\_\allowbreak oracle, const\_\allowbreak loso, session\_\allowbreak mean\_\allowbreak oracle} & $\constLoso$, $\overline{\mathrm{SD}}_{\mathrm{ref}}$ \\
+\end{longtable}
+\endgroup
+
+
+\section*{Notation Disambiguation \& Anti-Drift Guardrails for PaperOrchestra}
+\label{sec:notation_guardrails}
+
+All \texttt{PaperOrchestra} drafting agents, dense-input outlines, and Python
+docstrings MUST obey the five disambiguation rules in
+Table~\ref{tab:notation_guardrails} to eliminate collisions observed in legacy logs
+and preliminary scripts.
+
+\begin{table}[htbp]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\caption{Critical Symbol \& Identifier Disambiguation Rules.} \label{tab:notation_guardrails}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.19\textwidth} >{\raggedright\arraybackslash}p{0.34\textwidth} >{\raggedright\arraybackslash}p{0.41\textwidth}@{}}
+\toprule
+\textbf{Confused Pair} & \textbf{Root Cause of Ambiguity} & \textbf{Mandatory Thesis \& Code Rule} \\
+\midrule
+$\chestDisp$ vs $\chestDispEst$ vs $\csdSignal$ &
+In \texttt{run\_\allowbreak measurement.py}, \texttt{csd()} produces mean-centered complex $\csdSignal$; downstream calls pass \texttt{d\_raw = bandpass(x)} into \texttt{mitigate} / \texttt{mitigate\_\allowbreak hpss}, yielding \texttt{d\_hat} (NMF) and \texttt{d\_hpss} (HPSS)---none are metric displacement $\chestDisp$ ($\mathrm{mm}$) unless calibrated. &
+Use $\chestDisp$ solely for physical chest displacement ($\mathrm{mm}$); $\csdSignal$ for mean-centered complex baseband; $\chestDispEst$ explicitly distinguished as \texttt{d\_raw}, \texttt{d\_hat}, or \texttt{d\_hpss}. Never equate $|\mathrm{bandpass}(\csdSignal)|$ with metric displacement in $\mathrm{mm}$. \\
+\addlinespace
+$\rmseSess$ vs \texttt{rmse\_\allowbreak *\_\allowbreak per\_\allowbreak window} vs $\rmsePool$ &
+In \texttt{paper\_\allowbreak workspace/\allowbreak src/\allowbreak final\_\allowbreak review.py:\allowbreak 255}, the JSON field \texttt{rmse\_\allowbreak hpss\_\allowbreak per\_\allowbreak window} stores the \emph{unweighted session mean} of $\rmseSession{s}$, whereas \texttt{evaluation.\allowbreak scores()['rmse']} and \texttt{pooled\_\allowbreak rmse\_\allowbreak *} aggregate squared errors across windows. &
+Report $\rmseSess$ (\texttt{\textbackslash rmseSess}) as the primary equal-session KPI ($6.798\,\mathrm{bpm}$ HPSS on \texttt{PAPER\_18}); explicitly label window-pooled values as $\rmsePool$ (\texttt{\textbackslash rmsePool}; $7.217\,\mathrm{bpm}$ on \texttt{PAPER\_18}). \\
+\addlinespace
+$\rWithin$ vs $\rWithinSessMean$ &
+Bland \& Altman (1995) $\rWithin$ uses ANCOVA residual sums of squares weighted by $|\winSetSess|-1$ across sessions, whereas \texttt{final\_\allowbreak review.py:\allowbreak 290-291} averages per-session $r_s$ unweighted ($\bar{r}_{\mathrm{within}}^{(\mathrm{sess})} = 0.465$ HPSS on \texttt{PAPER\_18}). &
+Reserve $\rWithin$ (\texttt{\textbackslash rWithin}) strictly for Bland--Altman ANCOVA \texttt{rmcorr}, and denote unweighted session averages as $\rWithinSessMean$ (\texttt{\textbackslash rWithin\allowbreak SessMean}). Never compute pooled cross-session Pearson $r$. \\
+\addlinespace
+$\hpssMask$ vs $\hpssMaskBand$ &
+In \texttt{hpss.py:42}, locked \texttt{v1} computes $\hpssMask = \frac{\hpssHarm^\gamma}{\hpssHarm^\gamma + \hpssPerc^\gamma + \varepsilon}$ (single $\varepsilon$ in denominator only) across the full two-sided \texttt{fftshift} FFT ($F=256$); the Python variable \texttt{mask\_s} is simply the \texttt{fftshift}-centered mask, NOT a band-restricted mask. &
+Write the exact denominator $\hpssHarm^\gamma + \hpssPerc^\gamma + \varepsilon$ when documenting locked \texttt{v1}, note the two-sided STFT domain (\texttt{hpss.py:20-23}), and reserve $\hpssMaskBand$ strictly for the proposed \texttt{WP2} in-band/directional mask ($|f_k| \in [\bandLow, \bandHigh]$). \\
+\addlinespace
+$\nmfH$ / $\hpssHarm$ notation collision &
+Audio papers sometimes write $H$ for harmonic spectrogram while NMF writes $\nmfH$ for temporal activation matrices ($\mathbf{W}\mathbf{H}$). &
+Use bold $\nmfW$, $\nmfH$ exclusively for NMF decomposition factors, and reserve $\hpssHarm$, $\hpssPerc$ (\texttt{\textbackslash hpssHarm}, \texttt{\textbackslash hpssPerc}) for median-filtered HPSS spectrograms. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\fi

@@ -17,3 +17,15 @@ beltrao_data/radar/*.csv
 !beltrao_data/radar/20191212T121224.9057437_1.csv
 beltrao_data/reference/*.edf
 !beltrao_data/reference/7.0.1.15.0.3_L12122019_121140.edf
+
+# Downloaded external datasets (too large for git; manifests/README tracked instead)
+external_data/**/**/*.csv
+external_data/**/**/*.zip
+external_data/**/**/*.part
+external_data/**/*.zip
+external_data/**/*.csv
+external_data/**/*.mat
+external_data/**/*.bin
+external_data/**/*.npy
+external_data/**/*.npz
+external_data/**/scripts/

@@ -1,0 +1,787 @@
+% =============================================================================
+% seed_references.bib
+% 60-Paper Seed Reference Library for Master's Thesis:
+%   "Harmonic-Percussive Spectrogram Separation, Phase-Calibrated Demodulation,
+%    and Risk-Calibrated Breathing Tracking in Contactless NICU Radar"
+%
+% Cluster breakdown (5 clusters, 11-14 papers each):
+%   Cluster 1 (11): Contactless NICU / neonatal vital-sign radar (24 GHz CW, FMCW, UWB)
+%   Cluster 2 (12): CW radar I/Q imbalance, DC-offset calibration & Jacobi-Anger demodulation
+%   Cluster 3 (12): HPSS variants (median-filter, anisotropic/directional, causal) & STFT
+%   Cluster 4 (11): Harmonic pitch, Viterbi / state-space BR-HR tracking & HQI disambiguation
+%   Cluster 5 (14): Signal Quality Indices (SQI), selective prediction (AURC) & agreement stats
+%
+% Maintained in parallel with: lit_review_matrix.csv (1-to-1 bib_key parity)
+% Prepared for: google-research/paper-orchestra raw_materials/ & LaTeX thesis build
+% =============================================================================
+
+
+% =============================================================================
+% CLUSTER 1: Contactless NICU / Neonatal Vital-Sign Radar (24 GHz CW, FMCW, UWB)
+% =============================================================================
+
+@article{beltrao2022contactless,
+  author   = {Beltr{\~a}o, Gabriel and Stutz, Regine and Hornberger, Franziska and Martins, Wallace A. and Tatarinov, Dimitri and Alaee-Kerahroodi, Mohammad and Lindner, Ulrike and Stock, Lilly and Kaiser, Elisabeth and Goedicke-Fritz, Sybelle and Schroeder, Udo and {Bhavani Shankar}, M. R. and Zemlin, Michael},
+  title    = {Contactless radar-based breathing monitoring of premature infants in the neonatal intensive care unit},
+  journal  = {Scientific Reports},
+  year     = {2022},
+  volume   = {12},
+  pages    = {5150},
+  doi      = {10.1038/s41598-022-08836-3},
+  url      = {https://doi.org/10.1038/s41598-022-08836-3},
+  keywords = {cluster1_nicu_radar},
+  note     = {Primary NICU 24 GHz CW radar benchmark (33 local paired sessions, PAPER\_18 subset). Note: repository README.md line 9 misprints the DOI suffix as 08860-x; the published PDF prints 10.1038/s41598-022-08836-3.}
+}
+
+@article{beltrao2023adaptive,
+  author   = {Beltr{\~a}o, Gabriel and Martins, Wallace A. and {Bhavani Shankar}, M. R. and Alaee-Kerahroodi, Mohammad and Schroeder, Udo and Tatarinov, Dimitri},
+  title    = {Adaptive Nonlinear Least Squares Framework for Contactless Vital Sign Monitoring},
+  journal  = {IEEE Transactions on Microwave Theory and Techniques},
+  year     = {2023},
+  volume   = {71},
+  number   = {4},
+  pages    = {1696--1710},
+  doi      = {10.1109/TMTT.2022.3222384},
+  url      = {https://doi.org/10.1109/TMTT.2022.3222384},
+  keywords = {cluster1_nicu_radar}
+}
+
+@inproceedings{beltrao2020joint,
+  author    = {Beltr{\~a}o, Gabriel and Alaee-Kerahroodi, Mohammad and Schr{\"o}der, Udo and {Bhavani Shankar}, M. R.},
+  title     = {Joint Waveform/Receiver Design for Vital-Sign Detection in Signal-Dependent Interference},
+  booktitle = {2020 IEEE Radar Conference (RadarConf20)},
+  year      = {2020},
+  pages     = {1--6},
+  doi       = {10.1109/RadarConf2043947.2020.9266404},
+  url       = {https://doi.org/10.1109/RadarConf2043947.2020.9266404},
+  keywords  = {cluster1_nicu_radar}
+}
+
+@article{kim2019noncontact,
+  author   = {Kim, Jong Deok and Lee, Won Hyuk and Lee, Yonggu and Lee, Hyun Ju and Cha, Teahyen and Kim, Seung Hyun and Song, Ki-Min and Lim, Young-Hyo and Cho, Seok Hyun and Cho, Sung Ho},
+  title    = {Non-contact respiration monitoring using impulse radio ultrawideband radar in neonates},
+  journal  = {Royal Society Open Science},
+  year     = {2019},
+  volume   = {6},
+  number   = {6},
+  pages    = {190149},
+  doi      = {10.1098/rsos.190149},
+  url      = {https://doi.org/10.1098/rsos.190149},
+  keywords = {cluster1_nicu_radar}
+}
+
+@article{lee2020feasibility,
+  author   = {Lee, Won Hyuk and Lee, Yonggu and Na, Jae Yoon and Kim, Seung Hyun and Lee, Hyun Ju and Lim, Young-Hyo and Cho, Seok Hyun and Cho, Sung Ho and Park, Hyun-Kyung},
+  title    = {Feasibility of non-contact cardiorespiratory monitoring using impulse-radio ultra-wideband radar in the neonatal intensive care unit},
+  journal  = {PLOS ONE},
+  year     = {2020},
+  volume   = {15},
+  number   = {12},
+  pages    = {e0243939},
+  doi      = {10.1371/journal.pone.0243939},
+  url      = {https://doi.org/10.1371/journal.pone.0243939},
+  keywords = {cluster1_nicu_radar}
+}
+
+@article{gleichauf2021automated,
+  author   = {Gleichauf, Johanna and Herrmann, Sven and Hennemann, Lukas and Krauss, Hannes and Nitschke, Janina and Renner, Philipp and Niebler, Christine and Koelpin, Alexander},
+  title    = {Automated Non-Contact Respiratory Rate Monitoring of Neonates Based on Synchronous Evaluation of a {3D} Time-of-Flight Camera and a Microwave Interferometric Radar Sensor},
+  journal  = {Sensors},
+  year     = {2021},
+  volume   = {21},
+  number   = {9},
+  pages    = {2959},
+  doi      = {10.3390/s21092959},
+  url      = {https://doi.org/10.3390/s21092959},
+  keywords = {cluster1_nicu_radar}
+}
+
+@article{gleichauf2024time,
+  author   = {Gleichauf, Johanna and Herrmann, Sven and Niebler, Christine and Koelpin, Alexander},
+  title    = {A Time-of-Flight and Radar Dataset of a neonatal Thorax Simulator with synchronized Reference Sensor Signals for respiratory Rate Detection},
+  journal  = {Scientific Data},
+  year     = {2024},
+  volume   = {11},
+  pages    = {110},
+  doi      = {10.1038/s41597-024-02946-5},
+  url      = {https://doi.org/10.1038/s41597-024-02946-5},
+  keywords = {cluster1_nicu_radar}
+}
+
+@inproceedings{liao2025noncontact,
+  author    = {Liao, Guanghang and Zhu, Yingen and Mo, Haimiao and Song, Xiaoyan and Wang, Qiqiong and Yang, Jie and Wang, Wenjin},
+  title     = {Non-contact Cardio-respiratory Monitoring of Preterm Infants in {NICU}: {RGB} Camera or {mmWave} {FMCW} Radar?},
+  booktitle = {47th Annual International Conference of the IEEE Engineering in Medicine and Biology Society (EMBC)},
+  year      = {2025},
+  doi       = {10.1109/EMBC58623.2025.11254365},
+  url       = {https://doi.org/10.1109/EMBC58623.2025.11254365},
+  keywords  = {cluster1_nicu_radar},
+  note      = {Article ID 11254365; clinical comparison on 16 premature infants in NICU.}
+}
+
+@article{hari2025contactless,
+  author   = {Hari, Arnav and Kumar, Ravishankar and Kumbhani, Brijesh and Darshi, Sam and Agarwal, Satyam and Sahambi, Jyotindra Singh and Jain, Suksham and Chawla, Deepak},
+  title    = {Contactless Breathing Monitoring at Home and in the Hospital: Protocol for a Low-Cost Frequency-Modulated Continuous-Wave Radar-Based Device},
+  journal  = {JMIR Research Protocols},
+  year     = {2025},
+  volume   = {14},
+  pages    = {e59532},
+  doi      = {10.2196/59532},
+  url      = {https://doi.org/10.2196/59532},
+  keywords = {cluster1_nicu_radar}
+}
+
+@article{senechal2026next,
+  author   = {Senechal, Eva and Maximov, Alyssa and Jeanne, Emily and Radeschi, Daniel and Azevedo, Vivian and Gross, Amanda and Shalish, Wissam and Kearney, Robert E. and Sant'Anna, Guilherme},
+  title    = {Next generation of non-contact and wireless vital sign monitoring technology in the neonatal intensive care unit: a systematic review},
+  journal  = {Pediatric Research},
+  year     = {2026},
+  volume   = {99},
+  number   = {7},
+  pages    = {2490--2498},
+  doi      = {10.1038/s41390-025-04469-0},
+  url      = {https://doi.org/10.1038/s41390-025-04469-0},
+  keywords = {cluster1_nicu_radar},
+  note     = {Published online November 2025; print issue July 2026.}
+}
+
+@article{wang2020experimental,
+  author   = {Wang, Dingyang and Yoo, Sungwon and Cho, Sung Ho},
+  title    = {Experimental Comparison of {IR-UWB} Radar and {FMCW} Radar for Vital Signs},
+  journal  = {Sensors},
+  year     = {2020},
+  volume   = {20},
+  number   = {22},
+  pages    = {6695},
+  doi      = {10.3390/s20226695},
+  url      = {https://doi.org/10.3390/s20226695},
+  keywords = {cluster1_nicu_radar}
+}
+
+
+% =============================================================================
+% CLUSTER 2: CW Radar I/Q Imbalance, DC-Offset Calibration & Jacobi-Anger
+% =============================================================================
+
+@article{droitcour2004range,
+  author   = {Droitcour, Amy D. and Bori{\'{c}}-Lubecke, Olga and Lubecke, Victor M. and Lin, Jen-Shan and Kovacs, Gregory T. A.},
+  title    = {Range correlation and {I/Q} performance benefits in single-chip silicon {Doppler} radars for noncontact cardiopulmonary monitoring},
+  journal  = {IEEE Transactions on Microwave Theory and Techniques},
+  year     = {2004},
+  volume   = {52},
+  number   = {3},
+  pages    = {838--848},
+  doi      = {10.1109/TMTT.2004.823552},
+  url      = {https://doi.org/10.1109/TMTT.2004.823552},
+  keywords = {cluster2_iq_demod_jacobi}
+}
+
+@article{park2007arctangent,
+  author   = {Park, Byung-Kwon and Bori{\'{c}}-Lubecke, Olga and Lubecke, Victor M.},
+  title    = {Arctangent Demodulation With {DC} Offset Compensation in Quadrature {Doppler} Radar Receiver Systems},
+  journal  = {IEEE Transactions on Microwave Theory and Techniques},
+  year     = {2007},
+  volume   = {55},
+  number   = {5},
+  pages    = {1073--1079},
+  doi      = {10.1109/TMTT.2007.895653},
+  url      = {https://doi.org/10.1109/TMTT.2007.895653},
+  keywords = {cluster2_iq_demod_jacobi}
+}
+
+@article{li2008random,
+  author   = {Li, Changzhi and Lin, Jenshan},
+  title    = {Random Body Movement Cancellation in {Doppler} Radar Vital Sign Detection},
+  journal  = {IEEE Transactions on Microwave Theory and Techniques},
+  year     = {2008},
+  volume   = {56},
+  number   = {12},
+  pages    = {3143--3152},
+  doi      = {10.1109/TMTT.2008.2007139},
+  url      = {https://doi.org/10.1109/TMTT.2008.2007139},
+  keywords = {cluster2_iq_demod_jacobi}
+}
+
+@article{morgan2009novel,
+  author   = {Morgan, Dennis R. and Zierdt, Michael G.},
+  title    = {Novel signal processing techniques for {Doppler} radar cardiopulmonary sensing},
+  journal  = {Signal Processing},
+  year     = {2009},
+  volume   = {89},
+  number   = {1},
+  pages    = {45--66},
+  doi      = {10.1016/j.sigpro.2008.07.008},
+  url      = {https://doi.org/10.1016/j.sigpro.2008.07.008},
+  keywords = {cluster2_iq_demod_jacobi}
+}
+
+@article{li2013review,
+  author   = {Li, Changzhi and Boric-Lubecke, Olga B. and Lubecke, Victor M. and Lin, Jenshan},
+  title    = {A Review on Recent Advances in {Doppler} Radar Sensors for Noncontact Healthcare Monitoring},
+  journal  = {IEEE Transactions on Microwave Theory and Techniques},
+  year     = {2013},
+  volume   = {61},
+  number   = {5},
+  pages    = {2046--2060},
+  doi      = {10.1109/TMTT.2013.2256924},
+  url      = {https://doi.org/10.1109/TMTT.2013.2256924},
+  keywords = {cluster2_iq_demod_jacobi}
+}
+
+@article{singh2013data,
+  author   = {Singh, A. and Gao, X. and Yavari, E. and Zakrzewski, M. and Cao, X. H. and Lubecke, V. M. and Boric-Lubecke, O.},
+  title    = {Data-Based Quadrature Imbalance Compensation for a {CW} {Doppler} Radar System},
+  journal  = {IEEE Transactions on Microwave Theory and Techniques},
+  year     = {2013},
+  volume   = {61},
+  number   = {4},
+  pages    = {1718--1724},
+  doi      = {10.1109/TMTT.2013.2249525},
+  url      = {https://doi.org/10.1109/TMTT.2013.2249525},
+  keywords = {cluster2_iq_demod_jacobi}
+}
+
+@article{wu2013phase,
+  author   = {Wu, Ping-Hsun and Jau, Je-Kuan and Li, Chien-Jung and Horng, Tzyy-Sheng Jason and Hsu, Po-Wen},
+  title    = {Phase- and Self-Injection-Locked Radar for Detecting Vital Signs with Efficient Elimination of {DC} Offsets and Null Points},
+  journal  = {IEEE Transactions on Microwave Theory and Techniques},
+  year     = {2013},
+  volume   = {61},
+  number   = {1},
+  pages    = {685--695},
+  doi      = {10.1109/TMTT.2012.2228222},
+  url      = {https://doi.org/10.1109/TMTT.2012.2228222},
+  keywords = {cluster2_iq_demod_jacobi}
+}
+
+@inproceedings{tu2013respiration,
+  author    = {Tu, Jianxuan and Lin, Jen-Shan},
+  title     = {Respiration harmonics cancellation for accurate heart rate measurement in non-contact vital sign detection},
+  booktitle = {2013 IEEE MTT-S International Microwave Symposium Digest (MTT)},
+  year      = {2013},
+  pages     = {1--3},
+  doi       = {10.1109/MWSYM.2013.6697732},
+  url       = {https://doi.org/10.1109/MWSYM.2013.6697732},
+  keywords  = {cluster2_iq_demod_jacobi}
+}
+
+@article{hu2014noncontact,
+  author   = {Hu, Wei and Zhao, Zhangyan and Wang, Yunfeng and Zhang, Haiying and Lin, Fujiang},
+  title    = {Noncontact accurate measurement of cardiopulmonary activity using a compact quadrature {Doppler} radar sensor},
+  journal  = {IEEE Transactions on Biomedical Engineering},
+  year     = {2014},
+  volume   = {61},
+  number   = {3},
+  pages    = {725--735},
+  doi      = {10.1109/TBME.2013.2288319},
+  url      = {https://doi.org/10.1109/TBME.2013.2288319},
+  keywords = {cluster2_iq_demod_jacobi}
+}
+
+@article{zakrzewski2014quadrature,
+  author   = {Zakrzewski, M. and Singh, A. and Yavari, E. and Gao, X. and Boric-Lubecke, O. and Vanhala, J. and Palovuori, K.},
+  title    = {Quadrature Imbalance Compensation With Ellipse-Fitting Methods for Microwave Radar Physiological Sensing},
+  journal  = {IEEE Transactions on Microwave Theory and Techniques},
+  year     = {2014},
+  volume   = {62},
+  number   = {6},
+  pages    = {1400--1408},
+  doi      = {10.1109/TMTT.2014.2321738},
+  url      = {https://doi.org/10.1109/TMTT.2014.2321738},
+  keywords = {cluster2_iq_demod_jacobi}
+}
+
+@article{wang2014noncontact,
+  author   = {Wang, Jingyu and Wang, Xiang and Chen, Lei and Huangfu, Jiangtao and Li, Changzhi and Ran, Lixin},
+  title    = {Noncontact Distance and Amplitude-Independent Vibration Measurement Based on an Extended {DACM} Algorithm},
+  journal  = {IEEE Transactions on Instrumentation and Measurement},
+  year     = {2014},
+  volume   = {63},
+  number   = {1},
+  pages    = {145--153},
+  doi      = {10.1109/TIM.2013.2277530},
+  url      = {https://doi.org/10.1109/TIM.2013.2277530},
+  keywords = {cluster2_iq_demod_jacobi}
+}
+
+@article{fitzgibbon1999direct,
+  author   = {Fitzgibbon, Andrew W. and Pilu, Maurizio and Fisher, Robert B.},
+  title    = {Direct least square fitting of ellipses},
+  journal  = {IEEE Transactions on Pattern Analysis and Machine Intelligence},
+  year     = {1999},
+  volume   = {21},
+  number   = {5},
+  pages    = {476--480},
+  doi      = {10.1109/34.765658},
+  url      = {https://doi.org/10.1109/34.765658},
+  keywords = {cluster2_iq_demod_jacobi}
+}
+
+
+% =============================================================================
+% CLUSTER 3: HPSS Variants (Median-Filter, Anisotropic/Directional, Causal) & STFT
+% =============================================================================
+
+@inproceedings{ono2008separation,
+  author    = {Ono, Nobutaka and Miyamoto, Kenichi and Le Roux, Jonathan and Kameoka, Hirokazu and Sagayama, Shigeki},
+  title     = {Separation of a Monaural Audio Signal into Harmonic/Percussive Components by Complementary Diffusion on Spectrogram},
+  booktitle = {Proceedings of the 16th European Signal Processing Conference (EUSIPCO)},
+  year      = {2008},
+  pages     = {240--244},
+  keywords  = {cluster3_hpss_variants}
+}
+
+@inproceedings{ono2008realtime,
+  author    = {Ono, Nobutaka and Miyamoto, Kenichi and Kameoka, Hirokazu and Sagayama, Shigeki},
+  title     = {A Real-time Equalizer of Harmonic and Percussive Components in Music Signals},
+  booktitle = {Proceedings of the 9th International Conference on Music Information Retrieval (ISMIR)},
+  year      = {2008},
+  pages     = {139--144},
+  doi       = {10.5281/zenodo.1415044},
+  url       = {https://doi.org/10.5281/zenodo.1415044},
+  keywords  = {cluster3_hpss_variants}
+}
+
+@inproceedings{fitzgerald2010harmonic,
+  author    = {FitzGerald, Derry},
+  title     = {Harmonic/Percussive Separation Using Median Filtering},
+  booktitle = {Proceedings of the 13th International Conference on Digital Audio Effects (DAFx-10)},
+  year      = {2010},
+  pages     = {246--253},
+  url       = {http://dafx10.iem.at/papers/DerryFitzGerald_DAFx10_P15.pdf},
+  keywords  = {cluster3_hpss_variants}
+}
+
+@article{hoyer2004non,
+  author   = {Hoyer, Patrik O.},
+  title    = {Non-negative Matrix Factorization with Sparseness Constraints},
+  journal  = {Journal of Machine Learning Research},
+  year     = {2004},
+  volume   = {5},
+  pages    = {1457--1469},
+  doi      = {10.5555/1005332.1044709},
+  url      = {https://jmlr.org/papers/v5/hoyer04a.html},
+  keywords = {cluster3_hpss_variants}
+}
+
+@inproceedings{driedger2014extending,
+  author    = {Driedger, Jonathan and M{\"u}ller, Meinard and Disch, Sascha},
+  title     = {Extending Harmonic-Percussive Separation of Audio Signals},
+  booktitle = {Proceedings of the 15th International Society for Music Information Retrieval Conference (ISMIR)},
+  year      = {2014},
+  pages     = {611--616},
+  doi       = {10.5281/zenodo.1415226},
+  url       = {https://doi.org/10.5281/zenodo.1415226},
+  keywords  = {cluster3_hpss_variants}
+}
+
+@article{tachibana2014two,
+  author   = {Tachibana, Hideyuki and Ono, Nobutaka and Sagayama, Shigeki},
+  title    = {Singing Voice Enhancement in Monaural Music Signals Based on Two-Stage Harmonic/Percussive Sound Separation on Multiple Resolution Spectrograms},
+  journal  = {IEEE/ACM Transactions on Audio, Speech, and Language Processing},
+  year     = {2014},
+  volume   = {22},
+  number   = {1},
+  pages    = {228--237},
+  doi      = {10.1109/TASLP.2013.2287052},
+  url      = {https://doi.org/10.1109/TASLP.2013.2287052},
+  keywords = {cluster3_hpss_variants}
+}
+
+@article{tachibana2014harmonic,
+  author   = {Tachibana, Hideyuki and Ono, Nobutaka and Kameoka, Hirokazu and Sagayama, Shigeki},
+  title    = {Harmonic/Percussive Sound Separation Based on Anisotropic Smoothness of Spectrograms},
+  journal  = {IEEE/ACM Transactions on Audio, Speech, and Language Processing},
+  year     = {2014},
+  volume   = {22},
+  number   = {12},
+  pages    = {2059--2073},
+  doi      = {10.1109/TASLP.2014.2351131},
+  url      = {https://doi.org/10.1109/TASLP.2014.2351131},
+  keywords = {cluster3_hpss_variants}
+}
+
+@inproceedings{fitzgerald2014harmonic,
+  author    = {FitzGerald, Derry and Liutkus, Antoine and Rafii, Zafar and Pardo, Bryan and Daudet, Laurent},
+  title     = {Harmonic/Percussive Separation using Kernel Additive Modelling},
+  booktitle = {25th IET Irish Signals and Systems Conference (ISSC) and China-Ireland International Conference on Information and Communications Technologies (CIICT)},
+  year      = {2014},
+  pages     = {35--40},
+  doi       = {10.1049/cp.2014.0655},
+  url       = {https://doi.org/10.1049/cp.2014.0655},
+  keywords  = {cluster3_hpss_variants}
+}
+
+@inproceedings{cano2014phase,
+  author    = {Cano, Estefan{\'\i}a and Plumbley, Mark D. and Dittmar, Christian},
+  title     = {Phase-Based Harmonic/Percussive Separation},
+  booktitle = {Proceedings of Interspeech},
+  year      = {2014},
+  pages     = {1628--1632},
+  doi       = {10.21437/Interspeech.2014-386},
+  url       = {https://doi.org/10.21437/Interspeech.2014-386},
+  keywords  = {cluster3_hpss_variants}
+}
+
+@inproceedings{canadas2015online,
+  author    = {Ca{\~n}adas-Quesada, F. and Vera-Candeas, P. and Ruiz-Reyes, N. and Alonso, P. and Ranilla, J.},
+  title     = {Online Harmonic/Percussive Separation Using Smoothness/Sparseness Constraints},
+  booktitle = {Proceedings of the 12th Sound and Music Computing Conference (SMC)},
+  year      = {2015},
+  pages     = {337--342},
+  keywords  = {cluster3_hpss_variants}
+}
+
+@book{muller2021fundamentals,
+  author    = {M{\"u}ller, Meinard},
+  title     = {Fundamentals of Music Processing: Using {Python} and {Jupyter} Notebooks},
+  edition   = {2},
+  publisher = {Springer International Publishing},
+  address   = {Cham},
+  year      = {2021},
+  doi       = {10.1007/978-3-030-69808-9},
+  url       = {https://doi.org/10.1007/978-3-030-69808-9},
+  keywords  = {cluster3_hpss_variants}
+}
+
+@article{griffin1984signal,
+  author   = {Griffin, Daniel W. and Lim, Jae S.},
+  title    = {Signal estimation from modified short-time {Fourier} transform},
+  journal  = {IEEE Transactions on Acoustics, Speech, and Signal Processing},
+  year     = {1984},
+  volume   = {32},
+  number   = {2},
+  pages    = {236--243},
+  doi      = {10.1109/TASSP.1984.1164317},
+  url      = {https://doi.org/10.1109/TASSP.1984.1164317},
+  keywords = {cluster3_hpss_variants}
+}
+
+
+% =============================================================================
+% CLUSTER 4: Harmonic Pitch, Viterbi / State-Space BR-HR Tracking & HQI
+% =============================================================================
+
+@article{schroeder1968period,
+  author   = {Schroeder, Manfred R.},
+  title    = {Period histogram and product spectrum: new methods for fundamental-frequency measurement},
+  journal  = {The Journal of the Acoustical Society of America},
+  year     = {1968},
+  volume   = {43},
+  number   = {4},
+  pages    = {829--834},
+  doi      = {10.1121/1.1910902},
+  url      = {https://doi.org/10.1121/1.1910902},
+  keywords = {cluster4_pitch_viterbi_hqi}
+}
+
+@article{rabiner1989tutorial,
+  author   = {Rabiner, Lawrence R.},
+  title    = {A tutorial on hidden {Markov} models and selected applications in speech recognition},
+  journal  = {Proceedings of the IEEE},
+  year     = {1989},
+  volume   = {77},
+  number   = {2},
+  pages    = {257--286},
+  doi      = {10.1109/5.18626},
+  url      = {https://doi.org/10.1109/5.18626},
+  keywords = {cluster4_pitch_viterbi_hqi}
+}
+
+@article{cheveigne2002yin,
+  author   = {de Cheveign{\'e}, Alain and Kawahara, Hideki},
+  title    = {{YIN}, a fundamental frequency estimator for speech and music},
+  journal  = {The Journal of the Acoustical Society of America},
+  year     = {2002},
+  volume   = {111},
+  number   = {4},
+  pages    = {1917--1930},
+  doi      = {10.1121/1.1458024},
+  url      = {https://doi.org/10.1121/1.1458024},
+  keywords = {cluster4_pitch_viterbi_hqi}
+}
+
+@article{christensen2008multi,
+  author   = {Christensen, Mads G. and Stoica, Petre and Jakobsson, Andreas and Jensen, S{\o}ren Holdt},
+  title    = {Multi-Pitch Estimation},
+  journal  = {Signal Processing},
+  year     = {2008},
+  volume   = {88},
+  number   = {4},
+  pages    = {972--983},
+  doi      = {10.1016/j.sigpro.2007.10.014},
+  url      = {https://doi.org/10.1016/j.sigpro.2007.10.014},
+  keywords = {cluster4_pitch_viterbi_hqi}
+}
+
+@inproceedings{mauch2014pyin,
+  author    = {Mauch, Matthias and Dixon, Simon},
+  title     = {{pYIN}: A fundamental frequency estimator using probabilistic threshold distributions},
+  booktitle = {2014 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP)},
+  year      = {2014},
+  pages     = {659--663},
+  doi       = {10.1109/ICASSP.2014.6853678},
+  url       = {https://doi.org/10.1109/ICASSP.2014.6853678},
+  keywords  = {cluster4_pitch_viterbi_hqi}
+}
+
+@article{naishadham2016estimation,
+  author   = {Naishadham, Krishna and Piou, Jean E. and Ren, Lingyun and Fathy, Aly E.},
+  title    = {Estimation of Cardiopulmonary Parameters From Ultra Wideband Radar Measurements Using the State Space Method},
+  journal  = {IEEE Transactions on Biomedical Circuits and Systems},
+  year     = {2016},
+  volume   = {10},
+  number   = {6},
+  pages    = {1037--1046},
+  doi      = {10.1109/TBCAS.2015.2510652},
+  url      = {https://doi.org/10.1109/TBCAS.2015.2510652},
+  keywords = {cluster4_pitch_viterbi_hqi}
+}
+
+@article{temko2017accurate,
+  author   = {Temko, Andriy},
+  title    = {Accurate Heart Rate Monitoring during Physical Exercises Using {PPG}},
+  journal  = {IEEE Transactions on Biomedical Engineering},
+  year     = {2017},
+  volume   = {64},
+  number   = {9},
+  pages    = {2016--2024},
+  doi      = {10.1109/TBME.2017.2676243},
+  url      = {https://doi.org/10.1109/TBME.2017.2676243},
+  keywords = {cluster4_pitch_viterbi_hqi}
+}
+
+@article{xie2019unobtrusive,
+  author   = {Xie, Qingsong and Li, Yongfu and Wang, Guoxing and Lian, Yong},
+  title    = {An Unobtrusive System for Heart Rate Monitoring Based on Ballistocardiogram Using {Hilbert} Transform and {Viterbi} Decoding},
+  journal  = {IEEE Journal on Emerging and Selected Topics in Circuits and Systems},
+  year     = {2019},
+  volume   = {9},
+  number   = {4},
+  pages    = {635--644},
+  doi      = {10.1109/JETCAS.2019.2951411},
+  url      = {https://doi.org/10.1109/JETCAS.2019.2951411},
+  keywords = {cluster4_pitch_viterbi_hqi}
+}
+
+@article{le2020multivariate,
+  author   = {Le, Minhhuy and Nguyen, Binh Van},
+  title    = {Multivariate Correlation of Higher Harmonics for Heart Rate Remote Measurement Using {UWB} Impulse Radar},
+  journal  = {IEEE Sensors Journal},
+  year     = {2020},
+  volume   = {20},
+  number   = {4},
+  pages    = {1859--1866},
+  doi      = {10.1109/JSEN.2019.2950635},
+  url      = {https://doi.org/10.1109/JSEN.2019.2950635},
+  keywords = {cluster4_pitch_viterbi_hqi}
+}
+
+@article{arsalan2020improved,
+  author   = {Arsalan, Muhammad and Santra, Avik and Will, Christoph},
+  title    = {Improved Contactless Heartbeat Estimation in {FMCW} Radar via {Kalman} Filter Tracking},
+  journal  = {IEEE Sensors Letters},
+  year     = {2020},
+  volume   = {4},
+  number   = {5},
+  pages    = {3500404},
+  doi      = {10.1109/LSENS.2020.2983706},
+  url      = {https://doi.org/10.1109/LSENS.2020.2983706},
+  keywords = {cluster4_pitch_viterbi_hqi}
+}
+
+@article{ye2021spectral,
+  author   = {Ye, Chen and Ohtsuki, Tomoaki},
+  title    = {Spectral {Viterbi} Algorithm for Contactless Wide-Range Heart Rate Estimation With Deep Clustering},
+  journal  = {IEEE Transactions on Microwave Theory and Techniques},
+  year     = {2021},
+  volume   = {69},
+  number   = {5},
+  pages    = {2629--2641},
+  doi      = {10.1109/TMTT.2021.3054560},
+  url      = {https://doi.org/10.1109/TMTT.2021.3054560},
+  keywords = {cluster4_pitch_viterbi_hqi}
+}
+
+
+% =============================================================================
+% CLUSTER 5: Signal Quality Indices (SQI), Selective Prediction (AURC) & Stats
+% =============================================================================
+
+@article{bland1986statistical,
+  author   = {Bland, J. Martin and Altman, Douglas G.},
+  title    = {Statistical methods for assessing agreement between two methods of clinical measurement},
+  journal  = {The Lancet},
+  year     = {1986},
+  volume   = {327},
+  number   = {8476},
+  pages    = {307--310},
+  doi      = {10.1016/S0140-6736(86)90837-8},
+  url      = {https://doi.org/10.1016/S0140-6736(86)90837-8},
+  keywords = {cluster5_sqi_aurc_stats}
+}
+
+@article{bland1995calculating,
+  author   = {Bland, J. M. and Altman, D. G.},
+  title    = {Calculating correlation coefficients with repeated observations: Part 1---Correlation within subjects},
+  journal  = {BMJ},
+  year     = {1995},
+  volume   = {310},
+  number   = {6977},
+  pages    = {446},
+  doi      = {10.1136/bmj.310.6977.446},
+  url      = {https://doi.org/10.1136/bmj.310.6977.446},
+  keywords = {cluster5_sqi_aurc_stats}
+}
+
+@article{bland1999measuring,
+  author   = {Bland, J. Martin and Altman, Douglas G.},
+  title    = {Measuring agreement in method comparison studies},
+  journal  = {Statistical Methods in Medical Research},
+  year     = {1999},
+  volume   = {8},
+  number   = {2},
+  pages    = {135--160},
+  doi      = {10.1177/096228029900800204},
+  url      = {https://doi.org/10.1177/096228029900800204},
+  keywords = {cluster5_sqi_aurc_stats}
+}
+
+@article{bland2007agreement,
+  author   = {Bland, J. Martin and Altman, Douglas G.},
+  title    = {Agreement between methods of measurement with multiple observations per individual},
+  journal  = {Journal of Biopharmaceutical Statistics},
+  year     = {2007},
+  volume   = {17},
+  number   = {4},
+  pages    = {571--582},
+  doi      = {10.1080/10543400701329422},
+  url      = {https://doi.org/10.1080/10543400701329422},
+  keywords = {cluster5_sqi_aurc_stats}
+}
+
+@article{zou2013confidence,
+  author   = {Zou, Guang Yong},
+  title    = {Confidence interval estimation for the {Bland--Altman} limits of agreement with multiple observations per individual},
+  journal  = {Statistical Methods in Medical Research},
+  year     = {2013},
+  volume   = {22},
+  number   = {6},
+  pages    = {630--642},
+  doi      = {10.1177/0962280211402548},
+  url      = {https://doi.org/10.1177/0962280211402548},
+  keywords = {cluster5_sqi_aurc_stats}
+}
+
+@article{parker2016application,
+  author   = {Parker, Richard A. and Weir, Christopher J. and Rubio, Noah and Rabinovich, Roberto and Pinnock, Hilary and Hanley, Janet and McCloughan, Lucy and Drost, Ellen M. and Mantoani, Leandro C. and MacNee, William and McKinstry, Brian},
+  title    = {Application of Mixed Effects Limits of Agreement in the Presence of Multiple Sources of Variability: Exemplar from the Comparison of Several Devices to Measure Respiratory Rate in {COPD} Patients},
+  journal  = {PLOS ONE},
+  year     = {2016},
+  volume   = {11},
+  number   = {12},
+  pages    = {e0168321},
+  doi      = {10.1371/journal.pone.0168321},
+  url      = {https://doi.org/10.1371/journal.pone.0168321},
+  keywords = {cluster5_sqi_aurc_stats}
+}
+
+@article{bakdash2017repeated,
+  author   = {Bakdash, Jonathan Z. and Marusich, Laura R.},
+  title    = {Repeated Measures Correlation},
+  journal  = {Frontiers in Psychology},
+  year     = {2017},
+  volume   = {8},
+  pages    = {456},
+  doi      = {10.3389/fpsyg.2017.00456},
+  url      = {https://doi.org/10.3389/fpsyg.2017.00456},
+  keywords = {cluster5_sqi_aurc_stats}
+}
+
+@article{orphanidou2015signal,
+  author   = {Orphanidou, Christina and Bonnici, Timothy and Charlton, Peter H. and Clifton, David A. and Vallance, David and Tarassenko, Lionel},
+  title    = {Signal-Quality Indices for the Electrocardiogram and Photoplethysmogram: Derivation and Applications to Wireless Monitoring},
+  journal  = {IEEE Journal of Biomedical and Health Informatics},
+  year     = {2015},
+  volume   = {19},
+  number   = {3},
+  pages    = {832--838},
+  doi      = {10.1109/JBHI.2014.2338351},
+  url      = {https://doi.org/10.1109/JBHI.2014.2338351},
+  keywords = {cluster5_sqi_aurc_stats}
+}
+
+@article{birrenkott2018robust,
+  author   = {Birrenkott, Drew A. and Pimentel, Marco A. F. and Watkinson, Peter J. and Clifton, David A.},
+  title    = {A Robust Fusion Model for Estimating Respiratory Rate From Photoplethysmography and Electrocardiography},
+  journal  = {IEEE Transactions on Biomedical Engineering},
+  year     = {2018},
+  volume   = {65},
+  number   = {9},
+  pages    = {2033--2041},
+  doi      = {10.1109/TBME.2017.2778265},
+  url      = {https://doi.org/10.1109/TBME.2017.2778265},
+  keywords = {cluster5_sqi_aurc_stats}
+}
+
+@article{elyaniv2010foundations,
+  author   = {El-Yaniv, Ran and Wiener, Yair},
+  title    = {On the Foundations of Noise-free Selective Classification},
+  journal  = {Journal of Machine Learning Research},
+  year     = {2010},
+  volume   = {11},
+  number   = {53},
+  pages    = {1605--1641},
+  url      = {https://www.jmlr.org/papers/v11/el-yaniv10a.html},
+  keywords = {cluster5_sqi_aurc_stats}
+}
+
+@inproceedings{geifman2017selective,
+  author    = {Geifman, Yonatan and El-Yaniv, Ran},
+  title     = {Selective Classification for Deep Neural Networks},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  year      = {2017},
+  volume    = {30},
+  pages     = {4878--4887},
+  url       = {https://proceedings.neurips.cc/paper_files/paper/2017/file/6449f44a102fde848cbffd9bbc07530f-Paper.pdf},
+  keywords  = {cluster5_sqi_aurc_stats}
+}
+
+@inproceedings{traub2024overcoming,
+  author    = {Traub, Jeremias and Bungert, Till J. and L{\"u}th, Carsten T. and Baumgartner, Michael and Maier-Hein, Klaus H. and Maier-Hein, Lena and J{\"a}ger, Paul F.},
+  title     = {Overcoming Common Flaws in the Evaluation of Selective Classification Systems},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  year      = {2024},
+  volume    = {37},
+  pages     = {2323--2347},
+  doi       = {10.48550/arXiv.2407.01032},
+  url       = {https://arxiv.org/abs/2407.01032},
+  keywords  = {cluster5_sqi_aurc_stats},
+  note      = {Spotlight; also arXiv:2407.01032.}
+}
+
+@article{schuirmann1987comparison,
+  author   = {Schuirmann, Donald J.},
+  title    = {A comparison of the two one-sided tests procedure and the power approach for assessing the equivalence of average bioavailability},
+  journal  = {Journal of Pharmacokinetics and Biopharmaceutics},
+  year     = {1987},
+  volume   = {15},
+  number   = {6},
+  pages    = {657--680},
+  doi      = {10.1007/BF01068419},
+  url      = {https://doi.org/10.1007/BF01068419},
+  keywords = {cluster5_sqi_aurc_stats}
+}
+
+@article{lakens2017equivalence,
+  author   = {Lakens, Dani{\"e}l},
+  title    = {Equivalence Tests: A Practical Primer for {t} Tests, Correlations, and Meta-Analyses},
+  journal  = {Social Psychological and Personality Science},
+  year     = {2017},
+  volume   = {8},
+  number   = {4},
+  pages    = {355--362},
+  doi      = {10.1177/1948550617697177},
+  url      = {https://doi.org/10.1177/1948550617697177},
+  keywords = {cluster5_sqi_aurc_stats}
+}

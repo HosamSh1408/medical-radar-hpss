@@ -1,0 +1,400 @@
+{
+  "source_paper_doi": "10.1038/s41597-024-02946-5",
+  "collection_doi": "10.6084/m9.figshare.c.6809370.v1",
+  "extracted_files": 49,
+  "total_extracted_gb": 3.577,
+  "files": [
+    {
+      "article_id": 24055611,
+      "doi": "10.6084/m9.figshare.24055611.v1",
+      "file": "05BPM_deep/iq_values_05BPM_deep.csv",
+      "bytes": 138468386,
+      "sha256": "b5cc0069f90dc16f81eeb2ba5d7bc3a4346f619f28440581ff82b551cad8f08c",
+      "status": "downloaded"
+    },
+    {
+      "article_id": 24055611,
+      "doi": "10.6084/m9.figshare.24055611.v1",
+      "file": "05BPM_deep/laser_05BPM_deep.csv",
+      "bytes": 53128477,
+      "sha256": "02db2cae2ec74b5d662054ce36028a4e73fa87c174cbca1b0073fa0cd607e184",
+      "status": "downloaded"
+    },
+    {
+      "article_id": 24055701,
+      "doi": "10.6084/m9.figshare.24055701.v1",
+      "file": "05BPM_normal/iq_values_05BPM_normal.csv",
+      "bytes": 138506886,
+      "sha256": "e7f9fe05082135591cc25a935bab8fdce520585e8395973c36f3ff98695dbe7b",
+      "status": "downloaded"
+    },
+    {
+      "article_id": 24055701,
+      "doi": "10.6084/m9.figshare.24055701.v1",
+      "file": "05BPM_normal/laser_05BPM_normal.csv",
+      "bytes": 52668685,
+      "sha256": "8e08f9fd23b7a24a6066a23a3307cfec716531aeec349d26902e8dac9979a667",
+      "status": "downloaded"
+    },
+    {
+      "article_id": 24055800,
+      "doi": "10.6084/m9.figshare.24055800.v1",
+      "file": "10BPM_deep/iq_values_10BPM_deep.csv",
+      "bytes": 138949036,
+      "sha256": "407eaae7243429214f446f8d6022f08fe026787ea5c92cbbeacd552ab3e237d2",
+      "status": "downloaded"
+    },
+    {
+      "article_id": 24055800,
+      "doi": "10.6084/m9.figshare.24055800.v1",
+      "file": "10BPM_deep/laser_10BPM_deep.csv",
+      "bytes": 52828982,
+      "sha256": "5c500566fbc3b7bf533047e5d006e622cba6f24dc5ccb3fff3a5d8e2d18585e0",
+      "status": "downloaded"
+    },
+    {
+      "article_id": 24056067,
+      "doi": "10.6084/m9.figshare.24056067.v1",
+      "file": "10BPM_normal/iq_values_10BPM_normal.csv",
+      "bytes": 138560636,
+      "sha256": "4ebcd24456e1678680756bd74d6376a382554ab947322300fbda3872c7088799",
+      "status": "downloaded"
+    },
+    {
+      "article_id": 24056067,
+      "doi": "10.6084/m9.figshare.24056067.v1",
+      "file": "10BPM_normal/laser_10BPM_normal.csv",
+      "bytes": 52505268,
+      "sha256": "7f51a6e493cea7f85b487c42dddc10976d7344132a2b9fffe28744d28b6dcc05",
+      "status": "downloaded"
+    },
+    {
+      "article_id": 24056127,
+      "doi": "10.6084/m9.figshare.24056127.v1",
+      "file": "20BPM_deep/iq_values_20BPM_deep.csv",
+      "bytes": 138348736,
+      "sha256": "09a7f736d651a71857bea956e83e6185618e747f080acf81227f3e88a5d9e068",
+      "status": "downloaded"
+    },
+    {
+      "article_id": 24056127,
+      "doi": "10.6084/m9.figshare.24056127.v1",
+      "file": "20BPM_deep/laser_20BPM_deep.csv",
+      "bytes": 52822103,
+      "sha256": "1f4ca4d775686430ce2b7ba947325313c0aee9d9db76444532977d742dd24527",
+      "status": "downloaded"
+    },
+    {
+      "article_id": 24056202,
+      "doi": "10.6084/m9.figshare.24056202.v1",
+      "file": "20BPM_normal/iq_values_20BPM_normal.csv",
+      "bytes": 138522286,
+      "sha256": "3593aa08ec9cda7f65f32c1bbd8c6346172b04a2197df8149b887df5a6b718b7",
+      "status": "downloaded"
+    },
+    {
+      "article_id": 24056202,
+      "doi": "10.6084/m9.figshare.24056202.v1",
+      "file": "20BPM_normal/laser_20BPM_normal.csv",
+      "bytes": 53081062,
+      "sha256": "4620107286aa8f828d75352dfa5934566e90d9f85dfe3c3540190915bae060f1",
+      "status": "downloaded"
+    },
+    {
+      "article_id": 24056322,
+      "doi": "10.6084/m9.figshare.24056322.v1",
+      "file": "30BPM_deep/iq_values_30BPM_deep.csv",
+      "bytes": 138409586,
+      "sha256": "5627582712d6a024f7eb9febd1542aece2975ca54ee36a8bd064eb7a6dcaab9f",
+      "status": "downloaded"
+    },
+    {
+      "article_id": 24056322,
+      "doi": "10.6084/m9.figshare.24056322.v1",
+      "file": "30BPM_deep/laser_30BPM_deep.csv",
+      "bytes": 52538469,
+      "sha256": "c9f7c936583a9d269326b18e6781f4e92ca0b96afedbfc6d6d9dd83d0d25426c",
+      "status": "downloaded"
+    },
+    {
+      "article_id": 24056457,
+      "doi": "10.6084/m9.figshare.24056457.v1",
+      "file": "30BPM_normal/iq_values_30BPM_normal.csv",
+      "bytes": 138424686,
+      "sha256": "5a12953b8d70b7ada93a237b22c03e967f82cfa55c63681484ff6467ded95b6b",
+      "status": "downloaded"
+    },
+    {
+      "article_id": 24056457,
+      "doi": "10.6084/m9.figshare.24056457.v1",
+      "file": "30BPM_normal/laser_30BPM_normal.csv",
+      "bytes": 57928855,
+      "sha256": "381057a55795b04093f40e38235636563648d94dae19cfa93a5dbd09c4c27c30",
+      "status": "downloaded"
+    },
+    {
+      "article_id": 24056652,
+      "doi": "10.6084/m9.figshare.24056652.v1",
+      "file": "40BPM_deep/iq_values_40BPM_deep.csv",
+      "bytes": 138552636,
+      "sha256": "bc2b89b20b40449dfc9e2c03a4c87961a772bb9b4341b33e9fe949ae9c5c7e95",
+      "status": "downloaded"
+    },
+    {
+      "article_id": 24056652,
+      "doi": "10.6084/m9.figshare.24056652.v1",
+      "file": "40BPM_deep/laser_40BPM_deep.csv",
+      "bytes": 53926662,
+      "sha256": "65b3131b24cf34bf17d3935ae62fb821e5dda6a07ee981349c7d3e385b50c9de",
+      "status": "downloaded"
+    },
+    {
+      "article_id": 24056784,
+      "doi": "10.6084/m9.figshare.24056784.v1",
+      "file": "40BPM_normal/iq_values_40BPM_normal.csv",
+      "bytes": 138468386,
+      "sha256": "9147b5811ec5845c05283cfb469c567a85bc8e408fd4fa09068168e3b4bb3889",
+      "status": "downloaded"
+    },
+    {
+      "article_id": 24056784,
+      "doi": "10.6084/m9.figshare.24056784.v1",
+      "file": "40BPM_normal/laser_40BPM_normal.csv",
+      "bytes": 52689896,
+      "sha256": "9057ff6adc7847d3b6b571b2a29500c9e2911792138da98ee2e54663448c77ed",
+      "status": "downloaded"
+    },
+    {
+      "article_id": 24057594,
+      "doi": "10.6084/m9.figshare.24057594.v1",
+      "file": "45BPM_deep/iq_values_45BPM_deep.csv",
+      "bytes": 138285636,
+      "sha256": "4281fe913c03696c4d5eadbc8288f456c909a41b0f647ec7123ec7383d9dc452",
+      "status": "downloaded"
+    },
+    {
+      "article_id": 24057594,
+      "doi": "10.6084/m9.figshare.24057594.v1",
+      "file": "45BPM_deep/laser_45BPM_deep.csv",
+      "bytes": 58609553,
+      "sha256": "66c89bd42cf42043c73f423a798c26650cad303385865c5e69cc906e8d6d4f5d",
+      "status": "downloaded"
+    },
+    {
+      "article_id": 24057816,
+      "doi": "10.6084/m9.figshare.24057816.v1",
+      "file": "45BPM_normal/iq_values_45BPM_normal.csv",
+      "bytes": 138258686,
+      "sha256": "16cafc2b809867fe06897cf3587e060f28899532f9c8133bb3704bed9192dd68",
+      "status": "downloaded"
+    },
+    {
+      "article_id": 24057816,
+      "doi": "10.6084/m9.figshare.24057816.v1",
+      "file": "45BPM_normal/laser_45BPM_normal.csv",
+      "bytes": 52609286,
+      "sha256": "5bfd5973f8102586998ade2d87580c834c32f294832416d04f64e809b50448a7",
+      "status": "downloaded"
+    },
+    {
+      "article_id": 24057441,
+      "doi": "10.6084/m9.figshare.24057441.v1",
+      "file": "50BPM_deep/iq_values_50BPM_deep.csv",
+      "bytes": 138455036,
+      "sha256": "52edfe4d9a683b005b95a0454f5e71168d8b05a6d62c8b40c12475cd6193975c",
+      "status": "downloaded"
+    },
+    {
+      "article_id": 24057441,
+      "doi": "10.6084/m9.figshare.24057441.v1",
+      "file": "50BPM_deep/laser_50BPM_deep.csv",
+      "bytes": 52803814,
+      "sha256": "18247f3b45a2dd92d2f7962a58b410709e4553899e80f19d77c049f3f4d89fcb",
+      "status": "downloaded"
+    },
+    {
+      "article_id": 24057999,
+      "doi": "10.6084/m9.figshare.24057999.v1",
+      "file": "50BPM_normal/iq_values_50BPM_normal.csv",
+      "bytes": 138497536,
+      "sha256": "d0befa1f9cbdf0beb45dc5b6abe2a285dcd1888528cbac4cee2bf28a0b98866e",
+      "status": "downloaded"
+    },
+    {
+      "article_id": 24057999,
+      "doi": "10.6084/m9.figshare.24057999.v1",
+      "file": "50BPM_normal/laser_50BPM_normal.csv",
+      "bytes": 52730203,
+      "sha256": "709f79897bcc1a321a4c991fe9baefce6a31a6de81751630df9662752bddfd54",
+      "status": "downloaded"
+    },
+    {
+      "article_id": 24058107,
+      "doi": "10.6084/m9.figshare.24058107.v1",
+      "file": "55BPM_deep/iq_values_55BPM_deep.csv",
+      "bytes": 138293336,
+      "sha256": "a75e2db497524f3c7a8662830b8d2e4b95e40aaa7dbe346c1991be9f5ae906f6",
+      "status": "downloaded"
+    },
+    {
+      "article_id": 24058107,
+      "doi": "10.6084/m9.figshare.24058107.v1",
+      "file": "55BPM_deep/laser_55BPM_deep.csv",
+      "bytes": 53008811,
+      "sha256": "42799ed67b2c9cf39b9723b59b1c9ed77ba03e25ec05ccacc1c5f72099bf873c",
+      "status": "downloaded"
+    },
+    {
+      "article_id": 24058170,
+      "doi": "10.6084/m9.figshare.24058170.v1",
+      "file": "55BPM_normal/iq_values_55BPM_normal.csv",
+      "bytes": 138466736,
+      "sha256": "29beb9d0d3dae4a68676cc00b70f82841971c042082de7172765a0f5a7117d52",
+      "status": "downloaded"
+    },
+    {
+      "article_id": 24058170,
+      "doi": "10.6084/m9.figshare.24058170.v1",
+      "file": "55BPM_normal/laser_55BPM_normal.csv",
+      "bytes": 53153738,
+      "sha256": "f1650d44f485766fc96d048d400f52b395f325de878aa52259aed6fb1f0d3529",
+      "status": "downloaded"
+    },
+    {
+      "article_id": 24058293,
+      "doi": "10.6084/m9.figshare.24058293.v1",
+      "file": "60BPM_deep/iq_values_60BPM_deep.csv",
+      "bytes": 138314086,
+      "sha256": "79c4d80a573c0bbf2b99637783b3e0fd81396da7a4787fddff87d5f342704330",
+      "status": "downloaded"
+    },
+    {
+      "article_id": 24058293,
+      "doi": "10.6084/m9.figshare.24058293.v1",
+      "file": "60BPM_deep/laser_60BPM_deep.csv",
+      "bytes": 56282492,
+      "sha256": "52dd09a4b5b09fd47cc53173d571110590815393e09c2ea4e77ace159cb083f2",
+      "status": "downloaded"
+    },
+    {
+      "article_id": 24058599,
+      "doi": "10.6084/m9.figshare.24058599.v1",
+      "file": "60BPM_normal/iq_values_60BPM_normal.csv",
+      "bytes": 138441736,
+      "sha256": "8e5cafc7f2dde908d54eacd072a1ef1f0db05f1779d646e504e98f25440b4a35",
+      "status": "downloaded"
+    },
+    {
+      "article_id": 24058599,
+      "doi": "10.6084/m9.figshare.24058599.v1",
+      "file": "60BPM_normal/laser_60BPM_normal.csv",
+      "bytes": 52417167,
+      "sha256": "0fd32685487dcda1e34eade312512003b0510c632972edf077cd5592f5d08c3c",
+      "status": "downloaded"
+    },
+    {
+      "article_id": 24058683,
+      "doi": "10.6084/m9.figshare.24058683.v1",
+      "file": "80BPM_deep/iq_values_80BPM_deep.csv",
+      "bytes": 138529536,
+      "sha256": "5fb9a390277d6ad90fee43bc2b90f4e2a650e91e35216edeec24eb7bb24a0b5f",
+      "status": "downloaded"
+    },
+    {
+      "article_id": 24058683,
+      "doi": "10.6084/m9.figshare.24058683.v1",
+      "file": "80BPM_deep/laser_80BPM_deep.csv",
+      "bytes": 53020278,
+      "sha256": "40a20b45a1aaa61d57fa319f7d71f62658a38ce34a2c5144461da4e06ff01f56",
+      "status": "downloaded"
+    },
+    {
+      "article_id": 24058779,
+      "doi": "10.6084/m9.figshare.24058779.v1",
+      "file": "80BPM_normal/iq_values_80BPM_normal.csv",
+      "bytes": 138406936,
+      "sha256": "eb60232a78d5bc87e72c9e4ab60578006dd67c0b3bd65cc9dc9a3f0aa579400c",
+      "status": "downloaded"
+    },
+    {
+      "article_id": 24058779,
+      "doi": "10.6084/m9.figshare.24058779.v1",
+      "file": "80BPM_normal/laser_80BPM_normal.csv",
+      "bytes": 52637706,
+      "sha256": "c0b0b0d11772df364f4213a05bc427d1a02480a898725eb2d558c3e37cc0dfc9",
+      "status": "downloaded"
+    },
+    {
+      "article_id": 24056274,
+      "doi": "10.6084/m9.figshare.24056274.v1",
+      "file": "scripts/BabySimulator-main.zip",
+      "bytes": 32365,
+      "sha256": "0f2c833ab7feb1eb386239f5f3070f69d7795a74c0d6c3deeedd88c8ab1db682",
+      "status": "cached"
+    },
+    {
+      "article_id": 24056274,
+      "doi": "10.6084/m9.figshare.24056274.v1",
+      "file": "scripts/Laser/convert.m",
+      "bytes": 418,
+      "sha256": "d13185335b6c491ee645fe176b4ac71e9b2f3448c855a40b20bb6e708194d859",
+      "status": "cached"
+    },
+    {
+      "article_id": 24056274,
+      "doi": "10.6084/m9.figshare.24056274.v1",
+      "file": "scripts/Laser/convert.sh",
+      "bytes": 452,
+      "sha256": "0a12e45fa9fe77dc5ceb24f1e953411617b4b2918d707fd49548bd0b84f345c7",
+      "status": "cached"
+    },
+    {
+      "article_id": 24056274,
+      "doi": "10.6084/m9.figshare.24056274.v1",
+      "file": "scripts/Laser/csv_distance_publisher.cpp",
+      "bytes": 3282,
+      "sha256": "ac32268443dc549faa95fb72722e8bad2bd6900939e0c1af7a304bfc84d236b2",
+      "status": "cached"
+    },
+    {
+      "article_id": 24056274,
+      "doi": "10.6084/m9.figshare.24056274.v1",
+      "file": "scripts/Laser/csv_publisher-main.zip",
+      "bytes": 11762,
+      "sha256": "9a6027470b9c68198c3a860abd35f299b221052ec730ed5fa762b667b165f460",
+      "status": "cached"
+    },
+    {
+      "article_id": 24056274,
+      "doi": "10.6084/m9.figshare.24056274.v1",
+      "file": "scripts/Radar/iqtocsv.sh",
+      "bytes": 566,
+      "sha256": "0e8bb9c93a620b1b0c0583f72662903980286ffeeded24c6491c10a24dbf9cc4",
+      "status": "cached"
+    },
+    {
+      "article_id": 24056274,
+      "doi": "10.6084/m9.figshare.24056274.v1",
+      "file": "scripts/ToF/pcl_to_png.cpp",
+      "bytes": 2826,
+      "sha256": "2b0c484dbfe9e358aafdcbcec28ae4c2f8f1fc38472e3f1961d40353726d2f4c",
+      "status": "cached"
+    },
+    {
+      "article_id": 24056274,
+      "doi": "10.6084/m9.figshare.24056274.v1",
+      "file": "scripts/ToF/pcl_to_png.h",
+      "bytes": 3327,
+      "sha256": "f429bd5754b0d9645552ce5b6661fdc41d37c57f2edb5555d8e8ebdb298eafdd",
+      "status": "cached"
+    },
+    {
+      "article_id": 24056274,
+      "doi": "10.6084/m9.figshare.24056274.v1",
+      "file": "scripts/ToF/pcl_to_png_node.cpp",
+      "bytes": 261,
+      "sha256": "92cbd2207b4de15ce52e51b835dec629ca8f27d2e3592dc7d4f29e3ab1f80f1a",
+      "status": "cached"
+    }
+  ]
+}
