@@ -1,0 +1,136 @@
+version: "2.0"
+status: "pre_registered_confirmatory_lock"
+created_date: "2026-11-15"
+baseline_commit: "6b19fdd"
+baseline_tag: "v1.0-student-baseline"
+baseline_pipeline_version: "main-v3-audit-fix-2"
+random_seed: 20261011
+bootstrap_resamples: 10000
+alpha: 0.05
+tost_margin_bpm: 0.50
+
+cohorts:
+  primary_confirmatory: "pool30_sync"
+  sensitivity:
+    - "all_paired"
+    - "retained23"
+    - "PAPER_18"
+  non_evaluable_zero_valid:
+    - "1.3"
+    - "5.1"
+  zero_temporal_overlap:
+    - "1.1"
+    - "2.1"
+    - "2.2"
+  unpaired_missing_files:
+    - "1.2"
+    - "3.2"
+    - "10.3"
+  pool30_sync_patients: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+  all_paired_patients: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+  cross_validation:
+    scheme: "leave_one_patient_out"
+    split_column: "patient_group"
+    inner_tuning_permitted_through_gate: "G4"
+    hard_freeze_gate: "G4"
+
+synchronization:
+  primary_regime: "branch_neutral_raw_nls_lag"
+  primary_anchor_description: "Metadata clock offset +-60s search refined once via evaluation.sync_arrays using frozen v1 upstream Raw-NLS on bandpassed CSD; locked identically across all candidate WP1-WP5 estimators."
+  sensitivity_regime: "pure_metadata_clock_lag"
+  diagnostic_only_baseline_ref: "cached_nmf_lag"
+  search_radius_s: 60
+
+references:
+  primary_target:
+    name: "RespRate_1Hz_30sAvg"
+    symbol: "\\brRef"
+    window_s: 30
+    hop_s: 2
+    saturation_abs_v_cutoff: 2.99
+    whole_window_non_saturated: true
+  secondary_physical_targets:
+    br_256hz_resp_spec:
+      channel: "Resp"
+      fs_hz: 256.0
+      band_hz: [0.25, 2.0]
+    br_resp_trigger_1024hz:
+      channel: "Resp.-Trigger"
+      fs_hz: 1024.0
+      physiological_bpm_bounds: [12.0, 120.0]
+    hr_r_trigger_1024hz:
+      channel: "R-Trigger"
+      fs_hz: 1024.0
+      physiological_bpm_bounds: [60.0, 230.0]
+    hr_edf_1hz:
+      channel: "HeartRate"
+      fs_hz: 1.0
+      signaliq_channel: "SignalIQ"
+    hr_ecg_256hz_band_hz: [1.0, 6.0]
+
+metrics:
+  primary_error_kpi: "RMSE_sess"
+  secondary_error_kpis:
+    - "RMSE_pool"
+    - "MAE_sess"
+    - "Acc@3"
+    - "Acc@6"
+    - "Acc@10"
+    - "gross_gt10_pct"
+  tracking_kpis:
+    primary: "r_within_rmcorr"
+    baseline_comparative: "r_within_sess_mean"
+  agreement_kpis:
+    - "ba_bias_clustered"
+    - "ba_loa_lo_clustered"
+    - "ba_loa_up_clustered"
+  selective_prediction_kpis:
+    - "AURC"
+    - "E_AURC"
+  statistical_tests:
+    session_paired: "wilcoxon_signed_rank"
+    confidence_intervals: "patient_clustered_bca_bootstrap_10000"
+    multiplicity_correction: "holm_bonferroni"
+
+gates:
+  G1:
+    wp: "WP1 / EXP-1"
+    week: 5
+    criteria:
+      - "Reduce LOPO pool30_sync RMSE_sess vs frozen HPSS+NLS under branch_neutral_raw_nls_lag"
+      - "Improve high-skew sessions 11.1 and 12.1 without >0.50 bpm degradation on clean anchors (7.3, 4.1)"
+      - "Pass <1e-6 bpm mathematical invariance checks (scaling, rotation, sign flip, I/Q swap)"
+  G2:
+    wp: "WP2 / EXP-2 + EXP-3"
+    week: 9
+    criteria:
+      - "Characterize Accuracy-Latency-Runtime Pareto curve across lookahead {0,1,2,4,8} s vs frozen 3s rect HPSS"
+      - "Evaluate dual-band [1.0, 6.0] Hz cardiac branch against 1024 Hz R-Trigger & 1 Hz HeartRate; gate 2D vs 1D Viterbi coupling on >=50% SignalIQ-valid windows achieving |err_HR| <= 10 bpm"
+  G3:
+    wp: "WP3 / EXP-4"
+    week: 13
+    criteria:
+      - "Primary confirmatory beat const_loso on pool30_sync RMSE_sess (patient-clustered BCa 95% CI < 0; Holm-adjusted p < 0.05)"
+      - "Raise r_within_rmcorr and r_within_sess_mean over baseline (0.447 on pool30_sync) and cut >10 bpm gross tail below 14.31%"
+      - "Pass anti-inertia control: phase-scrambled surrogate collapses tracking r toward 0"
+  G4:
+    wp: "WP4 / EXP-5"
+    week: 16
+    criteria:
+      - "Positive selective prediction gain (E-AURC < 0 vs random abstention across c_cov in [0.5, 1.0])"
+      - "WGN (N=200, seed 20261011) and UCD!=ChildPresent rejection AUROC >= 0.95"
+      - "Apnea/bradypnea safety verified on 256 Hz Resp quiet pauses (>5 s)"
+      - "HARD FREEZE of all WP1-WP4 hyperparameters prior to EXP-6..EXP-8"
+
+mandatory_controls:
+  - "constant_loso_and_stiff_hmm"
+  - "complex_wgn_200_seed_20261011"
+  - "phase_scrambled_and_label_permuted_surrogates"
+  - "mathematical_group_invariances_1e-6_bpm"
+  - "deterministic_synthetic_tone_chirp_0.1_bpm"
+
+claim_boundaries:
+  upstream_lock_file: "paper_workspace/metadata/claim_gate_status.json"
+  prohibited_until_external_data: "L4_external_generalization"
+  prohibited_without_prospective_clinical_study: "L5_bedside_clinical_superiority"
+  prohibited_historical_claim: "L2_exact_beltrao_cohort_reproduction"
