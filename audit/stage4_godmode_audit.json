@@ -1,0 +1,51 @@
+{
+  "gates": {
+    "gate1_frozen_and_external_sha256_integrity": {
+      "passed": true,
+      "checked_frozen_files": 154,
+      "bad_frozen_files": [],
+      "bad_caches": [],
+      "frozen_stage4_sha256_match": true,
+      "checked_external_files": 49,
+      "bad_external_files": []
+    },
+    "gate2_exhaustive_partition_and_laser_gt": {
+      "passed": true,
+      "partition_14_plus_6_eq_20": true,
+      "max_clean_laser_gt_diff_bpm": 0.0,
+      "max_laser_vs_nominal_diff_bpm": 0.036233611442185065
+    },
+    "gate3_cleanroom_raw_csv_to_model_reexecution": {
+      "passed": true,
+      "max_reexecution_diff_bpm": 0.0,
+      "sentinels": [
+        "30BPM_normal",
+        "45BPM_normal",
+        "80BPM_deep"
+      ]
+    },
+    "gate4_cleanroom_metrics_and_csv_parity": {
+      "passed": true,
+      "max_metric_diff": 0.0,
+      "csv_vs_json_max_diff": 4.974565251890384e-05
+    },
+    "gate5_cleanroom_wp4_uncertainty_and_conformal": {
+      "passed": true,
+      "max_wp4_diff": 0.0,
+      "max_conformal_diff": 0.0
+    },
+    "gate6_external_o2_invariance_and_causality": {
+      "passed": true,
+      "max_external_h5_o2_invariance_diff": 1.4210854715202004e-14,
+      "max_causality_diff": 0.0
+    },
+    "gate7_rfc8259_json_and_gate_g5_contract": {
+      "passed": true,
+      "strict_rfc8259_json": true,
+      "schema_version": "stage4-external-v1",
+      "gate_g5_decision": "PASS_L4_ZERO_TOUCH_TRANSFER_VERIFIED"
+    }
+  },
+  "all_passed": true,
+  "schema_version_audited": "stage4-external-v1"
+}

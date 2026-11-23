@@ -52,6 +52,8 @@ def _configure_matplotlib() -> None:
         "savefig.dpi": 300,
         "axes.spines.top": False,
         "axes.spines.right": False,
+        "pdf.fonttype": 42,
+        "ps.fonttype": 42,
     })
 
 
@@ -810,7 +812,7 @@ def _write_dense_ch2_addendum(summary: dict, df_attr: pd.DataFrame) -> None:
         "# Chapter 2 Dense Input: Baseline Audit & EXP-0 Failure Forensics",
         "",
         "Strict symbol adherence: [notation_glossary.tex](file:///Users/hosamshibly/Downloads/medical_radar/paper_orchestra_bundle/raw_materials/notation_glossary.tex). "
-        "Claim constraints: `L0-L3` internal validation only (`L2` exact Beltrao cohort reproduction blocked; `L4` external and `L5` clinical claims prohibited).",
+        "Claim constraints (Chapter 2 / WP0 baseline scope): `L0-L3` internal validation only (`L2` exact Beltrao cohort reproduction blocked; `L5` clinical bedside utility claims prohibited; `L4` external zero-touch transfer is evaluated separately in Stage 4 / Ch. 7 on `gleichauf2024`).",
         "",
         "## 1. Cohort Multiverse & Lag-Leakage Decomposition (`EXP-0` Locked Outputs)",
         f"- **Primary Confirmatory Cohort (`pool30_sync`, $S=28$ synced sessions, $11$ patients, $|\\mathcal{{W}}|={r_n['pool30_sync']['n_windows']}$):** "
@@ -826,7 +828,7 @@ def _write_dense_ch2_addendum(summary: dict, df_attr: pd.DataFrame) -> None:
         f"`PAPER_18` $\\rmseSess = {r_n['PAPER_18']['rmse_sess_hpss']:.3f}\\,\\mathrm{{bpm}}$ ($\\rmsePool = {r_n['PAPER_18']['rmse_pool_hpss']:.3f}\\,\\mathrm{{bpm}}$).",
         "",
         "## 2. True Physical Error Modes Persisting Under Neutral Synchronization",
-        f"- **Quadrature Imbalance & Collinearity (`WP1` Target):** Session `11.1` ($\\rho_{{IQ}}={summary['outliers']['11.1']['iq_sd_ratio_session']:.2f}$, "
+        f"- **Quadrature Imbalance & Collinearity (`WP1` Target):** Session `11.1` (empirical I/Q SD ratio $\\rho_{{IQ}} \\equiv \\max(\\sigma_I/\\sigma_Q, \\sigma_Q/\\sigma_I) = {summary['outliers']['11.1']['iq_sd_ratio_session']:.2f}$, "
         f"$|r_{{IQ}}|={summary['outliers']['11.1']['iq_abs_corr_session']:.3f}$, clipping `{100*summary['outliers']['11.1']['radar_clip_frac_session']:.2f}%`) "
         f"persists at $\\mathrm{{RMSE}}_s = {summary['outliers']['11.1']['rmse_hpss_neutral']:.2f}\\,\\mathrm{{bpm}}$ across all lags.",
         f"- **Mid-Session Hardware / UCD Dropouts (`WP1` / `WP4` Target):** Session `9.2` exhibits mid-session `UCD Status != ChildPresent` "

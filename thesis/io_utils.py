@@ -64,11 +64,41 @@ def git_head_info() -> dict[str, str]:
             )
             return res.stdout.strip()
         except Exception:
-            return "unknown"
+            return ""
+
+    head_commit = _run(["rev-parse", "--short", "HEAD"])
+    branch = _run(["rev-parse", "--abbrev-ref", "HEAD"])
+
+    if not head_commit or not branch:
+        git_dir = ROOT / ".git"
+        head_file = git_dir / "HEAD"
+        if head_file.exists():
+            raw = head_file.read_text(encoding="utf-8").strip()
+            if raw.startswith("ref: "):
+                ref_rel = raw[5:].strip()
+                if not branch:
+                    branch = ref_rel.removeprefix("refs/heads/")
+                ref_path = git_dir / ref_rel
+                if ref_path.exists():
+                    head_commit = ref_path.read_text(encoding="utf-8").strip()[:7]
+                else:
+                    packed = git_dir / "packed-refs"
+                    if packed.exists():
+                        for line in packed.read_text(encoding="utf-8").splitlines():
+                            if not line or line.startswith("#") or line.startswith("^"):
+                                continue
+                            parts = line.split()
+                            if len(parts) >= 2 and parts[1] == ref_rel:
+                                head_commit = parts[0][:7]
+                                break
+            elif len(raw) >= 7:
+                head_commit = raw[:7]
+                if not branch:
+                    branch = "HEAD"
 
     return {
-        "head_commit": _run(["rev-parse", "--short", "HEAD"]),
-        "branch": _run(["rev-parse", "--abbrev-ref", "HEAD"]),
+        "head_commit": head_commit or "unknown",
+        "branch": branch or "unknown",
         "python_version": platform.python_version(),
     }
 

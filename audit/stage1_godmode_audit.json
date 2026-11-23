@@ -1,0 +1,71 @@
+{
+  "gates": {
+    "gate1_frozen_baseline_and_f0_lock": {
+      "passed": true,
+      "checked_frozen_files": 154,
+      "bad_files": [],
+      "bad_caches": [],
+      "max_f0_vs_est_hpss_diff_bpm": 0.0
+    },
+    "gate2_cleanroom_metrics_and_csv_parity": {
+      "passed": true,
+      "csv_rows": 28,
+      "max_cleanroom_metric_diff": 1.865174681370263e-14,
+      "csv_json_max_diff": 1.1321984768386528e-05,
+      "raw_clip_frac_max_diff": 4.832214765101289e-05
+    },
+    "gate3_cleanroom_hmm_and_viterbi_parity": {
+      "passed": true,
+      "max_hmm_loop_diff": 2.5579538487363607e-13,
+      "max_scaled_vs_logsumexp_diff": 1.2789769243681803e-13,
+      "stage0_vs_stage1_viterbi_max_diff_bpm": 0.0
+    },
+    "gate4_causality_and_invariance_contract": {
+      "passed": true,
+      "c_hpss_l0": 0.0,
+      "c_mit_v2_causal_env_mag_filt": 0.0,
+      "c_mit_v2_block_env_diag": 89.24760408804184,
+      "c_hmm_fwd": 0.0,
+      "c_hmm_lag4": 0.0,
+      "inv_max_diff_bpm": 0.0,
+      "two_axis_contract_ok": true
+    },
+    "gate5_lopo_antileakage_monotonicity_and_equivariance": {
+      "passed": true,
+      "leak_errors": [],
+      "pin_or_fallback_errors": [],
+      "aux_causal_lower_sigma_pinned_folds": {
+        "pool30_sync": {
+          "R1b_Online_Forward_MAP_0s": 1,
+          "R1h_E2E_Causal_H5_OnlineForward_0s": 1,
+          "R1i_E2E_Causal_H6_OnlineForward_0s": 1
+        },
+        "retained23": {
+          "R1b_Online_Forward_MAP_0s": 1,
+          "R1h_E2E_Causal_H5_OnlineForward_0s": 1,
+          "R1i_E2E_Causal_H6_OnlineForward_0s": 1
+        },
+        "PAPER_18": {
+          "R1b_Online_Forward_MAP_0s": 0,
+          "R1h_E2E_Causal_H5_OnlineForward_0s": 0,
+          "R1i_E2E_Causal_H6_OnlineForward_0s": 0
+        }
+      },
+      "monotonicity_errors": [],
+      "equivariance_ok": true
+    },
+    "gate6_controls_gates_and_lag_audit": {
+      "passed": true,
+      "surrogates_ok": true,
+      "lag_audit_ok": true,
+      "gates_g1_g2_ok": true
+    },
+    "gate7_provenance_bib_and_completeness": {
+      "passed": true,
+      "schema_version": "stage1-parsimony-v3",
+      "bib_71_parity": true,
+      "count_errors": []
+    }
+  },
+  "all_passed": true
+}

@@ -29,3 +29,7 @@ external_data/**/*.bin
 external_data/**/*.npy
 external_data/**/*.npz
 external_data/**/scripts/
+
+# Thesis large binary/cache outputs (reproducible via thesis/exp*.py) & pytest cache
+thesis/outputs/
+.pytest_cache/

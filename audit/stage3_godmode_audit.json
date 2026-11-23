@@ -1,0 +1,67 @@
+{
+  "gates": {
+    "gate1_frozen_baseline_and_stage1_stage2_parity": {
+      "passed": true,
+      "checked_frozen_files": 154,
+      "bad_files": [],
+      "bad_caches": [],
+      "external_data_untouched": true,
+      "stage1_full_cov_max_diff": 1.687538997430238e-14,
+      "stage2_full_cov_max_diff": 2.3092638912203256e-14
+    },
+    "gate2_cleanroom_selective_risk_and_csv_parity": {
+      "passed": true,
+      "max_u6c_weight_diff": 0.0,
+      "max_proxy_archive_diff": 0.0,
+      "max_rc_metric_diff": 4.052314039881821e-15,
+      "csv_vs_json_max_diff": 9.930315183925842e-06
+    },
+    "gate3_cleanroom_apnea_pause_safety": {
+      "passed": true,
+      "n_pause_windows": 1581,
+      "n_regular_windows": 5059,
+      "max_apnea_metric_diff": 0.0,
+      "u2_pause_risk_ratio_80pct": 1.0200192579834895,
+      "u6b_pause_risk_ratio_80pct": 1.1274503362871986,
+      "u3_pause_risk_ratio_80pct": 1.3941070482246951
+    },
+    "gate4_cleanroom_ood_wgn_abstention": {
+      "passed": true,
+      "max_wgn_auroc_diff": 0.0,
+      "max_surrogate_auroc_diff": 0.0,
+      "max_ucd_auroc_diff": 0.0,
+      "ucd_window_counts_verified": true,
+      "wgn_auroc_u3": 0.9796227409638554,
+      "wgn_auroc_u6a": 0.9935444277108434,
+      "wgn_auroc_u6b": 0.9985692771084337,
+      "wgn_auroc_u6c": 0.9635067771084337
+    },
+    "gate5_cleanroom_finite_k_conformal": {
+      "passed": true,
+      "max_conformal_metric_diff": 0.0,
+      "cross_cohort_vacuity_verified": true,
+      "alpha005_patient_vacuous": true,
+      "c2_undercovers_all_alphas": true,
+      "c4_c5_valid_coverage_010_020_030": true
+    },
+    "gate6_invariance_causality_and_lopo_disjointness": {
+      "passed": true,
+      "max_o2_invariance_diff": 2.220446049250313e-15,
+      "max_causality_diff": 0.0,
+      "max_low_amp_0p2mm_b_ood": 0.0,
+      "lopo_disjoint_ok": true
+    },
+    "gate7_gate_g4_hard_freeze_and_json_contract": {
+      "passed": true,
+      "strict_rfc8259_json": true,
+      "schema_version": "stage3-uncertainty-v1",
+      "gate_g4_decision": "PASS_AND_HARD_FREEZE_WP1_TO_WP4",
+      "frozen_stage4_archive_exists": true,
+      "frozen_stage4_sha256_match": true,
+      "frozen_stage4_keys_ok": true,
+      "frozen_stage4_arrays_finite_ok": true
+    }
+  },
+  "all_passed": true,
+  "schema_version_audited": "stage3-uncertainty-v1"
+}

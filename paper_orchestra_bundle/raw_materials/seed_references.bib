@@ -1,15 +1,16 @@
 % =============================================================================
 % seed_references.bib
-% 60-Paper Seed Reference Library for Master's Thesis:
+% 71-Paper Seed Reference Library for Master's Thesis:
 %   "Harmonic-Percussive Spectrogram Separation, Phase-Calibrated Demodulation,
 %    and Risk-Calibrated Breathing Tracking in Contactless NICU Radar"
 %
-% Cluster breakdown (5 clusters, 11-14 papers each):
-%   Cluster 1 (11): Contactless NICU / neonatal vital-sign radar (24 GHz CW, FMCW, UWB)
+% Cluster breakdown (6 clusters, 9-14 papers each):
+%   Cluster 1 (13): Contactless NICU / neonatal vital-sign radar (24 GHz CW, FMCW, UWB)
 %   Cluster 2 (12): CW radar I/Q imbalance, DC-offset calibration & Jacobi-Anger demodulation
 %   Cluster 3 (12): HPSS variants (median-filter, anisotropic/directional, causal) & STFT
 %   Cluster 4 (11): Harmonic pitch, Viterbi / state-space BR-HR tracking & HQI disambiguation
 %   Cluster 5 (14): Signal Quality Indices (SQI), selective prediction (AURC) & agreement stats
+%   Cluster 6  (9): Differentiable structured AI, shortcut learning & hierarchical conformal prediction
 %
 % Maintained in parallel with: lit_review_matrix.csv (1-to-1 bib_key parity)
 % Prepared for: google-research/paper-orchestra raw_materials/ & LaTeX thesis build
@@ -784,4 +785,141 @@
   doi      = {10.1177/1948550617697177},
   url      = {https://doi.org/10.1177/1948550617697177},
   keywords = {cluster5_sqi_aurc_stats}
+}
+
+
+% --- Appended Verified AI/ML, Conformal, Equivariance & Neonatal Dataset References (Cluster 1 additions + Cluster 6) ---
+
+@article{krbec2024emerging,
+  author   = {Krbec, Brooke A. and Zhang, Xiang and Chityat, Inbar and Brady-Mine, Alexandria and Linton, Evan and Copeland, Daniel and Anthony, Brian W. and Edelman, Elazer R. and Davis, Jonathan M.},
+  title    = {Emerging innovations in neonatal monitoring: a comprehensive review of progress and potential for non-contact technologies},
+  journal  = {Frontiers in Pediatrics},
+  year     = {2024},
+  volume   = {12},
+  pages    = {1442753},
+  doi      = {10.3389/fped.2024.1442753},
+  url      = {https://doi.org/10.3389/fped.2024.1442753},
+  keywords = {cluster1_nicu_radar}
+}
+
+@article{schellenberger2020dataset,
+  author   = {Schellenberger, Sven and Shi, Kilin and Steigleder, Tobias and Malessa, Anke and Michler, Fabian and Hameyer, Laura and Neumann, Nina and Lurz, Fabian and Weigel, Robert and Ostgathe, Christoph and K{\"o}lpin, Alexander},
+  title    = {A dataset of clinically recorded radar vital signs with synchronised reference sensor signals},
+  journal  = {Scientific Data},
+  year     = {2020},
+  volume   = {7},
+  pages    = {291},
+  doi      = {10.1038/s41597-020-00629-5},
+  url      = {https://doi.org/10.1038/s41597-020-00629-5},
+  keywords = {cluster1_nicu_radar}
+}
+
+@inproceedings{mensch2018differentiable,
+  author    = {Mensch, Arthur and Blondel, Mathieu},
+  title     = {Differentiable Dynamic Programming for Structured Prediction and Attention},
+  booktitle = {Proceedings of the 35th International Conference on Machine Learning (ICML)},
+  series    = {Proceedings of Machine Learning Research},
+  volume    = {80},
+  pages     = {3462--3471},
+  year      = {2018},
+  url       = {https://proceedings.mlr.press/v80/mensch18a.html},
+  note      = {arXiv:1802.03676.},
+  keywords  = {cluster6_structured_ai_conformal}
+}
+
+@inproceedings{bittner2017deep,
+  author    = {Bittner, Rachel M. and McFee, Brian and Salamon, Justin and Li, Peter and Bello, Juan P.},
+  title     = {Deep Salience Representations for {F0} Estimation in Polyphonic Music},
+  booktitle = {Proceedings of the 18th International Society for Music Information Retrieval Conference (ISMIR)},
+  pages     = {63--70},
+  year      = {2017},
+  doi       = {10.5281/zenodo.1417937},
+  url       = {https://doi.org/10.5281/zenodo.1417937},
+  keywords  = {cluster6_structured_ai_conformal}
+}
+
+@inproceedings{riou2023pesto,
+  author    = {Riou, Alain and Lattner, Stefan and Hadjeres, Ga{\"e}tan and Peeters, Geoffroy},
+  title     = {{PESTO}: Pitch Estimation with Self-Supervised Transposition-Equivariant Objective},
+  booktitle = {Proceedings of the 24th International Society for Music Information Retrieval Conference (ISMIR)},
+  pages     = {535--544},
+  year      = {2023},
+  doi       = {10.5281/zenodo.10265343},
+  url       = {https://doi.org/10.5281/zenodo.10265343},
+  note      = {Best Paper Award; arXiv:2309.02265.},
+  keywords  = {cluster6_structured_ai_conformal}
+}
+
+@inproceedings{geifman2019selectivenet,
+  author    = {Geifman, Yonatan and El-Yaniv, Ran},
+  title     = {{SelectiveNet}: A Deep Neural Network with an Integrated Reject Option},
+  booktitle = {Proceedings of the 36th International Conference on Machine Learning (ICML)},
+  series    = {Proceedings of Machine Learning Research},
+  volume    = {97},
+  pages     = {2151--2159},
+  year      = {2019},
+  url       = {https://proceedings.mlr.press/v97/geifman19a.html},
+  keywords  = {cluster6_structured_ai_conformal}
+}
+
+@article{geirhos2020shortcut,
+  author   = {Geirhos, Robert and Jacobsen, J{\"o}rn-Henrik and Michaelis, Claudio and Zemel, Richard and Brendel, Wieland and Bethge, Matthias and Wichmann, Felix A.},
+  title    = {Shortcut learning in deep neural networks},
+  journal  = {Nature Machine Intelligence},
+  year     = {2020},
+  volume   = {2},
+  number   = {11},
+  pages    = {665--673},
+  doi      = {10.1038/s42256-020-00257-z},
+  url      = {https://doi.org/10.1038/s42256-020-00257-z},
+  keywords = {cluster6_structured_ai_conformal}
+}
+
+@article{dunn2023distribution,
+  author   = {Dunn, Robin and Wasserman, Larry and Ramdas, Aaditya},
+  title    = {Distribution-Free Prediction Sets for Two-Layer Hierarchical Models},
+  journal  = {Journal of the American Statistical Association},
+  year     = {2023},
+  volume   = {118},
+  number   = {544},
+  pages    = {2491--2502},
+  doi      = {10.1080/01621459.2022.2060112},
+  url      = {https://doi.org/10.1080/01621459.2022.2060112},
+  keywords = {cluster6_structured_ai_conformal}
+}
+
+@article{barber2023conformal,
+  author   = {Barber, Rina Foygel and Cand{\`e}s, Emmanuel J. and Ramdas, Aaditya and Tibshirani, Ryan J.},
+  title    = {Conformal prediction beyond exchangeability},
+  journal  = {The Annals of Statistics},
+  year     = {2023},
+  volume   = {51},
+  number   = {2},
+  pages    = {816--845},
+  doi      = {10.1214/23-AOS2276},
+  url      = {https://doi.org/10.1214/23-AOS2276},
+  keywords = {cluster6_structured_ai_conformal}
+}
+
+@article{gibbs2024conformal,
+  author   = {Gibbs, Isaac and Cand{\`e}s, Emmanuel J.},
+  title    = {Conformal Inference for Online Prediction with Arbitrary Distribution Shifts},
+  journal  = {Journal of Machine Learning Research},
+  year     = {2024},
+  volume   = {25},
+  number   = {162},
+  pages    = {1--36},
+  url      = {https://www.jmlr.org/papers/v25/22-1218.html},
+  note     = {arXiv:2208.08401; explicitly cited as bedside-inapplicable without test-time labels.},
+  keywords = {cluster6_structured_ai_conformal}
+}
+
+@inproceedings{angelopoulos2024conformal,
+  author    = {Angelopoulos, Anastasios N. and Bates, Stephen and Fisch, Adam and Lei, Lihua and Schuster, Tal},
+  title     = {Conformal Risk Control},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  year      = {2024},
+  url       = {https://arxiv.org/abs/2208.02814},
+  note      = {Spotlight; arXiv:2208.02814.},
+  keywords  = {cluster6_structured_ai_conformal}
 }
