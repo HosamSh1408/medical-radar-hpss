@@ -9,11 +9,11 @@ surveillance in the Neonatal Intensive Care Unit (NICU) to detect tachypnea, per
 and central or mixed apnea episodes before severe bradycardia and hypoxemia occur
 \citep{beltrao2022contactless,krbec2024emerging,senechal2026next}. In routine clinical care,
 continuous breathing rate ($\brRef$) is derived primarily via thoracic impedance pneumography
-measured across adhesive electrocardiogram (ECG) electrodes or via nasal thermistors. Although
-clinically entrenched, wired contact sensors inflict epidermal stripping on underdeveloped preterm
-stratum corneum, restrict kangaroo mother care and routine nursing handling, exacerbate
-environmental stress, and suffer chronic false-alarm fatigue triggered by superficial lead detachment
-and infant movement \citep{beltrao2022contactless,krbec2024emerging,lee2020feasibility}.
+measured across adhesive electrocardiogram (ECG) electrodes. Although clinically entrenched, wired
+contact sensors can cause skin irritation and injury on fragile preterm skin, restrict kangaroo
+mother care and routine nursing handling, add environmental stress, and suffer false alarms
+triggered by lead detachment and infant movement
+\citep{beltrao2022contactless,krbec2024emerging,lee2020feasibility}.
 
 Contactless radio-frequency (RF) Doppler radar offers a physically compelling alternative: coherent
 microwave or millimeter-wave transceivers penetrate cotton swaddles, incubator canopies, and plastic
@@ -21,19 +21,21 @@ bassinets without optical illumination, line-of-sight skin exposure, or ionizing
 \citep{droitcour2004range,li2013review,kim2019noncontact,liao2025noncontact,hari2025contactless}.
 At a continuous-wave (CW) quadrature carrier frequency of $\carrierFreq = \SI{24}{\giga\hertz}$
 (free-space wavelength $\radarLambda = \speedLight/\carrierFreq = \SI{12.5}{\milli\meter}$), a
-preterm thoracic excursion $\chestDisp$ of merely \SIrange{0.2}{1.5}{\milli\meter} modulates the
+preterm thoracic excursion $\chestDisp$---often below \SI{1}{\milli\meter} (spanning roughly
+\SIrange{0.5}{2}{\milli\meter} across prone and supine postures)---modulates the
 reflected RF carrier phase $\phaseSig = \phaseZero + \frac{4\pi}{\radarLambda}\chestDisp$ across
 measurable quadrature baseband channels $\iqComplex = \iqI + j\iqQ$
 \citep{li2008random,morgan2009novel,beltrao2022contactless,gleichauf2021automated}. Compared with
 ultra-wideband impulse radar (IR-UWB) \citep{kim2019noncontact,lee2020feasibility,wang2020experimental}
 or frequency-modulated continuous-wave (FMCW) millimeter-wave arrays \citep{liao2025noncontact},
 single-channel \SI{24}{\giga\hertz} CW radar minimizes radio complexity, spectral bandwidth, and
-cost, making bedside retrofit atop acrylic incubators logistically straightforward
-\citep{beltrao2022contactless,gleichauf2021automated,schellenberger2020dataset}.
+cost, enabling straightforward clinical bedside integration \citep{schellenberger2020dataset} and
+retrofit atop acrylic neonatal incubators \citep{beltrao2022contactless,gleichauf2021automated}.
 
 Despite promising feasibility reports, however, a systematic review encompassing $60$
-observational neonatal monitoring studies \citep{senechal2026next} alongside recent engineering
-appraisals \citep{krbec2024emerging,gleichauf2024time} highlights a persistent translational gap
+observational neonatal monitoring studies \citep{senechal2026next}, a recent clinical-technology
+review \citep{krbec2024emerging}, and open neonatal simulator benchmarking efforts
+\citep{gleichauf2024time} highlight a persistent translational gap
 between prototype point-accuracy summaries and safety-critical clinical deployment. Four
 interlocking technical barriers explain why bedside adoption remains elusive: electromagnetic
 intermodulation from cardiac motion, weak methodological controls on tiny cohorts ($K \approx
@@ -49,8 +51,8 @@ frequently leave unexamined:
 
 \begin{enumerate}
   \item \textbf{Synchronization Leakage and Reference Ambiguity (\texttt{WP0}):}
-    Because preterm infants typically breathe between $30$ and $80$ breaths per minute (\si{bpm})
-    while resting heart rates occupy \SIrange{120}{180}{bpm}, weak first-order thoracic motion is
+    Because preterm infants typically breathe between $30$ and $80$ breaths per minute (\si{\bpm})
+    while resting heart rates occupy \SIrange{120}{180}{\bpm}, weak first-order thoracic motion is
     frequently confounded by fundamental cardiac motion ($f_h$), cardiac subharmonic aliasing
     ($f_h/2 \in [60,90]\,\mathrm{bpm}$), respiratory Bessel harmonics ($2\brRef$) driven by
     Jacobi--Anger phase nonlinearity $\besselJ{n}{\modIndex}$ \citep{morgan2009novel}, and episodic
@@ -66,17 +68,18 @@ frequently leave unexamined:
     exceeding \SI{5}{\second} where rate definitions diverge sharply.
 
   \item \textbf{Causal Delay versus Neural Shortcut Memorization (\texttt{WP1--WP3}):}
-    Memoryless baseline pipelines such as Harmonic--Percussive Source Separation paired with
-    harmonic nonlinear least squares (\texttt{HPSS+NLS}, \texttt{R0}) \citep{fitzgerald2010harmonic,beltrao2022contactless}
-    process each sliding $\winSec = \SI{30}{\second}$ window independently ($\rmseSess =
-    \SI{7.8173}{bpm}$ on \SI{1}{\hertz} trends and \SI{8.7268}{bpm} on lag-aligned triggers). Adding
+    Memoryless baseline pipelines such as our locked Harmonic--Percussive Source Separation front end
+    \citep{fitzgerald2010harmonic} paired with the harmonic nonlinear least-squares estimator of
+    Beltr\~ao~et~al.\ \citep{beltrao2022contactless} (\texttt{HPSS+NLS}, \texttt{R0}) process each
+    sliding $\winSec = \SI{30}{\second}$ window independently ($\rmseSess =
+    \SI{7.8173}{\bpm}$ on \SI{1}{\hertz} trends and \SI{8.7268}{\bpm} on lag-aligned triggers). Adding
     discrete state-space temporal continuity via Viterbi or Forward--Backward decoding
     \citep{rabiner1989tutorial,ye2021spectral} suppresses sporadic octave jumps, yet naive
     over-parameterized neural regressors (ridge regression, multilayer perceptrons, dilated temporal
     convolutional networks) risk committing \emph{shortcut learning} \citep{geirhos2020shortcut}:
     instead of decoding physical chest periodicity, unconstrained predictors can memorize the
     smoothed low-pass dynamics of the bedside VitaGuard monitor and shrink estimates toward the
-    \SIrange{45}{50}{bpm} NICU cohort prior. Such shortcuts inflate apparent in-distribution \SI{1}{\hertz}
+    \SIrange{45}{50}{\bpm} NICU cohort prior. Such shortcuts inflate apparent in-distribution \SI{1}{\hertz}
     scores while failing silently on physical breath triggers and collapsing under hardware or
     rate-regime shifts \citep{riou2023pesto,geirhos2020shortcut}.
 
@@ -84,10 +87,11 @@ frequently leave unexamined:
     Safe clinical decision support requires abstaining when radar returns are corrupted by
     out-of-distribution (OOD) white noise or device faults \citep{orphanidou2015signal,geifman2017selective,traub2024overcoming}.
     Yet memoryless spectral-flatness or spectral-entropy quality indices exhibit a dangerous blind
-    spot in neonatal care: during a true central apnea pause exceeding \SI{5}{\second}, the
+    spot in neonatal care: during a quiescent breathing pause exceeding \SI{5}{\second} (including
+    clinically critical central apnea episodes \citep{krbec2024emerging}), the
     spectrum flattens cleanly alongside SNR drops, causing memoryless spectral proxies to
-    disproportionately reject clinically critical pause episodes rather than preserving alarm visibility
-    \citep{krbec2024emerging}. Conversely, pure Markov posterior spread from an intact dynamical prior
+    disproportionately reject pause episodes rather than preserving alarm visibility.
+    Conversely, pure Markov posterior spread from an intact dynamical prior
     safely bridges brief respiratory pauses but can remain overconfident on sustained broadband noise.
 
   \item \textbf{Finite-$K$ Conformal Invalidity Under Hierarchical Clustering (\texttt{WP4--WP5}):}
@@ -138,7 +142,7 @@ work packages \texttt{WP0--WP5} and frozen verification gates \texttt{G1--G5}:
     Time (BPTT) \citep{mensch2018differentiable,riou2023pesto} surpass the memoryless \texttt{0}-parameter
     baseline (\texttt{R0}) across \emph{both} smoothed \SI{1}{\hertz} monitor trends and lag-aligned
     \SI{1024}{\hertz} breath triggers under strict $11$-infant LOPO validation, while avoiding the
-    variance shrinkage and frequency-memorization shortcuts of $439$--$15{,}817$-parameter neural
+    variance shrinkage and frequency-memorization shortcuts of $439$--$15{,}817$-parameter unconstrained
     regressors (\texttt{R3a--R3c}) \citep{geirhos2020shortcut}?
 
   \item \textbf{RQ3 (Apnea-Safe Selective Uncertainty and Finite-$K$ Conformal Bounds — Chapter~\ref{ch:uncertainty_conformal}, Stage~3):}
@@ -151,8 +155,8 @@ work packages \texttt{WP0--WP5} and frozen verification gates \texttt{G1--G5}:
   \item \textbf{RQ4 (Zero-Touch Hardware Transfer and Readiness Boundaries — Chapters~\ref{ch:external_transfer}--\ref{ch:discussion_conclusion}, Stage~4):}
     When all front-end hyperparameters, HMM weights, uncertainty composites, and conformal quantiles
     are hard-frozen at Gate~\texttt{G4}, how accurately do physics-constrained versus neural shortcut
-    models transfer zero-touch to an external \SI{24.2}{\giga\hertz} six-port neonatal thorax
-    simulator spanning \SIrange{5}{80}{\bpm} \citep{gleichauf2024time}, and what quantitative
+    models transfer zero-touch to an external \SI{24.2}{\giga\hertz} CW radar neonatal thorax
+    simulator benchmark spanning \SIrange{5}{80}{\bpm} \citep{gleichauf2024time}, and what quantitative
     uncertainty gap separates stationary physical transfer (\texttt{L4}) from bedside utility
     (\texttt{L5})?
 \end{itemize}
@@ -163,9 +167,10 @@ work packages \texttt{WP0--WP5} and frozen verification gates \texttt{G1--G5}:
 Because medical signal-processing evaluations on small clinical cohorts can easily conflate
 reimplementation parity, internal cross-validation, physical bench transfer, and bedside utility,
 every experiment and claim in this monograph is governed by an explicit six-tier epistemic ladder
-(\texttt{L0--L5}), codified prior to external evaluation in
+(\texttt{L0--L5}), codified in
 \texttt{claim\_\allowbreak gate\_\allowbreak status.\allowbreak json} and
-\texttt{unresolved\_\allowbreak protocol\_\allowbreak items.\allowbreak yaml}. Two upper-level
+\texttt{unresolved\_\allowbreak protocol\_\allowbreak items.\allowbreak yaml} and extended by
+the Stage~3--4 \texttt{G4}/\texttt{G5} manifests. Two upper-level
 claims are permanently
 \textbf{blocked} by structural evidence gaps: Level~\texttt{L2} (exact reproduction of the
 published $N=18$ subset, $\approx 4964$ window denominator, and proprietary synchronization/solver
@@ -183,11 +188,11 @@ bedside utility, autonomous apnea alarming, or superiority over wired NICU leads
     \midrule
     \texttt{L0} & \textbf{\textcolor{oiGreen}{Authorized}} &
     SHA-256 baseline locks (\texttt{154/154}), dual Python~3.9.6 / 3.10.19 parity (\texttt{33/33} caches). &
-    Verified throughout: locked \texttt{v1} parity exact to $\le \num{2.31e-14}\,\mathrm{bpm}$; \texttt{113/113} freeze hashes intact. \\
+    Verified throughout: locked \texttt{v1} parity exact to \SI{0.0}{\bpm} (Stages~1--3 cross-stage full-coverage parity $\le \num{2.31e-14}\,\mathrm{bpm}$); \texttt{113/113} freeze hashes intact. \\
     \addlinespace
     \texttt{L1} & \textbf{\textcolor{oiGreen}{Authorized}} &
-    Independent constrained reconstruction on local EDF/radar pairs using TOST equivalence ($\tostMargin = \SI{0.50}{bpm}$). &
-    \texttt{HPSS+NLS} TOST-equivalent to \texttt{NMF+NLS} ($\le \SI{0.50}{bpm}$, $p \le 0.0456$) across 4 cohorts at $6.1\times$--$9.2\times$ speedup. \\
+    Independent constrained reconstruction on local EDF/radar pairs using TOST equivalence ($\tostMargin = \SI{0.50}{\bpm}$). &
+    \texttt{HPSS+NLS} TOST-equivalent to \texttt{NMF+NLS} ($\le \SI{0.50}{\bpm}$, $p \le 0.0456$) across 4 locked-baseline cohorts at $6.1\times$--$6.4\times$ filter ($9.2\times$ core-solver) speedup. \\
     \addlinespace
     \texttt{L2} & \textbf{\textcolor{oiVermilion}{BLOCKED}} &
     Requires verified original $18$-session IDs, exact denominator reconstruction, and identical solver/sync rules \citep{beltrao2022contactless}. &
@@ -198,12 +203,12 @@ bedside utility, autonomous apnea alarming, or superiority over wired NICU leads
     Confirms \texttt{FilterSafe-8} (\texttt{R2e}) superiority over \texttt{R0}, pause-safe \texttt{U2}/\texttt{U6b}, and finite-$K$ conformal bounds. \\
     \addlinespace
     \texttt{L4} & \textbf{\textcolor{oiGreen}{Authorized}} &
-    Strict zero-touch forward pass after hard Gate~\texttt{G4} freeze onto independent \SI{24.2}{\giga\hertz} phantom \citep{gleichauf2024time} (\SIrange{5}{80}{bpm}). &
-    Gate~\texttt{G5} passed (\SI{0.0197}{bpm} in-band RMSE, slope $0.9994$, $0$ outliers; neural foils collapse at \SIrange{3.18}{3.64}{bpm}). \\
+    Strict zero-touch forward pass after hard Gate~\texttt{G4} freeze onto independent \SI{24.2}{\giga\hertz} phantom \citep{gleichauf2024time} (\SIrange{5}{80}{\bpm}). &
+    Gate~\texttt{G5} passed (\SI{0.0197}{\bpm} in-band RMSE, slope $0.9994$, $0$ steady-state outliers; unconstrained foils collapse at \SIrange{3.18}{3.64}{\bpm}). \\
     \addlinespace
     \texttt{L5} & \textbf{\textcolor{oiVermilion}{BLOCKED}} &
     Prospective NICU workflow trial, multi-site calibration ($K \ge 19$), alarm-latency clinical endpoints \citep{senechal2026next,krbec2024emerging}. &
-    \textbf{Prohibited:} \SI{24.02}{bpm} 80\% hierarchical interval width quantifies single-channel CW physical limits. \\
+    \textbf{Prohibited:} \SI{24.02}{\bpm} 80\% hierarchical interval width quantifies single-channel CW physical limits. \\
     \bottomrule
   \end{tabularx}
 \end{table}
@@ -223,12 +228,13 @@ makes five original scientific and methodological contributions:
   \item \textbf{Forensic De-Leakage and Dual-Reference Exposure (\texttt{WP0}, Chapter~\ref{ch:forensics_viterbi}):}
     Replacing cached branch-specific NMF lags with branch-neutral synchronization shifts
     Session~\texttt{12.1} from \SI{18.63}{\bpm} ($10$ windows) to \SI{3.47}{\bpm} ($9$ windows,
-    with persistent I/Q imbalance $\rho_{IQ}=5.96$) and lowers \texttt{pool30\_\allowbreak sync}
+    with persistent empirical I/Q SD ratio $\rho_{IQ}=5.96$) and lowers \texttt{pool30\_\allowbreak sync}
     \texttt{HPSS+\allowbreak NLS} $\rmseSess$ from \SI{8.0854}{} to \SI{7.8173}{\bpm} ($\rWithin =
-    0.4229$, $S=28$, $|\mathcal{W}|=6640$). We isolate remaining physical error drivers---severe
+    0.4229$, $\sessCount=28$, $|\mathcal{W}|=6640$). We isolate remaining physical error drivers---severe
     quadrature collinearity ($\rho_{IQ} = 5.86$ in Session~\texttt{11.1}, \SI{12.65}{\bpm}),
-    hardware status dropouts (Session~\texttt{9.2}, \SI{18.75}{\bpm}), and cardiac harmonic
-    collision ($\rho_{\mathrm{excess}} = +0.696$, $p < 10^{-4}$)---while revealing the
+    mid-session UCD presence-status dropouts (Session~\texttt{9.2}, \SI{18.75}{\bpm}, co-occurring
+    with cardiac-band collision), and cardiac fundamental/subharmonic collision (excess-RMSE
+    Spearman $\rho_{\mathrm{excess}} = +0.696$, $p < 10^{-4}$)---while revealing the
     \SI{10}{\second} group delay of hospital \SI{1}{\hertz} trends and quantifying $1581$ quiet
     breathing pause windows ($23.8\%$).
 
@@ -239,9 +245,10 @@ makes five original scientific and methodological contributions:
     equivalence, preserving locked complex demodulation (\texttt{F0}) and the $64$-tap Kaiser FIR
     filter (\SIrange{0.30}{3.00}{\hertz}, $\kaiserBeta=6.5$). Across the Stage~2 four-rung ladder
     (\texttt{R0--R3}), our $8$-parameter shift-equivariant differentiable HMM
-    (\texttt{FilterSafe-8}, \texttt{R2e}, maximum audited finite-difference discrepancy
-    $\le\num{4.77e-9}$ across differentiable-program checks,
-    $SO(2)\times\mathbb{R}_{>0}$ invariance $\le\num{3.38e-14}$, translation equivariance
+    (\texttt{FilterSafe-8}, \texttt{R2e}, analytical BPTT finite-difference discrepancy
+    $\le\num{2.95e-9}$ for causal \texttt{R2e} and $\le\num{4.77e-9}$ across all six differentiable
+    HMM variants, salience $SO(2)\times\mathbb{R}_{>0}$ invariance $\le\num{3.38e-14}$ and output
+    $\le\num{2.84e-14}\,\mathrm{bpm}$, operator-level translation equivariance
     $\le\num{1.42e-14}\,\mathrm{bpm}$) reduces NICU $\rmseSess$ to \SI{6.8486}{\bpm} on \SI{1}{\hertz}
     trends ($\Delta_{\mathrm{R0}} = -0.9687\;[-1.1347,-0.8034]\,\mathrm{bpm}$, $11/11$ infants,
     $p_{\mathrm{pat,Holm}} = 0.0117$) and \SI{8.0634}{\bpm} on lag-aligned physical breath triggers
@@ -249,29 +256,31 @@ makes five original scientific and methodological contributions:
     $p_{\mathrm{pat,Holm}} = 0.0215$). Crucially, \texttt{R2e} shows no statistically significant
     difference after Holm correction relative to its $3$-parameter \texttt{R1a} specialization
     ($p_{\mathrm{pat}} = 0.0830$, $p_{\mathrm{pat,Holm}} = 0.6641$ on \SI{1}{\hertz};
-    $p_{\mathrm{pat}} = 0.5771$, $p_{\mathrm{pat,Holm}} = 1.0000$ on \texttt{Trig}), indicating that
-    parsimony saturates near $3$--$8$ physical parameters whereas unconstrained
-    $439$--$15{,}817$-parameter regressors fail physical triggers
-    ($p_{\mathrm{pat,Holm}} = 1.00$) via shortcut memorization.
+    $p_{\mathrm{pat}} = 0.5771$, $p_{\mathrm{pat,Holm}} = 1.0000$ on \texttt{Trig~$-10\,\mathrm{s}$}),
+    indicating that parsimony saturates near $3$--$8$ physical parameters whereas unconstrained
+    $439$--$15{,}817$-parameter regressors fail lag-aligned physical triggers
+    ($p_{\mathrm{pat,Holm}} = 1.00$ on \texttt{Trig~$-10\,\mathrm{s}$}) via shortcut memorization.
 
   \item \textbf{Second Independent Proof of Parsimony via Pause-Safe Selective Uncertainty (\texttt{WP4}, Chapter~\ref{ch:uncertainty_conformal}):}
     Inside selective prediction, strictly zero-parameter, threshold-free posterior spread
-    (\texttt{U2\_\allowbreak Posterior\_\allowbreak SD}) shows consistent selective-risk
-    improvements on $10/11$ infants ($\eaurcMetric_{\mathrm{sess}} = -0.2454$
-    $[-0.4069,-0.1168]\,\mathrm{bpm}$ on \SI{1}{\hertz}, raw $p_{\mathrm{pat}} = 0.0098$, Holm
-    $0.0781$; $-0.2929$ $[-0.4555,-0.1436]\,\mathrm{bpm}$ on \texttt{Trig~$-10\,\mathrm{s}$}, raw
-    $p_{\mathrm{pat}} = 0.0244$, Holm $0.1953$) with negligible quiet-apnea bias ($1.02\times$ risk
-    ratio), beating a $5$-parameter LOPO-fitted ridge composite (\texttt{U6c}) whose \SI{1}{\hertz}
-    confidence interval crosses zero ($[-0.5926,\allowbreak +0.0266]$) and whose pause rejection
-    violates clinical safety ($1.23\times > 1.15\times$). Combining posterior SD with a
-    zero-fitted-weight heuristic entropy barrier (\texttt{U6b}, $\tau_{\mathrm{ood}}=0.90$, $3$
-    causal hops) resolves the pause-safety versus OOD paradox ($1.13\times \le 1.15\times$ pause
-    safety, $0.9986$ WGN OOD AUROC at $0.0036$ FPR@95\%TPR, $0.0$ false triggers on simulated
-    \SI{0.2}{\milli\meter} shallow breathing), supported by explicit sensitivity profiling across
-    $\tau_{\mathrm{ood}}\in[0.90,0.92]$.
+    (\texttt{U2\_\allowbreak Posterior\_\allowbreak SD}) lowers selective risk consistently
+    ($\eaurcMetric_{\mathrm{sess}} = -0.2454$
+    $[-0.4069,-0.1168]\,\mathrm{bpm}$ on \SI{1}{\hertz}, $10/11$ infants, raw $p_{\mathrm{pat}} = 0.0098$, Holm
+    $0.0781$; $-0.2929$ $[-0.4555,-0.1436]\,\mathrm{bpm}$ on \texttt{Trig~$-10\,\mathrm{s}$}, $9/11$ infants, raw
+    $p_{\mathrm{pat}} = 0.0244$, Holm $0.1953$) with negligible quiet-pause bias ($1.02\times$ pooled risk
+    ratio), outperforming a $5$-parameter LOPO-fitted ridge composite (\texttt{U6c}) in patient
+    consistency, CI reliability, and pause neutrality---\texttt{U6c}'s \SI{1}{\hertz} confidence
+    interval crosses zero ($[-0.5926,\allowbreak +0.0266]$) and its pause rejection violates the
+    project's diagnostic pause-safety criterion ($1.23\times > 1.15\times$). Combining posterior SD
+    with a zero-fitted-weight heuristic entropy barrier (\texttt{U6b}, cutoff $\tau_{\mathrm{ood}}=0.90$,
+    $3$ causal hops; raw $p_{\mathrm{pat}}=0.2402$ on \SI{1}{\hertz}, $0.1230$ on
+    \texttt{Trig~$-10\,\mathrm{s}$}) resolves the pause-safety versus OOD paradox ($1.13\times \le 1.15\times$
+    pause safety, $0.9986$ WGN OOD AUROC at $0.0036$ FPR@95\%TPR, $0.0$ false triggers on simulated
+    \SI{0.2}{\milli\meter} shallow breathing at \SI{10}{\decibel} SNR), supported by sensitivity profiling across
+    no-cutoff and $\tau_{\mathrm{ood}}\in[0.75,0.95]$ identifying $[0.90,0.92]$ as the feasible passing band.
 
   \item \textbf{Exact Finite-$K$ Conformal Bounds Under Clinical Clustering (\texttt{WP4--WP5}, Chapter~\ref{ch:uncertainty_conformal}):}
-    We prove analytically ($\alpha_{\min} = 1/(K_{\mathrm{cal}}+1) = 1/11$) and verify empirically
+    We establish analytically from finite-sample split-conformal rank bounds ($\alpha_{\min} = 1/(K_{\mathrm{cal}}+1) = 1/11$) and verify empirically
     that $95\%$ patient-exchangeable prediction sets are vacuous ($\mathrm{width}=\infty$) at
     $K_{\mathrm{cal}}=10$ (requiring $K_{\mathrm{cal}}\ge 19$ infants), while exposing silent
     under-coverage in naive window-pooled LOPO conformal (\texttt{C2}: $0.772$ mean, $0.398$ worst-infant
@@ -280,18 +289,18 @@ makes five original scientific and methodological contributions:
     ($0.963$ at $90\%$, $0.864$ at $80\%$, and $0.766$ at $70\%$). At the $80\%$ target, the
     mean coverage is $0.8636$, the minimum patient coverage is $0.5856$, and $2/11$ infants are
     undercovered; these results are therefore reported as an empirical calibration profile, not as
-    a universal clinical guarantee. The method tightens full interval width from \SI{30.54}{bpm} to
-    \SI{17.96}{bpm} between high- and low-uncertainty windows at $80\%$ coverage.
+    a universal clinical guarantee. The method tightens full interval width from \SI{30.54}{\bpm} to
+    \SI{17.96}{\bpm} between high- and low-uncertainty windows at $80\%$ coverage.
 
   \item \textbf{Zero-Touch \texttt{L4} Cross-Hardware Verification (\texttt{WP5}, Chapter~\ref{ch:external_transfer}):}
     Evaluated strictly zero-touch after Gate~\texttt{G4} freeze against an external \SI{24.2}{\giga\hertz}
     neonatal simulator \citep{gleichauf2024time} across an exhaustive $14+6=20$-scenario frequency
-    partition, \texttt{FilterSafe-8} transfers at \SI{0.0197}{bpm} in-band RMSE (slope $0.9994$,
-    $r=0.999999$, $0$ outliers $>\SI{0.5}{bpm}$, \SI{20}{bpm} FIR-skirt RMSE \SI{0.0949}{bpm}) alongside
-    \SI{0.9998}{} zero-touch \texttt{U6b} stopband OOD AUROC and $100\%$ in-band \texttt{C5} conformal
-    coverage (\SI{18.02}{bpm} at $80\%$). Simultaneously, all unconstrained neural models collapse across
-    rate boundaries (\SIrange{3.1782}{3.6353}{bpm} in-band; \SIrange{11.7783}{32.7040}{bpm} on the
-    \SI{20}{bpm} skirt), furnishing direct external proof of shortcut fragility.
+    partition, \texttt{FilterSafe-8} transfers at \SI{0.0197}{\bpm} in-band RMSE (slope $0.9994$,
+    $r=0.999999$, $0$ steady-state in-band outliers $>\SI{0.5}{\bpm}$, \SI{20}{\bpm} FIR-skirt RMSE \SI{0.0949}{\bpm}) alongside
+    $0.9998$ zero-touch \texttt{U6b} \SIrange{5}{10}{\bpm} stopband OOD AUROC and $100\%$ in-band \texttt{C5} conformal
+    coverage (\SI{18.02}{\bpm} at $80\%$). Simultaneously, all unconstrained Rung~3 models collapse across
+    rate boundaries (\SIrange{3.1782}{3.6353}{\bpm} in-band; \SIrange{11.7783}{32.7040}{\bpm} on the
+    \SI{20}{\bpm} skirt), furnishing direct external proof of shortcut fragility.
 \end{enumerate}
 
 Taken together, these contributions establish an audited methodological result rather than a
@@ -307,7 +316,8 @@ the authorized evidence levels of this thesis.
 The remainder of this monograph proceeds as follows.
 \textbf{Chapter~\ref{ch:physics_related_work}} develops first-principles \SI{24}{\giga\hertz} CW
 quadrature and Jacobi--Anger harmonic radar physics alongside a structured synthesis of $71$
-peer-reviewed references across NICU sensing, HPSS/NMF source separation, differentiable state-space
+scholarly references ($70$ peer-reviewed papers and one signal-processing textbook) across NICU
+sensing, HPSS/NMF source separation, differentiable state-space
 tracking, selective prediction, and clustered conformal statistics.
 \textbf{Chapter~\ref{ch:forensics_viterbi}} executes the \texttt{EXP-0} forensic de-leakage audit and
 Stage~0 Viterbi reproduction, resolving cached lag artifacts and unanchored spectral traps.
@@ -320,7 +330,8 @@ benchmarked directly against Dunn~et~al.\ \citep{dunn2023distribution}.
 \textbf{Chapter~\ref{ch:external_transfer}} reports the zero-touch Stage~4 external evaluation on
 \texttt{gleichauf2024}, including exhaustive frequency strata and shortcut failure diagnostics.
 \textbf{Chapter~\ref{ch:discussion_conclusion}} synthesizes our findings, defines the quantitative
-\SI{24.02}{bpm} boundary separating verified hardware transfer from bedside deployment, discusses
+\SI{24.02}{\bpm} boundary separating verified hardware transfer from bedside deployment, discusses
 clinical ethics and architectural limitations, and outlines next-generation MIMO/FMCW translational
 work. Finally, \textbf{Appendices~\ref{app:notation}--\ref{app:reproducibility}} house the locked
-notation contract, extended Holm and conformal tables, and cryptographic reproducibility commands.
+notation contract, extended Holm--Bonferroni, VitaGuard lag-sweep, Rung~2 parameter, and
+cross-cohort sensitivity tables, and cryptographic reproducibility commands.

@@ -31,7 +31,7 @@
 % Top heading: y = 12.60 .. 12.95
 \node[font=\small\bfseries\sffamily, anchor=south west,
       text=oiBlue!85!black] at (0, 12.60)
-  {A. Causal signal-processing, inference, and safety pipeline};
+  {A. Signal-processing, inference, and safety pipeline};
 
 % Top blocks: top y = 12.40 down to min y ~ 10.25
 \node[blk, anchor=north west, text width=2.45cm, minimum height=2.05cm] (raw)
@@ -100,7 +100,7 @@
   at (0.05, 7.35)
   {\textbf{Internal LOPO ($K=11$, $\sessCount=28$)}\\[2pt]
    \SI{1}{\hertz} trend versus \SI{1024}{\hertz} trigger ($-\SI{10}{\second}$)\\
-   Quiet apnea ($>\SI{5}{\second}$, $n=1581$) and WGN OOD};
+   Quiet pauses ($>\SI{5}{\second}$, $n=1581$) and WGN OOD};
 
 \node[safe, anchor=north west, text width=7.10cm, minimum height=1.45cm] (external)
   at (8.40, 7.35)
@@ -135,6 +135,6 @@
 
 \end{tikzpicture}%
 }
-\caption[End-to-End Pipeline and Claim-Gate Architecture]{End-to-end 24\,GHz CW radar respiratory-monitoring pipeline, verification gates (\texttt{G1}, \texttt{G2}, \texttt{G4}, \texttt{G5}), dual-reference 11-infant LOPO evaluation, zero-touch 24.2\,GHz external transfer, and strict epistemic claim boundaries blocking \texttt{L2} and \texttt{L5}.}
+\caption[End-to-End Pipeline and Claim-Gate Architecture]{End-to-end 24\,GHz CW radar respiratory-monitoring pipeline, verification gates (\texttt{G1}, \texttt{G2}, \texttt{G4}, \texttt{G5}; with \texttt{G3} governing Rung~1 inside the tracking block), dual-reference 11-infant LOPO evaluation, zero-touch 24.2\,GHz external transfer, and strict epistemic claim boundaries blocking \texttt{L2} and \texttt{L5}.}
 \label{fig:ch1_architecture}
 \end{figure}
