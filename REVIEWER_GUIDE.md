@@ -54,7 +54,7 @@ Every mathematical operator, baseline, control, and statistical test reported in
    ```bash
    python3 verify_submission.py
    ```
-   Confirms `113/113` SHA-256 freeze-manifest hashes, frozen archive `af33a83e...`, `35/35` pytest checks (causality, $O(2)\times\mathbb{R}_{>0}$ invariance, finite-difference BPTT gradients, HQI/conformal bounds, Stage 0–4 contracts), and prints live headline tables from `paper_orchestra_bundle/raw_materials/metrics_stage*.json`.
+   Confirms `113/113` SHA-256 freeze-manifest hashes, frozen archive `af33a83e...`, `31/31` portable pytest checks out-of-the-box on a fresh clone (causality, $O(2)\times\mathbb{R}_{>0}$ invariance, finite-difference BPTT gradients, HQI/conformal bounds, Stage 0–4 contracts; plus `4` full-corpus raw-data provenance checks that run automatically when the unbundled Zenodo/Figshare datasets are present for `35/35`), and prints live headline tables from `paper_orchestra_bundle/raw_materials/metrics_stage*.json`.
 2. **Inspect the interactive walkthrough (`~5 s` execution or view rendered plots on GitHub):**
    - View [`notebooks/supervisor_code_tour.ipynb`](notebooks/supervisor_code_tour.ipynb) directly on GitHub, **or** execute [`examples/filtersafe_tour.py`](examples/filtersafe_tour.py):
      ```bash
@@ -67,10 +67,11 @@ Every mathematical operator, baseline, control, and statistical test reported in
    ```bash
    python3 verify_submission.py --run-v1-baseline
    ```
+   Full `19/19` legacy baseline checks require the full 33-session `beltrao_data/` corpus; on a fresh clone with tracked fixtures alone, the first 12 checks run on Anchor Session `7.3`.
 
 ---
 
 ## 4. Dual-Interpreter & Dataset Notes
 
 - **Dual-Interpreter Provenance Lock:** Legacy `v1` baseline caches (`paper_workspace/outputs/cache/*.npz`, `33/33`) were generated and verified under `Python 3.9.6` (`paper_workspace/src/requirements-lock.txt`); Stages 0–4 (`thesis/`, `tests/`) execute under `Python 3.10+` (`requirements-thesis.txt`) reading those caches read-only.
-- **Fresh-Clone Bundle Strategy:** Full raw clinical recordings (`beltrao_data/`, 33 sessions) and the 24.2 GHz phantom benchmark (`external_data/gleichauf2024/`, `3.58 GiB`) exceed GitHub blob limits and are excluded from Git via `.gitignore` (full SHA-256 manifests and Figshare/paper DOIs are tracked instead). Two small fixtures—[`frozen_stage4_models.npz`](thesis/outputs/stage3_uncertainty/frozen_stage4_models.npz) (`259 KB`) and Session `2.3` radar (`6.02 MB`, paired with Anchor Session `7.3`)—are tracked directly so every unit and contract test passes out-of-the-box after `git clone`.
+- **Fresh-Clone Bundle Strategy:** Full raw clinical recordings (`beltrao_data/`, 33 sessions) and the 24.2 GHz phantom benchmark (`external_data/gleichauf2024/`, `3.58 GiB`) exceed GitHub blob limits and are excluded from Git via `.gitignore` (full SHA-256 manifests and Figshare/paper DOIs are tracked instead). Two small fixtures—[`frozen_stage4_models.npz`](thesis/outputs/stage3_uncertainty/frozen_stage4_models.npz) (`259 KB`) and Session `2.3` radar (`6.02 MB`, paired with Anchor Session `7.3`)—are tracked directly so all `31/31` portable unit/contract tests (`35/35` with full raw corpora), `113/113` freeze-manifest checks, and `examples/filtersafe_tour.py` run cleanly out-of-the-box after `git clone`.

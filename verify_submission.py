@@ -77,7 +77,18 @@ def check_baseline_subset() -> tuple[int, int, int]:
     return checked, len(subset), unbundled_raw
 
 
-def run_pytest_suite() -> int:
+def detect_raw_datasets() -> tuple[bool, bool]:
+    has_beltrao = (
+        len(list((ROOT / "beltrao_data" / "radar").glob("*.csv"))) >= 33
+        and len(list((ROOT / "beltrao_data" / "reference").glob("*.edf"))) >= 33
+    )
+    has_gleichauf = (
+        len(list((ROOT / "external_data" / "gleichauf2024").rglob("iq_values_*.csv"))) >= 20
+    )
+    return has_beltrao, has_gleichauf
+
+
+def run_pytest_suite(has_beltrao: bool, has_gleichauf: bool, force_all: bool = False) -> int:
     env = os.environ.copy()
     env.update(
         {
@@ -86,8 +97,29 @@ def run_pytest_suite() -> int:
             "OMP_NUM_THREADS": "1",
         }
     )
+    cmd = [sys.executable, "-m", "pytest", "--rootdir=.", "-v"]
+    if not force_all:
+        excluded: list[str] = []
+        missing_corpora: list[str] = []
+        if not has_beltrao:
+            excluded.extend(
+                [
+                    "test_frozen_baseline_untouched",
+                    "test_v2_schema_cohort_scatter_and_cleanroom_audit",
+                ]
+            )
+            missing_corpora.append("33-session Zenodo beltrao_data")
+        if not has_gleichauf:
+            excluded.append("test_locked_kaiser_bandpass_provenance_and_scenario_partition")
+            missing_corpora.append("20-scenario Figshare gleichauf2024")
+        if excluded:
+            print(
+                f"  [INFO] Unbundled raw corpus absent ({', '.join(missing_corpora)}); "
+                "deselecting raw-corpus provenance tests (pass --force-all-pytest to run all 35)."
+            )
+            cmd.extend(["-k", " and ".join(f"not {name}" for name in excluded)])
     proc = subprocess.run(
-        [sys.executable, "-m", "pytest", "--rootdir=.", "-v"],
+        cmd,
         cwd=ROOT,
         env=env,
         check=False,
@@ -209,6 +241,11 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Verify Master's Thesis submission integrity.")
     parser.add_argument("--skip-pytest", action="store_true", help="Skip running pytest.")
     parser.add_argument(
+        "--force-all-pytest",
+        action="store_true",
+        help="Run all 35 pytest tests even if unbundled raw datasets are absent.",
+    )
+    parser.add_argument(
         "--run-v1-baseline",
         action="store_true",
         help="Also run locked v1 paper_workspace.src.test_pipeline (19/19).",
@@ -225,7 +262,7 @@ def main() -> None:
     else:
         print(
             f"  [PASS] postfix_manifest tracked baseline: {ok_base}/{tot_base} OK "
-            f"({unbundled} optional raw Zenodo CSV/EDF files not bundled in git)"
+            f"({unbundled} optional raw Zenodo/ignored files not bundled in git)"
         )
 
     arch = ROOT / "thesis" / "outputs" / "stage3_uncertainty" / "frozen_stage4_models.npz"
@@ -233,13 +270,26 @@ def main() -> None:
         raise RuntimeError(f"Frozen Stage 4 archive missing or hash mismatch: {arch}")
     print(f"  [PASS] frozen_stage4_models.npz SHA-256: {EXPECTED_FROZEN_ARCHIVE_SHA[:16]}... OK")
 
+    has_b, has_g = detect_raw_datasets()
+
     if not args.skip_pytest:
-        print("\nRunning Stage 0-4 pytest suite (expected 35/35)...")
-        rc = run_pytest_suite()
+        if (has_b and has_g) or args.force_all_pytest:
+            print("\nRunning Stage 0-4 pytest suite (expected 35/35)...")
+        else:
+            print(
+                "\nRunning portable Stage 0-4 pytest suite "
+                "(unbundled raw-corpus tests auto-deselected)..."
+            )
+        rc = run_pytest_suite(has_b, has_g, force_all=args.force_all_pytest)
         if rc != 0:
             raise SystemExit(rc)
 
     if args.run_v1_baseline:
+        if not has_b:
+            print(
+                "\n[INFO] Full 33-session beltrao_data/ not detected; full 19/19 checks require "
+                "all 33 raw CSV/EDF files (first 12 checks run on tracked Session 7.3)."
+            )
         print("\nRunning locked v1 baseline suite (expected 19/19)...")
         rc = run_v1_baseline()
         if rc != 0:

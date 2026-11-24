@@ -23,7 +23,7 @@ Rather than reading `19.3k` lines of orchestration and clean-room audit boilerpl
    pip install -r requirements-thesis.txt
    python3 verify_submission.py
    ```
-   Verifies `113/113` SHA-256 freeze-manifest hashes, checks the frozen Stage 4 model archive (`af33a83e...`), runs the full `35/35` pytest verification suite, and prints the Stage 2–4 tables straight from immutable JSON logs.
+   Verifies `113/113` SHA-256 freeze-manifest hashes, checks the frozen Stage 4 model archive (`af33a83e...`), runs the `31/31` portable pytest tests on a fresh clone (auto-deselecting the `4` tests that require the unbundled `>4 GB` Zenodo/Figshare raw corpora; all `35/35` run automatically when the full raw corpora are present or via `--force-all-pytest`), and prints the Stage 2–4 tables straight from immutable JSON logs.
 2. **Run or browse the clean executable code tour (`~5 s`):**
    - View rendered outputs & Okabe-Ito plots inline on GitHub: **[`notebooks/supervisor_code_tour.ipynb`](notebooks/supervisor_code_tour.ipynb)**
    - Or run standalone in terminal: `python3 examples/filtersafe_tour.py`
@@ -114,9 +114,9 @@ medical_radar/
   ```
 - **Legacy `v1` Baseline Verification (`Python 3.9.6`):**
   ```bash
-  /usr/bin/python3 -m paper_workspace.src.test_pipeline   # 19/19 checks pass on fresh clone
+  /usr/bin/python3 -m paper_workspace.src.test_pipeline   # 19/19 checks require full beltrao_data/ (first 12 checks run on tracked Session 7.3)
   ```
 - **Re-running Full 28-Session / 20-Scenario `thesis/exp*.py` Sweeps (Optional):**
   - Clinical NICU corpus (`33` sessions, `beltrao_data/`): referenced in Beltrao et al. (*Scientific Reports* 12, 5150, 2022, DOI [`10.1038/s41598-022-08836-3`](https://doi.org/10.1038/s41598-022-08836-3)), verified locally against `audit/postfix_manifest.sha256` (`154/154` baseline subset) and `paper_workspace/metadata/cohort_ledger.csv`.
   - External 24.2 GHz neonatal thorax simulator (`3.58 GiB` extracted subset, `49` files, 20 scenarios): Gleichauf et al. (*Scientific Data* 11, 110, 2024, DOI [`10.1038/s41597-024-02946-5`](https://doi.org/10.1038/s41597-024-02946-5); Figshare collection [`10.6084/m9.figshare.c.6809370.v1`](https://doi.org/10.6084/m9.figshare.c.6809370.v1)), verified locally against [`external_data/gleichauf2024/extracted_manifest.json`](external_data/gleichauf2024/extracted_manifest.json).
-  - Precomputed master metric JSONs are tracked in git under [`paper_orchestra_bundle/raw_materials/`](paper_orchestra_bundle/raw_materials/), and `beltrao_data/` test fixtures (Sessions `7.3` & `2.3`) + [`frozen_stage4_models.npz`](thesis/outputs/stage3_uncertainty/frozen_stage4_models.npz) are bundled so `verify_submission.py`, `examples/filtersafe_tour.py`, `pytest`, and `test_pipeline` run cleanly out-of-the-box on any fresh clone.
+  - Precomputed master metric JSONs are tracked in git under [`paper_orchestra_bundle/raw_materials/`](paper_orchestra_bundle/raw_materials/), and `beltrao_data/` test fixtures (Sessions `7.3` & `2.3`) + [`frozen_stage4_models.npz`](thesis/outputs/stage3_uncertainty/frozen_stage4_models.npz) are bundled so `verify_submission.py` (`113/113` freeze manifest + `31/31` portable pytest tests; `35/35` with full raw corpora) and `examples/filtersafe_tour.py` pass cleanly out-of-the-box on any fresh clone.
