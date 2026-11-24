@@ -54,7 +54,7 @@ After downconversion and low-pass filtering, an idealized quadrature receiver ob
   \label{eq:ch2_iq_model}
 \end{align}
 where $A_I$ and $A_Q$ are effective channel amplitudes, including return amplitude and receiver
-gain; $\iqDcI$ and $\iqDcQ$ are receiver offsets,
+gain (with gain-imbalance ratio $\iqGainImb = A_Q/A_I$); $\iqDcI$ and $\iqDcQ$ are receiver offsets,
 $\iqPhaseSkew$ is departure from ideal quadrature, and $\nu_I,\nu_Q$ collect receiver noise
 and unmodeled interference. The complex observation is $\iqComplex=\iqI+j\iqQ$. In the ideal
 case, its samples trace a circle as phase varies. Gain imbalance, quadrature skew, and DC offsets
@@ -83,7 +83,8 @@ for understanding the radar observation. Let
   \label{eq:ch2_modulation_index}
 \end{equation}
 where $A_r$ is displacement amplitude and $f_b$ is the respiratory fundamental frequency. After
-removing a constant complex gain, the ideal phase-modulated return is proportional to
+removing the constant DC offset and factoring out the static complex amplitude and phase factor
+$A\exp(j\phaseZero)$, the ideal phase-modulated return is proportional to
 $\exp[j\modIndex\sin(2\pi f_b t)]$. The Jacobi--Anger identity gives
 \begin{equation}
   \exp[j\modIndex\sin(2\pi f_b t)]
@@ -112,16 +113,18 @@ clutter \citep{naishadham2016estimation,beltrao2023adaptive}.
 
 \subsection{Complex signal demodulation and calibrated alternatives}
 
-An arctangent demodulator attempts to recover phase directly from the quadrature angle. In an ideal
-receiver with its center removed, this can be expressed schematically as
-$\hat{\phi}_{\mathrm{AD}}(t)=\operatorname{unwrap}(\operatorname{atan2}(Q(t),I(t)))$; multiplying
-by $\radarLambda/(4\pi)$ yields a displacement-like phase trace. The operation is vulnerable
-when the signal passes near the origin, where small noise changes can cause large phase changes,
-and when offsets or ellipse distortion are not corrected. Differentiation-and-cross-multiplication
-(DACM) instead estimates phase increments from adjacent quadrature samples and integrates them,
-avoiding an explicit phase unwrap, but it too depends on suitable center and imbalance handling.
-Methods for DC compensation, ellipse fitting, Gram--Schmidt correction, and extended DACM address
-these receiver effects in different ways \citep{park2007arctangent,wang2014noncontact,fitzgibbon1999direct,singh2013data,zakrzewski2014quadrature}.
+An arctangent demodulator attempts to recover phase directly from the quadrature angle. For
+mean-centered quadrature channels $\Delta b_I(t) = b_I(t)-\bar b_I$ and
+$\Delta b_Q(t) = b_Q(t)-\bar b_Q$, the repository's displacement-scaled arctangent trace (retained
+only for diagnostic illustration and unused in active scoring) is
+$\adPhase=\frac{\radarLambda}{4\pi}\operatorname{unwrap}(\operatorname{atan2}(\Delta b_Q(t),\Delta b_I(t)))$.
+The operation is vulnerable when the signal passes near the origin, where small noise changes can
+cause large phase jumps, and when offsets or ellipse distortion are not corrected.
+Differentiation-and-cross-multiplication (DACM) instead estimates phase increments from adjacent
+quadrature samples and integrates them, avoiding an explicit phase unwrap, but it too depends on
+suitable center and imbalance handling. Methods for DC compensation, ellipse fitting, Gram--Schmidt
+correction, and extended DACM address these receiver effects in different ways
+\citep{park2007arctangent,wang2014noncontact,fitzgibbon1999direct,singh2013data,zakrzewski2014quadrature}.
 
 The locked baseline used in this thesis retains both channels and subtracts their per-window means:
 \begin{equation}
@@ -131,15 +134,15 @@ The locked baseline used in this thesis retains both channels and subtracts thei
 This complex signal demodulation (CSD) avoids converting the trajectory to an angle before
 downstream processing. Mean subtraction removes a constant offset over the analysis window, while
 the complex representation preserves the orientation and relative movement of the I/Q trajectory.
-If a centered signal is transformed by a fixed complex gain and rotation,
-$x'(t)=a\exp(j\vartheta)x(t)$ for $a>0$, then mean-centering commutes with that transform:
-$x'_c(t)=a\exp(j\vartheta)x_c(t)$. This is an equivariance property of the representation, not
-invariance of every possible downstream statistic: amplitudes still scale by $a$, so a later
-algorithm must normalize scale or use scale-invariant features when that is required. CSD also does
-not correct time-varying offsets, severe ellipse distortion, clipping, or multiple-reflector
-interference. These limits motivate evaluating calibration variants separately rather than
-assuming that a more complex demodulator must improve rate estimates
-\citep{li2008random,li2013review,droitcour2004range}.
+If the raw complex baseband signal is transformed by a fixed positive gain, phase rotation, and
+constant offset, $z'(t)=a\exp(j\vartheta)z(t)+c_0$ for $a>0$ and $c_0\in\mathbb{C}$, then per-window
+mean-centering removes $c_0$ and transforms equivariantly as $x'(t)=a\exp(j\vartheta)x(t)$. This is
+an equivariance property of the representation, not invariance of every possible downstream
+statistic: amplitudes still scale by $a$, so a later algorithm must normalize scale or use
+scale-invariant features when that is required. CSD also does not correct time-varying offsets,
+severe ellipse distortion, clipping, or multiple-reflector interference. These limits motivate
+evaluating calibration variants separately rather than assuming that a more complex demodulator must
+improve rate estimates \citep{li2008random,li2013review,droitcour2004range}.
 
 \section{Contactless Neonatal Monitoring and Radar Modalities}
 \label{sec:ch2_nicu_literature}
@@ -147,7 +150,7 @@ assuming that a more complex demodulator must improve rate estimates
 The clinical literature spans several sensor families that trade spatial information, hardware
 complexity, and dependence on the environment. Single-channel CW radar is attractive for its
 compact front end and sensitivity to small periodic displacement, and it can operate without
-attaching an electrode or optical marker to the infant. The 24 GHz NICU study by Beltrão et al.
+attaching an electrode or optical marker to the infant. The 24 GHz NICU study by Beltr\~ao et al.
 established a prominent benchmark pipeline combining quadrature processing, short-time Fourier
 analysis, non-negative matrix factorization (NMF) for random-body-movement mitigation, filtering,
 and harmonic nonlinear least squares (NLS). Its results demonstrated feasibility under a range of
@@ -158,7 +161,7 @@ resolve the local cohort identifiers, exact window denominator, reference constr
 details required for an exact reproduction claim in the present repository
 \citep{beltrao2022contactless}.
 
-Other work illustrates that “contactless radar” is not a single measurement design. Impulse-radio
+Other work illustrates that ``contactless radar'' is not a single measurement design. Impulse-radio
 ultra-wideband (IR-UWB) systems use short broadband pulses and can exploit range profiles to
 separate chest motion from other reflections. Neonatal studies have compared IR-UWB-derived
 respiration with clinical references and have examined movement censoring and feasibility in the
@@ -206,34 +209,36 @@ decision. Evidence for the first question does not by itself answer the second o
 \subsection{Short-time Fourier representation}
 
 The short-time Fourier transform (STFT) represents local spectral content over overlapping frames.
-For a discrete signal $x[n]$, analysis window $w[n]$, frame hop $H_{\mathrm{stft}}$, and transform
-length $N_{\mathrm{FFT}}$, one convention is
+For a discrete signal $x[n]$, analysis window $w[r]$ of length $\stftWin$, frame hop $\stftHop$,
+and transform length $\stftNfft$, the frame-local discrete Fourier convention used by the repository
+is
 \begin{equation}
-  X[k,m]=\sum_n x[n]w[n-mH_{\mathrm{stft}}]
-  \exp\left(-j\frac{2\pi kn}{N_{\mathrm{FFT}}}\right).
+  \stftComplex=\sum_{r=0}^{\stftWin-1} x[m\stftHop+r]\,w[r]
+  \exp\!\left(-j\frac{2\pi kr}{\stftNfft}\right).
   \label{eq:ch2_stft}
 \end{equation}
 The time--frequency trade-off is direct: longer windows sharpen frequency discrimination but blur
 rapid changes; shorter windows localize transients but broaden spectral peaks. The locked v1
-implementation uses a rectangular STFT with $N_{\mathrm{win}}=48$ samples, hop
-$H_{\mathrm{stft}}=16$ samples, and $N_{\mathrm{FFT}}=256$ at a 16 Hz slow-time sampling rate.
+implementation uses a rectangular STFT with $\stftWin=48$ samples, hop
+$\stftHop=16$ samples, and $\stftNfft=256$ at a 16 Hz slow-time sampling rate.
 These values correspond to a 3 s frame, a 1 s frame advance, and a sampled FFT-bin spacing of
 0.0625 Hz (3.75 breaths per minute). Zero-padding to 256 points makes the frequency grid denser;
 it does not give a 3 s frame the resolving power of a 16 s observation. These are the
 implementation settings of the benchmark branch, not a claim that this configuration is
-universally optimal. Each modified frame is inverse transformed;
-overlapping samples are accumulated and divided by their overlap counts. Because the mask modifies
-spectral magnitudes while reusing mixture phase, the modified coefficients need not be exactly
-consistent with any single time-domain signal; this is a general limitation of magnitude-only
-masking and modified-STFT reconstruction \citep{griffin1984signal,muller2021fundamentals}.
+universally optimal. In both locked NMF and HPSS branches, masked magnitudes undergo bounded
+per-frame envelope normalization before reusing the input phase; each modified frame is inverse
+transformed, and overlapping samples are accumulated and divided by their overlap counts. Because
+the mask modifies spectral magnitudes while reusing mixture phase, the modified coefficients need
+not be exactly consistent with any single time-domain signal; this is a general limitation of
+magnitude-only masking and modified-STFT reconstruction \citep{griffin1984signal,muller2021fundamentals}.
 
 \subsection{NMF, sparsity, and random-body-movement mitigation}
 
-NMF approximates a non-negative magnitude spectrogram $V\in\mathbb{R}_{\geq0}^{F\times T}$ as
+NMF approximates a non-negative magnitude spectrogram $V\in\mathbb{R}_{\geq0}^{F\times T_f}$ as
 \begin{equation}
   V\approx\nmfW\nmfH,
-  \qquad \nmfW\in\mathbb{R}_{\geq0}^{F\times K},
-  \quad \nmfH\in\mathbb{R}_{\geq0}^{K\times T}.
+  \qquad \nmfW\in\mathbb{R}_{\geq0}^{F\times \nmfRank},
+  \quad \nmfH\in\mathbb{R}_{\geq0}^{\nmfRank\times T_f}.
   \label{eq:ch2_nmf}
 \end{equation}
 The columns of $\nmfW$ act as spectral patterns and the rows of $\nmfH$ describe their
@@ -246,21 +251,21 @@ maximum-iteration limit, so solver settings and convergence records are part of 
 than incidental implementation details.
 
 Sparsity provides one possible description of an activation pattern. For a nonzero vector of
-length $T>1$, $h\in\mathbb{R}_{\geq0}^{T}$, Hoyer sparsity can be written
+length $T_f>1$, $h\in\mathbb{R}_{\geq0}^{T_f}$, Hoyer sparsity can be written
 \begin{equation}
   \hoyerSpar(h)=
-  \frac{\sqrt{T}-\lVert h\rVert_1/\lVert h\rVert_2}{\sqrt{T}-1}.
+  \frac{\sqrt{T_f}-\lVert h\rVert_1/\lVert h\rVert_2}{\sqrt{T_f}-1}.
   \label{eq:ch2_hoyer}
 \end{equation}
 It approaches zero for a uniform nonnegative vector and one for a vector concentrated in a small
 number of coordinates. A transient, high-amplitude activation may therefore be a candidate motion
 component, but sparsity alone is not a reliable artifact label: breathing itself can be irregular,
-and an infant's movement can persist across multiple frames. The Beltrão benchmark uses an
-NMF-based component rejection strategy, and this thesis retains rank-11 NMF as a comparison branch
-while auditing the dependence on cohort, solver, and threshold choices in later chapters. Hoyer
-sparsity is one possible descriptor; its discussion here does not imply that every NMF branch uses
-that rejection rule or that the local implementation exactly reproduces the published solver
-\citep{beltrao2022contactless,hoyer2004non}.
+and an infant's movement can persist across multiple frames. The Beltr\~ao benchmark uses an
+NMF-based component rejection strategy, and this thesis retains rank-11 ($\nmfRank=11$) NMF as a
+comparison branch while auditing the dependence on cohort, solver, and threshold choices in later
+chapters. Hoyer sparsity is one possible descriptor; its discussion here does not imply that every
+NMF branch uses that rejection rule or that the local implementation exactly reproduces the
+published solver \citep{beltrao2022contactless,hoyer2004non}.
 
 \subsection{Harmonic--percussive separation as a structural alternative}
 
@@ -271,7 +276,7 @@ streaks. Median filtering along time and frequency supplies robust local estimat
 textures. For magnitude $|X[k,m]|$, the estimates are
 \begin{align}
   \hpssHarm[k,m] &= \operatorname{median}_{r\in\mathcal{N}_t(m)}|X[k,r]|,\\
-  \hpssPerc[k,m] &= \operatorname{median}_{q\in\mathcal{N}_f(k)}|X[q,m]|,
+  \hpssPerc[k,m] &= \operatorname{median}_{p\in\mathcal{N}_f(k)}|X[p,m]|,
   \label{eq:ch2_hpss_medians}
 \end{align}
 where $\mathcal{N}_t$ and $\mathcal{N}_f$ are temporal and frequency neighborhoods. A soft
@@ -286,7 +291,7 @@ The complementary mask can retain the percussive texture; the soft form avoids t
 of a binary mask. Median-filter HPSS and its diffusion-based predecessors were designed for audio,
 not for a physiological source-separation guarantee \citep{ono2008separation,fitzgerald2010harmonic,muller2021fundamentals}.
 
-In this thesis, the terminology “harmonic” and “percussive” describes spectrogram geometry only.
+In this thesis, the terminology ``harmonic'' and ``percussive'' describes spectrogram geometry only.
 It does not assert that $\hpssHarm$ is pure respiration or that $\hpssPerc$ is pure body movement.
 An infant's breathing can be nonstationary, shallow, or interrupted; gross movement can also be
 slow or sustained. HPSS offers a deterministic structural prior with low algorithmic complexity,
@@ -307,14 +312,14 @@ clarify design options, but each adds assumptions or computational requirements 
 for respiratory data rather than imported as if audio and neonatal radar shared the same source
 statistics \citep{ono2008realtime,driedger2014extending,tachibana2014two,tachibana2014harmonic,fitzgerald2014harmonic,cano2014phase,canadas2015online}.
 
-After time--frequency reconstruction, the local benchmark implementation applies a Kaiser-window
-FIR bandpass from $0.30$ to $3.00\,\mathrm{Hz}$ (18--180 breaths per minute) with Kaiser
-parameter $\beta=6.5$. Its 64-tap length is marked as inferred in the repository and should not
-be attributed to a fully specified filter protocol in the source paper. Forward--backward
-filtering is applied separately to the real and imaginary parts, so the resulting filter is
-zero-phase but offline and noncausal. It is an implementation choice for retrospective rate
-estimation, not a real-time filter with zero latency; finite-window filtering also requires
-attention to edge effects.
+Both before and after time--frequency separation, the local benchmark implementation applies a
+Kaiser-window FIR bandpass from $0.30$ to $3.00\,\mathrm{Hz}$ (18--180 breaths per minute) with
+Kaiser parameter $\kaiserBeta=6.5$. Its 64-tap length is marked as inferred in the repository and
+should not be attributed to a fully specified filter protocol in the source paper.
+Forward--backward filtering is applied separately to the real and imaginary parts, so the resulting
+filter is zero-phase and noncausal within each analysis block. It is an implementation choice for
+retrospective window processing, not a real-time filter with zero latency; finite-window filtering
+also requires attention to edge effects.
 
 \section{Harmonic Rate Estimation and Temporal Tracking}
 \label{sec:ch2_tracking}
@@ -329,10 +334,10 @@ examples of using multiple harmonics to resolve ambiguous peaks; the YIN differe
 family instead emphasizes periodicity in the time domain and reduces octave errors through
 normalized difference structure \citep{schroeder1968period,cheveigne2002yin}.
 
-For a filtered radar trace $\chestDispEst$, an $L_k$-harmonic sinusoidal model at candidate
+For a filtered radar trace $\chestDispEst$, an $\nlsOrder$-harmonic sinusoidal model at candidate
 frequency $f$ can be expressed as
 \begin{equation}
-  \chestDispEst(t_i) \approx
+  \hat{d}(t_i) \approx
   \sum_{\ell=1}^{\nlsOrder}
   \left[a_\ell\cos(2\pi\ell f t_i)+b_\ell\sin(2\pi\ell f t_i)\right]
   +\epsilon_i, \qquad a_\ell,b_\ell,\epsilon_i\in\mathbb{C}.
@@ -343,15 +348,15 @@ cost $\nlsCost$ is the sum of squared residual magnitudes after optimizing those
 the estimate is the frequency that minimizes this cost over the allowed grid. Under suitable
 orthogonality and normalization conditions, this objective can be related to a weighted sum of
 spectral power at
-$f,2f,\ldots,\nlsOrder f$. The name “NLS” in the benchmark branch should not be read as proof that
+$f,2f,\ldots,\nlsOrder f$. The name ``NLS'' in the benchmark branch should not be read as proof that
 the implementation numerically minimizes this joint sinusoidal residual at every candidate: the
 repository implementation instead scores a local frequency grid by summing interpolated folded-PSD
 power at the first two harmonics, centered on a coarse autocorrelation estimate (with a spectral
 fallback when that estimate is unavailable). This is a discrete harmonic-score approximation, and
 the exact grid and PSD interpolation settings are implementation choices. Coarse autocorrelation
 limits the search range but cannot guarantee that a stronger cardiac or harmonic peak is excluded.
-The locked baseline uses a two-harmonic order for this stage, while adaptive-order approaches form
-a related but distinct line of work \citep{christensen2008multi,beltrao2023adaptive}.
+The locked baseline uses a two-harmonic order ($\nlsOrder=2$) for this stage, while adaptive-order
+approaches form a related but distinct line of work \citep{christensen2008multi,beltrao2023adaptive}.
 
 No single estimator resolves every ambiguity. Autocorrelation can select a multiple of the true
 period when cycles are irregular or waveforms are asymmetric. A spectral maximum can favor the
@@ -377,9 +382,10 @@ where $y_t$ denotes the spectral or waveform evidence at frame $t$. The Viterbi 
 the highest-scoring path efficiently; forward filtering instead propagates a probability
 distribution using observations available up to the current time. Forward--backward smoothing uses
 future observations and is therefore appropriate for offline analysis but not for a strictly
-causal online estimate. HMMs and Viterbi decoding are established tools for sequence inference;
-applications to pitch, heart rate, and radar motivate candidate tracking when instantaneous peaks
-are unreliable \citep{rabiner1989tutorial,mauch2014pyin,temko2017accurate,xie2019unobtrusive,ye2021spectral,arsalan2020improved}.
+causal online estimate. HMMs, Viterbi decoding, and continuous-state Kalman filters are established
+tools for sequence inference; applications to pitch, heart rate, and radar motivate temporal
+tracking when instantaneous peaks are unreliable
+\citep{rabiner1989tutorial,mauch2014pyin,temko2017accurate,xie2019unobtrusive,ye2021spectral,arsalan2020improved}.
 
 The state-transition prior encodes a model of plausible temporal change. If it is too weak, the
 path can jump between a fundamental and its harmonic. If it is too strong, it can lag genuine
@@ -428,14 +434,15 @@ at all \citep{orphanidou2015signal,birrenkott2018robust}.
 
 Selective prediction formalizes the trade-off between how many observations are retained and the
 error among those retained. Let $s_i$ be an uncertainty score, with larger values indicating less
-confidence, and accept observations below a threshold $q$. Coverage is the accepted fraction; risk
-is a chosen error measure conditional on acceptance. Varying $q$ produces a risk--coverage curve,
-which can be summarized by area-under-curve measures such as AURC or by adjusted variants such as
-E-AURC. These summaries describe ranking quality over a range of operating points; they do not
-select a clinically acceptable operating threshold, determine the consequences of abstention, or
-establish calibration by themselves. Learned reject heads such as SelectiveNet are one approach;
-physiological SQIs and model-derived posterior spread are alternatives with different training and
-assumption requirements \citep{elyaniv2010foundations,geifman2017selective,geifman2019selectivenet,traub2024overcoming}.
+confidence, and accept observations below a threshold $\tau_u$. Coverage $\covLevel$ is the
+accepted fraction; selective risk $\selRisk$ is a chosen error measure conditional on acceptance.
+Varying $\tau_u$ produces a risk--coverage curve, which can be summarized by area-under-curve
+measures such as $\aurcMetric$ or by adjusted variants such as $\eaurcMetric$. These summaries
+describe ranking quality over a range of operating points; they do not select a clinically
+acceptable operating threshold, determine the consequences of abstention, or establish calibration
+by themselves. Learned reject heads such as SelectiveNet are one approach; physiological SQIs and
+model-derived posterior spread are alternatives with different training and assumption requirements
+\citep{elyaniv2010foundations,geifman2017selective,geifman2019selectivenet,traub2024overcoming}.
 
 For neonatal monitoring, rejected windows are not interchangeable missing values. If uncertainty
 is high during quiet breathing pauses, a quality gate may selectively remove the very periods that
@@ -508,18 +515,20 @@ those components and their uncertainty \citep{bland1986statistical,bland1999meas
 
 The repeated-measures correlation $\rWithin$ estimates a common within-subject association after
 separating subject-level differences; this differs from pooling all windows and computing one
-ordinary correlation. The unweighted mean of per-session correlations is another distinct
-summary and must be named separately. This distinction matters when infants have different numbers
-of valid windows or occupy different respiratory-rate ranges \citep{bland1995calculating,bakdash2017repeated}.
+ordinary correlation. The unweighted mean of per-session correlations ($\rWithinSessMean$) is
+another distinct summary and must be named separately. This distinction matters when infants have
+different numbers of valid windows or occupy different respiratory-rate ranges
+\citep{bland1995calculating,bakdash2017repeated}.
 
 Finally, a nonsignificant difference does not establish equivalence. The two one-sided tests
 procedure (TOST) evaluates whether the effect lies within a prespecified interval
 $[-\tostMargin,+\tostMargin]$; equivalently, the corresponding 90\% confidence interval must
 fall inside the margin for the conventional paired-test formulation. The thesis uses a
-predefined margin of 0.50 breaths per minute for its NMF--HPSS comparison, so conclusions are
-bounded by that tolerance and the evaluated cohorts. Equivalence testing answers a different
-question from testing whether the mean difference is zero, and neither result establishes
-generalization to a new site or clinical benefit \citep{schuirmann1987comparison,lakens2017equivalence}.
+predefined margin of 0.50 breaths per minute for its NMF--HPSS and Stage~1 causal-HPSS equivalence
+comparisons, so conclusions are bounded by that tolerance and the evaluated cohorts. Equivalence
+testing answers a different question from testing whether the mean difference is zero, and neither
+result establishes generalization to a new site or clinical benefit
+\citep{schuirmann1987comparison,lakens2017equivalence}.
 
 \section{Synthesis and Positioning of the Thesis}
 \label{sec:ch2_synthesis}
@@ -564,6 +573,6 @@ test.
 In the next chapter, these foundations are applied to the benchmark reconstruction and its
 protocol uncertainties. Chapter 4 then evaluates front-end and temporal-model choices; Chapter 5
 examines selective uncertainty and patient-level conformal behavior; Chapter 6 evaluates transfer
-to a separate 24.2 GHz thorax simulator. Throughout, exact reproduction of the original Beltrão
+to a separate 24.2 GHz thorax simulator. Throughout, exact reproduction of the original Beltr\~ao
 cohort and denominator remains blocked by unresolved source details, and stationary phantom
 transfer is treated as a physical-domain result rather than evidence of bedside clinical utility.
