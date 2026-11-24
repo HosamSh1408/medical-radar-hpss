@@ -38,13 +38,13 @@ directly from immutable output logs prior to manuscript compilation.
     \textbf{Component / Aid} & \textbf{Declared Scope and Verification Safeguard} \\
     \midrule
     Locked \texttt{v1} Baseline Engine &
-    Python~3.9.6 (\texttt{paper\_\allowbreak workspace/\allowbreak src/}, \texttt{main-v3-audit-fix-2}, commit \texttt{6b19fdd}); \texttt{154/154} SHA-256 baseline hashes, \texttt{33/33} caches, and \texttt{19/19} unit tests verified untouched throughout all thesis experiments. \\
+    Python~3.9.6 (\texttt{paper\_\allowbreak workspace/\allowbreak src/}, \texttt{main-v3-audit-fix-2}, commit \texttt{6b19fdd}); \texttt{154/154} frozen baseline SHA-256 hashes (\texttt{paper\_\allowbreak workspace/} and \texttt{beltrao\_\allowbreak data/} subset of \texttt{postfix\_\allowbreak manifest.sha256}), \texttt{33/33} caches, and \texttt{19/19} unit tests verified untouched throughout all thesis experiments. \\
     \addlinespace
     \texttt{WP1--WP5} Research Pipeline &
     Python~3.10.19 (\texttt{thesis/*.py}, \texttt{tests/*.py}); sealed permanently at commit \FrozenGitCommit{} (\texttt{113/113} freeze manifest hashes, \texttt{35/35} pytest invariance, gradient, and causality checks); frozen Stage~4 archive \FrozenArchiveHash{}. \\
     \addlinespace
     Clinical \& External Data &
-    Preterm NICU 24\,GHz CW radar corpus (\texttt{beltrao\_data/}, $K=11$ synced infants, $S=28$ primary sessions) and public 24.2\,GHz neonatal thorax simulator benchmark (\texttt{external\_\allowbreak data/\allowbreak gleichauf2024/}, \texttt{49/49} manifest hashes, zero-touch \texttt{L4} run only). \\
+    Preterm NICU 24\,GHz CW radar corpus (\texttt{beltrao\_data/}, $K=11$ synced infants, $S=28$ primary sessions) and public 24.2\,GHz neonatal thorax simulator benchmark (\texttt{external\_\allowbreak data/\allowbreak gleichauf2024/}, $20$ scenarios, \texttt{49/49} extracted-file SHA-256 hashes, zero-touch \texttt{L4} run only). \\
     \addlinespace
     Generative AI \& Editorial Tooling &
     AI engineering and writing assistance (Antigravity agentic coding/verification harness and \texttt{PaperOrchestra} modular outline preparation protocol) was used for test-suite authoring, adversarial red-team auditing, figure-layout scripting, and LaTeX manuscript drafting/typesetting. Every quantitative value, statistical test, citation key, and LaTeX theorem/figure was machine-checked against raw JSON outputs, source-code ASTs, and compiled PDF inspection. \\

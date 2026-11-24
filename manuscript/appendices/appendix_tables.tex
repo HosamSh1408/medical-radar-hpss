@@ -2,7 +2,7 @@
 \label{app:tables}
 
 This appendix records four complete supplementary quantitative tables verifying the internal
-statistical multiplicity controls, monitor hardware-delay characterization, learned parameter
+statistical multiplicity controls, monitor group-delay characterization, learned parameter
 interpretability, and cross-cohort stability underlying Chapters~\ref{ch:parsimony_complexity}
 and~\ref{ch:uncertainty_conformal}. Every entry is transcribed directly from the sealed Stage~1--3
 JSON outputs and independent verification logs at commit \FrozenGitCommit{}.
@@ -21,7 +21,8 @@ offline Viterbi.
   \footnotesize
   \setlength{\tabcolsep}{3.5pt}
   \caption{Audited Stage~1 paired comparison against noncausal offline Viterbi (\texttt{R1g}, $n=8$
-  Holm--Bonferroni family, \texttt{pool30\_sync}). Parentheses show raw / Holm-adjusted $p$-values.}
+  Holm--Bonferroni family, \texttt{pool30\_sync}). Lookahead lists block-decoding / STFT lookahead
+  in seconds; entries report patient-level raw / Holm-adjusted Wilcoxon $p$-values.}
   \label{tab:app_r1g_holm}
   \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}X rc rrr@{}}
     \toprule
@@ -46,16 +47,18 @@ offline Viterbi.
 
 Table~\ref{tab:app_lag_sweep} details equal-session $\rmseSess$ across shared reference time shifts
 applied uniformly to \SI{1024}{\hertz} physical respiratory triggers (\texttt{pool30\_sync}, $S=28$).
-Five of six unshifted architectures attain minimum error (bold) or peak correlation at
-$+\SI{8}{\second}$ to $+\SI{10}{\second}$ (\texttt{Trig $-10$\,s}), confirming hardware monitor lag.
+Five of the six evaluated architectures attain minimum $\rmseSess$ (bold) at
+$\Delta\tau = +\SI{8}{\second}$ to $+\SI{10}{\second}$ (while causal TCN \texttt{R3a} reaches
+its minimum at $+\SI{4}{\second}$, and \texttt{R2e} $\rWithin$ peaks at $+\SI{12}{\second}$),
+consistent with an effective monitor group delay (\texttt{Trig $-10$\,s}).
 
 \begin{table}[htbp]
   \centering
   \footnotesize
   \setlength{\tabcolsep}{4pt}
-  \caption{Uniform EDF trigger lag sweep across \SIrange{-20}{+20}{\second} (\texttt{pool30\_sync},
-  $\rmseSess$ in \si{\bpm}). Note that $\Delta\tau = +\SI{10}{\second}$ defines the shared
-  \texttt{Trig $-10$\,s} evaluation regime.}
+  \caption{Representative offsets from the \SI{2}{\second}-grid uniform EDF trigger lag sweep
+  across \SIrange{-20}{+20}{\second} (\texttt{pool30\_sync}, $\rmseSess$ in \si{\bpm}). Note that
+  $\Delta\tau = +\SI{10}{\second}$ defines the shared \texttt{Trig $-10$\,s} evaluation regime.}
   \label{tab:app_lag_sweep}
   \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}r rrrrrr rr@{}}
     \toprule
@@ -106,8 +109,8 @@ w_4$ are structurally clamped to zero to preserve filter-edge equivariance.
     $w_5$ ($\phi_{\mathrm{anchor}}$) & $+3.925 \pm 0.133$ & $+3.995$ & $+2.351 \pm 0.391$ & $+2.240$ & $+1.772 \pm 0.369$ & $+1.274$ \\
     $w_6$ ($P_{\mathrm{raw}}(f)$) & $-0.500 \pm 0.000$ & $-0.500$ & $-0.500 \pm 0.000$ & $-0.500$ & $-0.500 \pm 0.000$ & $-0.500$ \\
     $\sigma_{\mathrm{slow}}$ (bpm) & $1.081 \pm 0.143$ & $1.000$ & $2.153 \pm 0.621$ & $2.421$ & $2.338 \pm 1.900$ & $1.462$ \\
-    $\sigma_{\mathrm{jump}}$ (bpm) & $5.000 \pm 0.000$ & $5.000$ & $12.723 \pm 2.932$ & $14.247$ & $12.919 \pm 1.930$ & $10.764$ \\
-    $\pi_{\mathrm{jump}}$ & $0.0009 \pm 0.000$ & $0.0009$ & $0.0101 \pm 0.0019$ & $0.0110$ & $0.0072 \pm 0.0047$ & $0.0110$ \\
+    $\sigma_{\mathrm{jump}}$ (bpm) & $5.000 \pm 0.000$ & $5.000$ & $12.723 \pm 2.932$ & $14.247$ & $12.918 \pm 1.930$ & $10.764$ \\
+    $\pi_{\mathrm{jump}}$ & $0.0009 \pm 0.0000$ & $0.0009$ & $0.0101 \pm 0.0019$ & $0.0110$ & $0.0072 \pm 0.0047$ & $0.0110$ \\
     $\kappa_1$ (context) & $0.000 \pm 0.000$ & $0.000$ & $0.000 \pm 0.000$ & $0.000$ & $0.000 \pm 0.000$ & $0.000$ \\
     $\kappa_2$ (context) & $0.012 \pm 0.026$ & $0.000$ & $0.051 \pm 0.043$ & $0.081$ & $0.026 \pm 0.048$ & $0.000$ \\
     \bottomrule

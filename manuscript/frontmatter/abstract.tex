@@ -3,66 +3,51 @@
 \markboth{Abstract}{Abstract}
 
 {\emergencystretch=1.5em
-Continuous respiratory monitoring in neonatal intensive care units (NICUs) relies predominantly
-on adhesive ECG and impedance pneumography leads that injure fragile preterm skin and suffer
-from false alarms. While contactless \SI{24}{\giga\hertz} continuous-wave (CW) quadrature Doppler
-radar can sense sub-millimeter thoracic motion through incubators and blankets, clinical
-adoption has stalled due to methodological leakage, fragile heuristic tracking, black-box shortcut
-learning on tiny neonatal cohorts, and uncalibrated uncertainty estimates during genuine apnea pauses.
+Adhesive ECG and impedance leads injure fragile preterm skin in neonatal intensive care units
+(NICUs). Contactless \SI{24}{\giga\hertz} continuous-wave (CW) Doppler radar senses
+sub-millimeter thoracic motion through incubators, yet translation is hindered by
+synchronization leakage, small-cohort shortcut learning, and uncalibrated uncertainty during
+quiet breathing pauses.
 
-This thesis establishes a systematic, claim-gated investigation demonstrating that encoding
-physical domain symmetries---translation equivariance in respiratory frequency,
-$SO(2)\times\mathbb{R}_{>0}$ complex baseband invariance, and causal discrete Markov continuity---into
-ultra-parsimonious models strictly dominates over-parameterized neural regressors across both
-point breathing-rate tracking and safety-critical uncertainty quantification. First, an internal
-forensic audit (\texttt{EXP-0}) over $K=11$ synchronously monitored preterm infants ($S=28$
-confirmatory sessions, $|\mathcal{W}|=6640$ windows) removes branch-dependent synchronization
-leakage, exposes a systematic \SI{10}{\second} group delay between smoothed \SI{1}{\hertz} bedside
-monitor trends and physical \SI{1024}{\hertz} breath triggers, and documents $1581$ windows
-($23.8\%$) containing quiet breathing pauses exceeding \SI{5}{\second}. Next, controlled ablations
-confirm that locked complex signal demodulation (\texttt{F0}) and median-filter Harmonic--Percussive
-Source Separation (\texttt{H0}, 64-tap Kaiser FIR \SIrange{0.30}{3.00}{\hertz},
-$\kaiserBeta=6.5$) remain optimal over multi-parameter I/Q calibration and causal STFT redesigns.
+This claim-gated thesis evaluates physics-constrained machine learning---encoding frequency
+translation equivariance, $SO(2)\times\mathbb{R}_{>0}$ baseband invariance, and causal Markov
+continuity---against unconstrained learned baselines. An internal forensic audit (\texttt{EXP-0};
+$K=11$ infants, $S=28$ sessions, $|\mathcal{W}|=6640$ windows) removes branch-dependent lag
+leakage, exposes an effective \SI{10}{\second} group delay between \SI{1}{\hertz} monitor trends
+and \SI{1024}{\hertz} physical breath triggers, and documents $1581$ windows ($23.8\%$) with
+quiet pauses exceeding \SI{5}{\second}. Controlled ablations retain locked complex demodulation
+(\texttt{F0}) and Harmonic--Percussive Source Separation (\texttt{H0}; 64-tap Kaiser FIR
+\SIrange{0.30}{3.00}{\hertz}, $\kaiserBeta=6.5$) over clipping/whitening and zero-lookahead
+STFT variants on parsimony and equivalence grounds.
 
-Across a four-rung complexity ladder trained solely on \SI{1}{\hertz} NICU trends, the
-$8$-parameter causal shift-equivariant differentiable Hidden Markov Model
-(\texttt{FilterSafe-8}, \texttt{R2e}) lowers $\rmseSess$ from memoryless \texttt{R0}
-(\SI{7.8173}{\bpm}) to \SI{6.8486}{\bpm} on \SI{1}{\hertz} trends ($\Delta = -0.9687\,\mathrm{bpm}$,
-$11/11$ infants, $p_{\mathrm{pat,Holm}} = 0.0117$) and is the only causal estimator retaining
-Holm-adjusted patient-level significance on lag-aligned physical breath triggers (\SI{8.7268}
-to \SI{8.0634}{\bpm}, $10/11$ infants, $p_{\mathrm{pat,Holm}} = 0.0215$). Crucially,
-unconstrained $439$--$15{,}817$-parameter regressors (\texttt{Ridge}, \texttt{MLP}, \texttt{TCN})
-appear competitive in-band (\SIrange{5.7985}{6.5844}{\bpm}) only by memorizing monitor smoothing
-and the preterm rate prior, failing completely on physical triggers ($p_{\mathrm{pat,Holm}} = 1.00$)
-and collapsing under zero-touch transfer to an independent \SI{24.2}{\giga\hertz} neonatal thorax
-simulator (\texttt{gleichauf2024}, $20$ scenarios): \texttt{FilterSafe-8} achieves \SI{0.0197}{\bpm}
-in-band scenario RMSE (slope~$0.9994$, $0$ outliers $>\SI{0.5}{\bpm}$) versus
+Across a four-rung complexity ladder trained solely on \SI{1}{\hertz} trends, the $8$-parameter
+causal differentiable Hidden Markov Model (\texttt{FilterSafe-8}, \texttt{R2e}) lowers
+equal-session $\rmseSess$ from memoryless \texttt{R0} (\SI{7.8173}{\bpm}) to \SI{6.8486}{\bpm}
+($\Delta=-0.9687\,\mathrm{bpm}$, $11/11$ infants, $p_{\mathrm{pat,Holm}}=0.0117$) and is the
+only causal model retaining Holm significance on lag-aligned physical triggers (\SI{8.7268} to
+\SI{8.0634}{\bpm}, $10/11$ infants, $p_{\mathrm{pat,Holm}}=0.0215$). Unconstrained
+$439$--$15{,}817$-parameter regressors (\texttt{Ridge}, \texttt{MLP}, \texttt{TCN}) score lower
+on \SI{1}{\hertz} trends (\SIrange{5.7985}{6.5844}{\bpm}) via monitor-smoothing and prior
+shortcuts, fail Holm significance on triggers ($p_{\mathrm{pat,Holm}}=1.00$), and degrade under
+zero-touch transfer to an independent \SI{24.2}{\giga\hertz} neonatal phantom
+(\texttt{gleichauf2024}, $20$ scenarios): \texttt{FilterSafe-8} attains \SI{0.0197}{\bpm}
+in-band scenario RMSE (slope~$0.9994$, $0$ steady-state outliers $>\SI{0.5}{\bpm}$) versus
 \SIrange{3.1782}{3.6353}{\bpm} in-band and \SIrange{11.7783}{32.7040}{\bpm} \SI{20}{\bpm}-skirt
-collapse for neural foils.
+errors for unconstrained baselines.
 
-Within uncertainty quantification, zero-parameter posterior spread
-(\texttt{U2\_\allowbreak Posterior\_\allowbreak SD}) shows favorable selective risk reduction
-($10/11$ infants, $\eaurcMetric_{\mathrm{sess}} = -0.2454\,\mathrm{bpm}$, raw patient
-$p_{\mathrm{pat}} = 0.0098$, Holm-adjusted $0.0781$) while preserving quiet pauses ($1.02\times$
-relative rejection), whereas memoryless spectral entropies over-reject genuine apnea pauses
-($1.39\times$--$1.42\times > 1.15\times$) and a $5$-parameter ridge composite fails both pause
-safety ($1.23\times$) and significance. A
-zero-fitted-weight heuristic barrier composite (\texttt{U6b}, $\tau_{\mathrm{ood}}=0.90$) resolves
-this pause-safety versus out-of-distribution paradox ($1.13\times$ pause safe, $0.9986$ WGN AUROC,
-and $0.9998$ external stopband AUROC). Finally, a finite-$K$ conformal audit proves $95\%$
-patient-exchangeable sets vacuous at $K_{\mathrm{cal}}=10$ ($\alpha_{\min} = 1/11$), shows naive
-window-pooled conformal under-covers infants, and quantifies via hierarchical calibration
-(\texttt{C5}, $80\%$ mean width \SI{24.02}{\bpm}) the exact boundary separating verified hardware
-transfer (\texttt{L4}) from bedside clinical readiness (\texttt{L5}).
+For uncertainty quantification, zero-parameter posterior spread
+(\texttt{U2\_\allowbreak Posterior\_\allowbreak SD}) lowers selective risk across $10/11$
+infants ($\eaurcMetric_{\mathrm{sess}}=-0.2454\,\mathrm{bpm}$, raw $p_{\mathrm{pat}}=0.0098$,
+Holm $0.0781$) while staying pause-safe ($1.02\times$ relative rejection), whereas spectral
+entropies ($1.39\times$--$1.42\times$) and a $5$-parameter regularized linear composite
+(\texttt{U6c}, $1.23\times$, \SI{1}{\hertz} $95\%$ CI crossing zero) breach the $1.15\times$
+safety cap. A zero-fitted-weight heuristic barrier composite (\texttt{U6b},
+$\tau_{\mathrm{ood}}=0.90$) balances pause safety ($1.13\times$) with out-of-distribution
+detection ($0.9986$ WGN AUROC; $0.9998$ external stopband AUROC). Finally, a finite-$K$ conformal
+audit proves $95\%$ patient-exchangeable split-conformal intervals vacuous at $K_{\mathrm{cal}}=10$
+($\alpha_{\min}=1/11$), confirms pooled-window under-coverage, and quantifies via hierarchical
+calibration (\texttt{C5}, $80\%$ mean width \SI{24.02}{\bpm}) the gap between verified hardware
+transfer (\texttt{L4}) and bedside clinical readiness (\texttt{L5}).
 \par}
-
-% Optional German Zusammenfassung toggle (enable via \def\INCLUDEGERMANABSTRACT{1})
-\ifdefined\INCLUDEGERMANABSTRACT
-\cleardoublepage
-\chapter*{Zusammenfassung}
-\addcontentsline{toc}{chapter}{Zusammenfassung}
-\markboth{Zusammenfassung}{Zusammenfassung}
-\emph{[Optional German translation of the English abstract per BTU examination preference.]}
-\fi
 
 \cleardoublepage
