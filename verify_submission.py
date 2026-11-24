@@ -68,7 +68,7 @@ def check_baseline_subset() -> tuple[int, int, int]:
             checked += 1
             if sha256_file(fp) != expected:
                 bad.append(rel)
-        elif rel.startswith(("beltrao_data/radar/", "beltrao_data/reference/")):
+        elif rel.startswith(("beltrao_data/radar/", "beltrao_data/reference/")) or rel.endswith("/.DS_Store"):
             unbundled_raw += 1
         else:
             bad.append(rel)
