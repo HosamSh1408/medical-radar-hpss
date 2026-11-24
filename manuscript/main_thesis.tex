@@ -4,17 +4,19 @@
 \documentclass[
   11pt,
   a4paper,
-  oneside,
+  twoside,
+  open=right,
+  cleardoublepage=empty,
   bibliography=totoc,
   listof=totoc,
   numbers=noenddot
 ]{scrreprt}
 
-% --- Page Geometry (16.0 cm text width cleanly accommodates nomenclature tables) ---
+% --- Page Geometry (16.0 cm text width for nomenclature tables; 6 mm binding offset) ---
 \usepackage[
   a4paper,
-  left=2.5cm,
-  right=2.5cm,
+  inner=2.8cm,
+  outer=2.2cm,
   top=2.5cm,
   bottom=2.5cm,
   headheight=18pt
@@ -58,11 +60,12 @@
 \definecolor{oiWarnBg}{HTML}{FFF5F0}
 \definecolor{oiSafeBg}{HTML}{F0F9F6}
 
-% --- Headers, Captions & Floats ---
+% --- Headers, Captions & Floats (twoside alternating chapter/section running heads) ---
 \usepackage[automark,headsepline]{scrlayer-scrpage}
 \clearpairofpagestyles
 \ihead{\headmark}
 \ohead{\pagemark}
+\ofoot[\pagemark]{}
 \pagestyle{scrheadings}
 
 \usepackage{enumitem}
