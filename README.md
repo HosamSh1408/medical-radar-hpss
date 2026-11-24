@@ -1,151 +1,122 @@
-# Contactless Neonatal Radar Respiration Monitoring: Beltrão Reimplementation & HPSS Extension
+# Physics-Constrained Machine Learning for Contactless Neonatal Radar Respiratory Monitoring
+### Parsimony, Causal Inductive Bias, and Safety-Aware Uncertainty Quantification
 
-[![Pipeline Version](https://img.shields.io/badge/pipeline-main--v3--audit--fix--2-blue)](#reproducibility--execution-guide)
-[![Tests](https://img.shields.io/badge/tests-19%2F19%20passing-brightgreen)](#reproducibility--execution-guide)
-[![Provenance Caches](https://img.shields.io/badge/caches-33%2F33%20SHA256--verified-success)](#reproducibility--execution-guide)
+**Brandenburg University of Technology Cottbus-Senftenberg (BTU)**  
+**Faculty 1 — M.Sc. Artificial Intelligence (Module 13600, 30 ECTS)**  
+**Author:** Hosam Shibly | **Sealed Experimental Core:** `thesis/main` (`5e458c1`) | **Frozen Archive:** `af33a83e157f7d2e`
 
-An audited, cryptographically provenance-locked academic codebase for **contactless neonatal breathing rate estimation** using $24\text{ GHz}$ continuous-wave (CW) interferometer radar in the Neonatal Intensive Care Unit (NICU).
+[![Freeze Manifest](https://img.shields.io/badge/SHA256%20freeze-113%2F113%20OK-brightgreen)](#start-here-10-minute-supervisor-review)
+[![Thesis Suite](https://img.shields.io/badge/pytest-35%2F35%20passing-brightgreen)](#start-here-10-minute-supervisor-review)
+[![Locked Baseline](https://img.shields.io/badge/v1%20baseline-19%2F19%20passing-blue)](#start-here-10-minute-supervisor-review)
+[![Monograph](https://img.shields.io/badge/monograph-109%20pages%20A4%20twoside-informational)](#manuscript-compilation)
 
-1. **Goal 1 — Constrained Reimplementation of Beltrão et al. (2022):** Reconstructs the four-stage reference pipeline (*Complex Signal Demodulation $\to$ STFT + NMF/RBM Mitigation $\to$ Bandpass Filtering $\to$ Harmonic Nonlinear Least Squares [NLS]*) from [Beltrão et al., *Scientific Reports* 12, 5150 (2022)](https://doi.org/10.1038/s41598-022-08860-x).
-2. **Goal 2 — Deterministic HPSS Extension:** Replaces iterative Non-Negative Matrix Factorization (`NMF`, $\mathcal{O}(I \cdot K \cdot F \cdot T)$) with closed-form, zero-frequency-centered **Harmonic–Percussive Source Separation (`HPSS`, $\mathcal{O}(F \cdot T)$)** while keeping all upstream demodulation, pre/post bandpass filtering, and downstream harmonic NLS estimation 100% identical.
-
-> **Complete Engineering & Audit History:** All historical iterations, experiments, mathematical root-cause analyses (resolving the *"Raw NLS Paradox"*), cohort multiverse evaluations, and lessons learned are documented in [**`RESEARCH_AND_ENGINEERING_LOG.md`**](file:///Users/hosamshibly/Downloads/medical_radar/RESEARCH_AND_ENGINEERING_LOG.md).
+This repository contains the complete, cryptographically verified codebase, claim-gated audit ledger, and LaTeX source for a Master's thesis investigating whether encoding physical radar symmetries ($SO(2)\times\mathbb{R}_{>0}$ I/Q invariance, frequency translation equivariance, and causal discrete Markov continuity) into an **8-parameter differentiable Hidden Markov Model (`FilterSafe-8`, `R2e`)** outperforms high-capacity unconstrained regressors (`439`–`15,817` parameters) across internal preterm NICU validation, pause-safe selective uncertainty, and zero-touch external hardware transfer.
 
 ---
 
-## Key Empirical Results
+## Start Here: 10-Minute Supervisor Review
 
-### 1. Paper-Inspired 18-Session Benchmark (`PAPER_18`, $N = 5,466$ Valid 30-s Windows)
-Per-measurement scenario means reproduced via `python3 main.py --tables`:
+Rather than reading `19.3k` lines of orchestration and clean-room audit boilerplate, start with the curated review layer:
 
-| Scenario | $N_{\text{meas}}$ | $N_{\text{win}}$ | `DFT` (No Mit.) | `NLS` (No Mit.) | `NLS + NMF` (Baseline) | `HPSS + NLS` (Proposed) |
+1. **Verify integrity & run all automated tests (`~45 s`):**
+   ```bash
+   pip install -r requirements-thesis.txt
+   python3 verify_submission.py
+   ```
+   Verifies `113/113` SHA-256 freeze-manifest hashes, checks the frozen Stage 4 model archive (`af33a83e...`), runs the full `35/35` pytest verification suite, and prints the Stage 2–4 tables straight from immutable JSON logs.
+2. **Run or browse the clean executable code tour (`~5 s`):**
+   - View rendered outputs & Okabe-Ito plots inline on GitHub: **[`notebooks/supervisor_code_tour.ipynb`](notebooks/supervisor_code_tour.ipynb)**
+   - Or run standalone in terminal: `python3 examples/filtersafe_tour.py`
+3. **Trace every thesis chapter & equation to exact symbols and line numbers:**
+   - **[`REVIEWER_GUIDE.md`](REVIEWER_GUIDE.md)** maps Chapters 2–6 directly to the `7` core algorithm modules (`~4.5k` LOC total).
+
+---
+
+## Architecture & Verification Pipeline
+
+```mermaid
+flowchart LR
+    IQ["24 GHz CW I/Q<br/>(fs=16 Hz, W=30 s)"] --> CSD["Locked F0: CSD +<br/>64-tap Kaiser FIR<br/>[0.30, 3.00] Hz"]
+    CSD --> HPSS["Locked H0: Median<br/>HPSS Mask (48/16/256)<br/>(3 s STFT lookahead)"]
+    HPSS --> SAL["Folded Salience Tensor<br/>SO(2)xR+ Invariant"]
+    SAL --> R2E["R2e FilterSafe-8 (8p)<br/>Causal BPTT HMM<br/>Passband-Safe Ch."]
+    SAL --> R3["Rung 3 Foils (439-16k p)<br/>Ridge / MLP / Causal TCN"]
+    R2E --> UQ["U2 Post-SD & U6b Barrier<br/>+ C5 Conformal Quantiles"]
+    R2E --> EXT["Zero-Touch L4 Transfer<br/>24.2 GHz Simulator (20 scen.)"]
+```
+
+---
+
+## Headline Audited Results
+
+### 1. Stage 2 NICU LOPO Complexity Ladder (`pool30_sync`: $K=11$ infants, $S=28$ sessions) & Stage 4 External Transfer
+
+| Model | Params | Lookahead (`Blk/STFT`) | NICU `1 Hz` $\mathrm{RMSE}_{\mathrm{sess}}$ | NICU `Trig -10 s` $\mathrm{RMSE}_{\mathrm{sess}}$ ($p_{\mathrm{Holm}}$ vs `R0`) | External In-Band `>=28 bpm` (Slope) | External `20 bpm` Skirt |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| **ALL** | 18 | 5,466 | 10.11 bpm (74.8% Acc@10) | 7.49 bpm (82.4% Acc@10) | **6.86 bpm (85.4% Acc@10)** | **6.80 bpm (85.8% Acc@10)** |
-| **Supine** | 11 | 3,120 | 11.54 bpm (69.8% Acc@10) | 8.35 bpm (78.1% Acc@10) | **7.63 bpm (81.3% Acc@10)** | **7.55 bpm (81.5% Acc@10)** |
-| **Prone** | 7 | 2,346 | 7.85 bpm (82.6% Acc@10) | 6.12 bpm (89.0% Acc@10) | **5.65 bpm (91.7% Acc@10)** | **5.62 bpm (92.4% Acc@10)** |
-| **Single** | 14 | 4,002 | 9.79 bpm (76.5% Acc@10) | 7.54 bpm (82.4% Acc@10) | **6.89 bpm (85.2% Acc@10)** | **6.76 bpm (85.9% Acc@10)** |
-| **Twins** | 4 | 1,464 | 11.23 bpm (68.7% Acc@10) | 7.31 bpm (82.3% Acc@10) | **6.77 bpm (85.8% Acc@10)** | **6.94 bpm (85.1% Acc@10)** |
+| `R0` Locked `HPSS+NLS` | `0` | `0 / 3 s` | `7.817` | `8.727` (baseline) | `0.031` | `0.214` |
+| `R1a` Online Fwd MMSE | `3` | `0 / 3 s` | `6.990` | `8.197` (`0.1953`) | `0.025` | `0.156` |
+| `R1f` Offline FB MMSE | `3` | `inf / 3 s` | `6.395` | `7.597` (`0.0117`) | `0.008` | `0.044` |
+| **`R2e` `FilterSafe-8`** | **`8`** | **`0 / 3 s`** | **`6.849`** (`p_Holm=0.0117`) | **`8.063`** (**`0.0215`**, `10/11` inf.) | **`0.0197`** (**`0.9994`**) | **`0.0949`** |
+| `R3c` Spectral Ridge | `439` | `0 / 3 s` | `5.798` | `8.102` (`1.0000`) | `3.6353` (`0.7090`) | `11.7783` |
+| `R3b` Spectral MLP | `14,593` | `0 / 3 s` | `6.584` | `8.515` (`1.0000`) | `3.5022` (`0.9293`) | `32.7040` |
+| `R3a` Causal TCN | `15,817` | `0 / 3 s` | `6.075` | `8.498` (`1.0000`) | `3.1782` (`0.8623`) | `23.4714` |
 
-### 2. Four-Variant Cohort Multiverse (`HPSS - NMF`)
-Reproduced via `python3 main.py --multiverse` ([`reconstruction_multiverse.csv`](file:///Users/hosamshibly/Downloads/medical_radar/paper_workspace/outputs/audits/reconstruction_multiverse.csv)):
+- **Parsimony saturation:** `R2e` vs. `R1a` is Holm-non-significant ($p_{\mathrm{pat,Holm}} = 0.6641$ on `1 Hz`, $1.0000$ on `Trig -10 s`), showing benefit saturates around `3–8` physical parameters.
+- **Protocol disclosure:** `R3a`/`R3b` use one held-out validation infant for early stopping (`10` fit / `1` val in LOPO; Patient 12 held out for Stage 4 refit), whereas `R3c` and `R2*` train on all available training infants (`11` in Stage 4) and `R3c` still collapses externally.
 
-| Predefined Cohort Variant | Evaluable Sessions | Valid Windows | `NLS+NMF` RMSE | `HPSS+NLS` RMSE | $\Delta\text{RMSE}$ (bpm) | 95% Session Bootstrap CI | $\Delta\text{Acc@10}$ (pp) |
-| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| `all_paired_local` | 31 / 33 | 7,105 | 8.349 | 8.361 | **+0.012** | $[-0.456, +0.372]$ | $-0.35\text{ pp}$ |
-| `pool30_no_zero_overlap` | 28 / 30 | 6,642 | 8.181 | 8.085 | **−0.096** | $[-0.574, +0.287]$ | $-0.28\text{ pp}$ |
-| `retained23_named_exclusions` | 23 / 23 | 6,447 | 7.796 | 7.821 | **+0.025** | $[-0.202, +0.276]$ | $+0.19\text{ pp}$ |
-| `current_reference_validity_ranked_18` | 18 / 18 | 5,466 | 6.863 | 6.798 | **−0.065** | $[-0.249, +0.099]$ | $+0.39\text{ pp}$ |
+### 2. Stage 3 Uncertainty Quantification, Quiet-Pause Safety & Finite-$K$ Conformal Bounds (`R2e`)
 
-* **TOST Equivalence Calibration (`WS4`):** Under formal Two One-Sided Tests (TOST) at a pre-specified margin of $\delta = \pm 0.50\text{ bpm}$ (half the $1\text{ bpm}$ resolution of the clinical reference monitor), `HPSS+NLS` and `NLS+NMF` are statistically equivalent at $\alpha = 0.05$ across all four cohort variants (`PAPER_18`: $\delta^* = 0.225\text{ bpm}, p_{\text{TOST}} = 0.0001$; `retained23`: $\delta^* = 0.246\text{ bpm}, p_{\text{TOST}} = 0.0006$; `pool30`: $\delta^* = 0.489\text{ bpm}, p_{\text{TOST}} = 0.0456$; `all_paired_local`: $\delta^* = 0.385\text{ bpm}, p_{\text{TOST}} = 0.0171$; see [`phase3_ws4_tost_and_bootstrap.csv`](file:///Users/hosamshibly/Downloads/medical_radar/audit/phase3_ws4_tost_and_bootstrap.csv)).
-* **Controlled Single-Thread Timing Benchmark (`WS8`):** In a controlled single-thread benchmark (`OMP/BLAS threads=1`, GC-isolated, 5 warmup + $3\times 50$ timed windows on Session `7.3`; see [`phase3_ws8_timing_benchmark.csv`](file:///Users/hosamshibly/Downloads/medical_radar/audit/phase3_ws8_timing_benchmark.csv)), HPSS's core median-filter mask stage (`1.86 ± 0.11 ms`, median `1.84 ms`) is **9.2× faster** (`9.3×` median) than NMF's iterative solver + mask (`17.01 ± 0.59 ms`, median `17.08 ms`), **6.1–6.4× faster** across the full STFT separation filter block (`2.97 ms` vs. `18.17 ms` in benchmark; `2.78 ms` vs. `17.84 ms` across `PAPER_18` caches), and **5.1× faster** end-to-end per 30-s window (`3.72 ms` vs. `18.97 ms`). The batch builder is single-process/sequential and HPSS is 100% deterministic.
+- **Selective risk (`U2_Posterior_SD`, strictly zero-parameter & threshold-free):** Improves E-AURC across `10/11` infants on `1 Hz` (`-0.2454 bpm`, raw $p_{\mathrm{pat}} = 0.0098$, Holm $0.0781$) and `9/11` on `Trig -10 s` (`-0.2929 bpm`, raw $p_{\mathrm{pat}} = 0.0244$, Holm $0.1953$) while keeping quiet `>5 s` pause rejection near unity (`1.02x`).
+- **Pause-safety vs. OOD trade-off (`U6b`):** Memoryless spectral entropies (`U3`/`U4`: `1.39x–1.42x`) and the `5`-parameter regularized linear composite (`U6c`: `1.23x`, `1 Hz` CI `[-0.5926, +0.0266]`) violate the `<= 1.15x` pause-safety cap; `U6b` (zero-fitted-weight heuristic geometric barrier with $\tau_{\mathrm{ood}}=0.90$, 3-hop history) achieves `1.1275x` pooled / `1.1209x` session pause safety, `0.9986` WGN AUROC (`0.0036` FPR@95%TPR), and `0.9998` Stage 4 stopband AUROC.
+- **Finite-$K$ conformal limit:** At $K_{\mathrm{cal}}=10$ exchangeable calibration infants, $\alpha_{\min}=1/11\approx 0.0909$, rendering **95% patient-exchangeable split-conformal intervals vacuous (`width = inf`; $K_{\mathrm{cal}}\ge 19$ required)**; at `80%`, hierarchical adaptive calibration (`C5`) attains `0.8636` mean infant coverage (`2/11` undercovered) with **`24.02 bpm` mean full width** on NICU recordings (`18.02 bpm` / `100%` coverage in-band on external `gleichauf2024`).
 
-### 3. Final Independent Review (Weaknesses & Context)
-Reproduced by `python3 -m paper_workspace.src.final_review` (regenerates both `audit/final_review_*.json` artifacts with explicit `_definitions` blocks and PASS/FAIL self-checks); full inventory in [`audit/AUDIT_FINDINGS.md`](file:///Users/hosamshibly/Downloads/medical_radar/audit/AUDIT_FINDINGS.md) (Phase 5):
+### 3. Epistemic Claim-Gate Status
 
-* **Constant-predictor headroom:** both mitigated branches beat trivial constants on the two curated cohorts ($6.80$–$6.86$ vs. $8.02$ bpm; $7.80$–$7.82$ vs. $8.24$ bpm), but on the full cohorts a cohort-mean constant remains competitive-to-better ($7.81$–$7.86$ vs. pipeline $8.09$–$8.36$ bpm) — on the full uncurated cohort there is **no demonstrable within-session tracking benefit over predicting the cohort mean**.
-* **Weak within-session tracking:** mean within-session Pearson $r = 0.39$–$0.47$; $4/18$ (`PAPER_18`) and $9/31$ (`all_paired`) sessions have $r < 0.3$.
-* **Gross-error tail:** $14.8\%$ (NMF) / $14.3\%$ (HPSS) of `PAPER_18` valid windows exceed $10$ bpm error; heavy-motion windows pooled RMSE $8.32/7.81$ vs. $9.05$ unmitigated.
-* **No confidence gate:** Raw NLS on pure white noise emits plausible in-range rates (median $\approx 57$–$62$ bpm; $97\%$ within the `PAPER_18` reference range) — an in-range output is **not** evidence of captured respiration.
-* **Patient-level TOST is marginal at the widest cohort** (`all_paired_local`: CI90 bound $0.508 > 0.50$ bpm margin, $p = 0.0528$); the registered session-level TOST passes everywhere.
+| Level | Status | Scope |
+| :---: | :---: | :--- |
+| **`L0–L1`** | Authorized | Cryptographic `v1` parity (`0.0 bpm` on `33/33` caches) & `HPSS+NLS` vs. `NMF+NLS` TOST equivalence ($\pm 0.50\text{ bpm}$). |
+| **`L2`** | **BLOCKED** | Exact reproduction of Beltrao et al. (2022) [DOI `10.1038/s41598-022-08836-3`] `N=18` cohort/denominator/proprietary rules. |
+| **`L3 / L3+`** | Authorized | Strict `11`-infant LOPO evaluation, branch-neutral sync, dual references (`1 Hz` & `Trig -10 s`), Holm & symmetry audits. |
+| **`L4`** | Authorized | Zero-touch physical hardware transfer after Gate `G4` freeze onto external `24.2 GHz` phantom (`gleichauf2024`, 20 scenarios). |
+| **`L5`** | **BLOCKED** | Prospective clinical utility, autonomous apnea alarming, or wired-monitor replacement (`24.02 bpm` 80% clinical uncertainty gap). |
 
 ---
 
-## Repository Structure
+## Repository Map
 
 ```text
 medical_radar/
-├── README.md                          # Submission overview & reproduction guide
-├── RESEARCH_AND_ENGINEERING_LOG.md    # Complete history of versions, solved bugs, audits & lessons learned
-├── main.py                            # Unified command-line interface (CLI)
-├── beltrao_data/                      # Raw NICU radar CSVs (16 Hz), reference EDFs (256 Hz Resp / 1 Hz RespRate), & paper PDF
-└── paper_workspace/
-    ├── metadata/
-    │   ├── analysis_plan_v1.md        # Pre-specified evaluation protocol & estimands
-    │   ├── claim_gate_status.json     # Machine-readable scientific claim boundaries (L0–L5)
-    │   ├── cohort_ledger.csv          # 33-session SHA-256 input & exclusion evidence ledger
-    │   └── unresolved_protocol_items.yaml
-    ├── outputs/
-    │   ├── cache/                     # 33 SHA-256 provenance-locked .npz caches (main-v3-audit-fix-2)
-    │   ├── audits/                    # Multiverse & per-session CSV tables
-    │   ├── fig4_7.3_60s.png           # Beltrão Fig. 4 spectrogram reproduction
-    │   ├── fig5_7.3.png               # Beltrão Fig. 5 25-min tracking reproduction
-    │   ├── bland_altman_7.3.png       # Beltrão Fig. 5b Bland-Altman reproduction
-    │   ├── fig6_scenario_comparison.png # Beltrão Fig. 6 4-way scenario bar chart
-    │   ├── nmf_vs_hpss_spectrogram.png  # Extension Fig. 1: NMF vs HPSS spectrogram & waveform
-    │   ├── nmf_vs_hpss_tracking.png     # Extension Fig. 2: Session 7.3 tracking & Bland-Altman
-    │   ├── nmf_vs_hpss_cohort_benchmark.png # Extension Fig. 3: Cohort RMSE, Acc@10 & Runtime
-    │   ├── poster.html                # Self-contained printable HTML scientific poster
-    │   └── professor_audit.html       # Self-contained interactive professor briefing
-    └── src/
-        ├── config.py                  # Physical radar constants & locked algorithm parameters
-        ├── protocols.py               # Clinical posture, twin, and incubator lid metadata
-        ├── cohort.py                  # Cohort definitions (PAPER_18, pool30, retained23, local_pool)
-        ├── data_loader.py             # Raw I/Q CSV & EDF reference loader
-        ├── demod.py                   # Complex Signal Demodulation (CSD)
-        ├── filtering.py               # 64-tap Kaiser FIR bandpass (0.3–3.0 Hz, β=6.5) & coarse autocorrelation
-        ├── estimation.py              # Zero-padded DFT & Harmonic Nonlinear Least Squares (NLS)
-        ├── rbm_nmf.py                 # Baseline NMF + RBM detection + Wiener ratio mask + env_normalize
-        ├── hpss.py                    # Proposed fftshift-centered HPSS + soft Wiener mask + env_normalize
-        ├── lags.py                    # Metadata-anchored cross-correlation lag search
-        ├── evaluation.py              # Saturation-masked synchronization, valid-window gating, & metrics
-        ├── provenance.py              # Cryptographic SHA-256 cache provenance validator
-        ├── run_measurement.py         # Single-window & full-session 4-way runner
-        ├── run_all.py                 # Session orchestrator & scenario aggregator
-        ├── run_batch.py               # Sequential single-process batch cache builder
-        ├── compare_ab.py              # Anchor session 7.3 4-way A/B demo
-        ├── result_tables.py           # Fig. 6, Fig. 7, & pooled scenario tables
-        ├── build_metadata.py          # Cohort SHA-256 ledger generator
-        ├── reconstruction_multiverse.py # 4-cohort multiverse & bootstrap CI evaluator
-        ├── plot_figs.py               # Beltrão reproduction figure generator
-        ├── plot_nmf_vs_hpss.py        # NMF vs HPSS comparative figure generator
-        ├── test_pipeline.py           # 19-check unit, mathematical, provenance & Phase 1–4 audit regression test suite
-        ├── final_review.py            # Phase 5 final-review artifact regenerator (definitions + PASS/FAIL self-checks)
-        ├── requirements.txt           # Core Python dependencies
-        └── requirements-lock.txt      # Pinned reproducible environment (Python 3.9.6)
+├── README.md                          # Executive overview & reproduction quickstart
+├── REVIEWER_GUIDE.md                  # Chapter/Equation -> Exact File::Symbol(Lines) examiner map
+├── verify_submission.py               # 1-command SHA-256 + pytest (35/35) + metrics table verifier
+├── requirements-thesis.txt            # Python 3.10+ dependencies for thesis/ and tests/
+├── examples/filtersafe_tour.py        # Self-contained ~220-LOC runnable walkthrough
+├── notebooks/supervisor_code_tour.ipynb # Pre-executed GitHub-renderable tour with inline plots
+├── manuscript/                        # 109-page twoside LaTeX monograph (scrreprt, Tectonic)
+├── thesis/                            # Frozen Stages 0-4 Python modules (at commit 5e458c1)
+│   └── outputs/stage3_uncertainty/frozen_stage4_models.npz  # Tracked frozen Gate G4 weights (259 KB)
+├── tests/                             # 35/35 automated causality, invariance, BPTT & contract tests
+├── paper_workspace/                   # Locked Python 3.9.6 v1 baseline engine & 33 SHA-256 caches
+├── paper_orchestra_bundle/            # Raw audited JSON metrics, locked notation_glossary.tex, BibTeX & figures
+├── audit/                             # SHA-256 manifests (113/113) & clean-room verification logs
+├── beltrao_data/                      # Tracked test fixtures (Sessions 7.3 & 2.3) + MATLAB helpers
+├── external_data/gleichauf2024/       # Figshare 24.2 GHz phantom manifests (49/49 extracted SHA-256s)
+└── docs/baseline_archive/             # Archived student baseline project logs (AUDIT_PLAN, Engineering Log)
 ```
 
 ---
 
-## Reproducibility & Execution Guide
+## Manuscript Compilation & External Datasets
 
-### 1. Environment Setup
-```bash
-pip install -r paper_workspace/src/requirements.txt
-# Or install exact pinned versions:
-pip install -r paper_workspace/src/requirements-lock.txt
-```
-
-### 2. Reproduce All Verification Checks, Tables, Multiverse CSVs, and Figures
-All tasks are orchestrated through [`main.py`](file:///Users/hosamshibly/Downloads/medical_radar/main.py):
-
-```bash
-# 1. Run the 19-check unit, mathematical, provenance & Phase 1–4 audit regression test suite
-python3 main.py --test
-
-# 2. Run the 4-way A/B comparison on anchor session 7.3
-python3 main.py --demo
-
-# 3. Print Fig. 6 (scenario mean), Fig. 7 (minimal movement), and pooled tables
-python3 main.py --tables
-
-# 4. Rebuild the 33-session SHA-256 cohort ledger and 4-variant multiverse CSVs
-python3 main.py --multiverse
-
-# 5. Regenerate the two final-review audit JSONs (baselines, TOST, tracking, noise floor)
-python3 -m paper_workspace.src.final_review
-
-# 6. Regenerate all publication and comparative figures in paper_workspace/outputs/
-python3 main.py --plots
-
-# 7. Run the complete verification, table, multiverse, and figure pipeline end-to-end
-python3 main.py --all
-```
-
-To recompute all `.npz` caches from scratch (rather than using the verified SHA-256 locked caches):
-```bash
-# Rebuild all 33 paired-session caches (needed for the four-variant multiverse):
-python3 -m paper_workspace.src.run_batch --all-paired --force
-
-# Rebuild only the 18-session benchmark cohort (PAPER_18):
-python3 main.py --batch --force
-```
+- **Compile PDF (`109` pages, `0` errors, `0` warnings, `0` Overfull `>5 pt`):**
+  ```bash
+  tectonic -X compile -C --keep-logs --outdir manuscript/build manuscript/main_thesis.tex
+  ```
+- **Legacy `v1` Baseline Verification (`Python 3.9.6`):**
+  ```bash
+  /usr/bin/python3 -m paper_workspace.src.test_pipeline   # 19/19 checks pass on fresh clone
+  ```
+- **Re-running Full 28-Session / 20-Scenario `thesis/exp*.py` Sweeps (Optional):**
+  - Clinical NICU corpus (`33` sessions, `beltrao_data/`): referenced in Beltrao et al. (*Scientific Reports* 12, 5150, 2022, DOI [`10.1038/s41598-022-08836-3`](https://doi.org/10.1038/s41598-022-08836-3)), verified locally against `audit/postfix_manifest.sha256` (`154/154` baseline subset) and `paper_workspace/metadata/cohort_ledger.csv`.
+  - External 24.2 GHz neonatal thorax simulator (`3.58 GiB` extracted subset, `49` files, 20 scenarios): Gleichauf et al. (*Scientific Data* 11, 110, 2024, DOI [`10.1038/s41597-024-02946-5`](https://doi.org/10.1038/s41597-024-02946-5); Figshare collection [`10.6084/m9.figshare.c.6809370.v1`](https://doi.org/10.6084/m9.figshare.c.6809370.v1)), verified locally against [`external_data/gleichauf2024/extracted_manifest.json`](external_data/gleichauf2024/extracted_manifest.json).
+  - Precomputed master metric JSONs are tracked in git under [`paper_orchestra_bundle/raw_materials/`](paper_orchestra_bundle/raw_materials/), and `beltrao_data/` test fixtures (Sessions `7.3` & `2.3`) + [`frozen_stage4_models.npz`](thesis/outputs/stage3_uncertainty/frozen_stage4_models.npz) are bundled so `verify_submission.py`, `examples/filtersafe_tour.py`, `pytest`, and `test_pipeline` run cleanly out-of-the-box on any fresh clone.

@@ -1,0 +1,17 @@
+# Master's Thesis Research Pipeline Dependencies (Python 3.10+)
+# Verified environment on sealed baseline (commit 5e458c1):
+#   Python 3.10.19
+#   numpy==2.2.6, scipy==1.15.3, scikit-learn==1.7.2, pandas==2.3.3,
+#   matplotlib==3.10.8, pyEDFlib==0.1.42, pytest==9.2.0, PyMuPDF==1.27.1
+#
+# Note: The locked v1 baseline engine (paper_workspace/src/) uses
+# paper_workspace/src/requirements-lock.txt under Python 3.9.6.
+
+numpy>=1.26,<3
+scipy>=1.11
+scikit-learn>=1.4
+pandas>=2.0
+matplotlib>=3.8
+pyEDFlib>=0.1.36
+pytest>=8.0
+PyMuPDF>=1.24
