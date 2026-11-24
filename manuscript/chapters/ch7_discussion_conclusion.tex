@@ -1,0 +1,281 @@
+\chapter{Discussion, Clinical Readiness Gap, Limitations, and Conclusion}
+\label{ch:discussion_conclusion}
+
+This thesis examined contactless neonatal respiratory-rate estimation as a chain of
+measurement, signal processing, inference, and decision-making. The results do not support a
+single claim that a high-accuracy estimator is ready to replace a bedside monitor. They support a
+more bounded conclusion: in the evaluated cohort, a compact model with explicit signal and
+temporal structure was more robust than the tested unconstrained regressors; simple uncertainty
+scores and a fixed quality barrier exposed useful failure information; and independent phantom
+measurements demonstrated controlled hardware transfer. At the same time, differences between
+the available respiratory references, patient-level interval widths, and the absence of a
+prospective clinical evaluation leave bedside utility unresolved.
+
+The distinction matters because the output of a radar pipeline is not determined by its estimator
+alone. Synchronization changes which samples are compared. A monitor trend and a rate computed
+from individual respiratory triggers encode different timing and pause conventions. Filtering
+sets the range of rates the system can represent. Finally, selective rejection and interval
+calibration determine what a user sees when the signal becomes ambiguous. The following
+discussion interprets the thesis across these connected stages and states the resulting claim
+boundary explicitly.
+
+\section{What the results establish}
+\label{sec:ch7_synthesis}
+
+\subsection{The value and limits of physical inductive bias}
+
+The point-estimation results favor a structured, low-capacity model over the specific
+high-capacity regressors evaluated here. On the 11-infant, 28-session \texttt{pool30\_sync}
+cohort, the eight-parameter causal differentiable HMM R2e reduced equal-session RMSE relative to
+the memoryless R0 baseline by 0.9687~bpm on the 1~Hz monitor reference (95\% interval
+[$-1.1347,-0.8034$]; patient-level Holm-adjusted $p=0.0117$) and by 0.6635~bpm on the shared
+\texttt{Trig -10 s} reference ($[-0.8833,-0.4464]$; Holm-adjusted $p=0.0215$). The paired
+improvement appeared in 11/11 infants on the monitor reference and 10/11 on the lag-adjusted
+trigger reference. This is evidence for R2e over R0 within the frozen evaluation protocol; it is
+not evidence that the radar estimates a clinically adjudicated respiratory rate without error.
+
+The comparison with the three-parameter forward-MMSE model R1a is more restrained. R2e's
+one-hertz point estimate was 0.1418~bpm lower, but the patient-level comparison was not
+significant after multiplicity correction ($p_{\mathrm{pat}}=0.0830$;
+$p_{\mathrm{pat,Holm}}=0.6641$). The patient-level comparison on \texttt{Trig -10 s} was also
+non-significant ($p_{\mathrm{pat}}=0.5771$). Thus the evidence supports a useful gain over the
+memoryless baseline, while the cohort does not resolve whether eight parameters improve on the
+much smaller temporal model. This pattern is consistent with a practical saturation point: a
+small amount of causal temporal structure appears valuable, but the additional complexity of
+R2e has not been shown to yield a reliable patient-level gain over R1a.
+
+The unconstrained R3 regressors illustrate why parameter count alone is not the relevant
+comparison. Their apparent internal advantages varied by reference, and they showed variance
+shrinkage and weaker performance on the trigger-based evaluation. On the independent Stage~4
+phantom, their in-band scenario RMSEs were 3.18--3.64~bpm, while R2e's was 0.0197~bpm with a
+calibration slope of 0.9994. R3a and R3b used ten training infants, with one infant reserved for
+checkpoint selection; R3c and R2e used all eleven. The training difference is a fairness
+limitation, although R3c also showed substantial phantom error. The results therefore support
+physical and shift-equivariant constraints over these tested shortcuts in these evaluations, not
+a general conclusion that neural models cannot transfer. Shortcut learning is a recognized risk
+when models can exploit correlations that do not persist under shift \citep{geirhos2020shortcut}.
+
+The independent lines of evidence are complementary rather than interchangeable. Stage~2 tests
+patient-held-out estimation on NICU recordings; Stage~4 tests frozen algorithms on controlled
+stationary phantom motion. The Stage~4 benchmark comprised twenty conditions, fourteen in the
+filter's in-band range and six below it. R2e performed exceptionally on the stable in-band
+phantom signals, but Stage~4 contained no infants, spontaneous motion, clinical care, or bedside
+reference uncertainty. Its result supports the project's L4 claim of zero-touch physical
+transfer under the tested protocol. It cannot be used as evidence of L5 clinical utility.
+
+\subsection{Uncertainty is useful only when its operating limits are visible}
+
+The uncertainty analyses do not establish a second, independently validated clinical benefit.
+U2, posterior standard deviation, is attractive because it is a direct posterior-spread score
+with no fitted parameters or additional cutoff. Its session-level E-AURC was
+$-0.2454$~bpm (95\% interval [$-0.4069,-0.1168$]) on the monitor reference and
+$-0.2929$~bpm ([$-0.4555,-0.1436$]) on the trigger reference. At 80\% retained coverage it
+reduced the one-hertz session-macro RMSE from 6.8486 to 6.6890~bpm; 10/11 infants improved. The raw
+patient-level $p$-value was 0.0098, but the Holm-adjusted value was 0.0781. On the trigger
+reference, 9/11 infants improved and the raw $p$-value of 0.0244 became 0.1953 after Holm
+correction. The negative E-AURC estimates and these patient-level patterns are promising
+internal evidence, not multiplicity-adjusted confirmation that U2 improves clinical decisions.
+
+U6b addresses a different operating need: it combines posterior and spectral information to
+flag questionable signal windows while limiting rejection during quiet pause-like intervals.
+Its weights are not fitted, but it uses the fixed, empirically informed
+$\tau_{\mathrm{ood}}=0.90$ cutoff and a three-hop (6~s) history. At that setting the pause-rejection
+ratio was 1.1275 pooled and 1.1209 session-macro, within the project's 1.15 criterion; the
+synthetic white-noise AUROC was 0.9986, with a 0.0036 false-positive rate at 95\% sensitivity.
+On Stage~4, U6b separated the tested 5--10~bpm stopband conditions from in-band phantom motion
+with AUROC 0.9998. When the 20~bpm skirt was added to the out-of-band class, its AUROC fell to
+0.6686. Accordingly, the evidence supports a useful but fixed heuristic for the tested pause
+and corruption conditions. It does not establish a generally reliable OOD detector or a
+threshold-free method.
+
+The learned five-parameter U6c score provides a counterexample to treating selective-risk
+performance as the only criterion: although its risk--coverage point estimates were favorable,
+its pause-rejection ratio of 1.2266 exceeded the project's 1.15 limit. Conversely, U6b's safer
+pause ratio does not make it universally superior. Score ranking, pause preservation, corruption
+detection, and patient-level uncertainty are separate properties and should remain separately
+reported. In this cohort, a safe monitor design would expose quality or uncertainty to the
+operator without silently suppressing a potentially important pause.
+
+\section{The gap between phantom transfer and clinical readiness}
+\label{sec:ch7_readiness}
+
+The clearest quantitative readiness gap is the difference between Stage~4 point accuracy and
+Stage~3 patient-level uncertainty. R2e's 0.0197~bpm scenario-macro RMSE on the in-band phantom
+reflects a stable periodic signal with a laser reference. In the clinical cohort, the locally
+adaptive C5 interval procedure at an 80\% target had a mean full width of 24.02~bpm. Its mean
+patient coverage was 0.864, but the minimum was 0.586 and two of eleven infants were below the
+nominal target. The full width averaged 17.96~bpm in the lower-posterior-uncertainty group and
+30.54~bpm in the higher-uncertainty group. These widths are cohort-specific empirical results;
+they are not half-widths, and they do not establish a universal physical limit of 24~GHz radar.
+They show that, for this model, front end, cohort, and calibration design, intervals wide enough
+to cover patient-level errors can be poorly suited to narrow rate decisions.
+
+The finite-sample rank constraint is more fundamental to the current 95\% calibration claim. In
+each leave-one-patient-out fold, only ten infants are available for calibration. The patient-level
+order-statistic rank at 95\% is
+\[
+  \left\lceil (K_{\mathrm{cal}}+1)(1-0.05)\right\rceil
+  =\lceil 11\times0.95\rceil=11,
+\]
+which exceeds the ten observed calibration units. A finite patient-exchangeable 95\% interval
+therefore cannot be returned by this rank construction; its set is vacuous. At least
+$K_{\mathrm{cal}}=19$ independent calibration patients are required for a finite 95\% interval
+under this rule. That is a mathematical minimum for rank resolution, not a sufficient sample
+size for clinical validation, subgroup precision, or safe alarm evaluation. Repeated windows
+from the same infant do not increase the number of independent calibration patients. This
+distinction between window-level abundance and patient-level information is central to
+interpreting conformal intervals in clustered clinical data \citep{dunn2023distribution,barber2023conformal}.
+
+These interval results also need careful interpretation at the 80\% target. C5 is a two-level,
+locally adaptive calibration procedure informed by hierarchical conformal methods. If the same
+nominal level is used at both levels, the simple hierarchical coverage bound under the required
+assumptions is $(1-\alpha)^2=0.64$, not 0.80; the present analysis does not establish those
+assumptions or a distribution-free, per-infant 80\% guarantee \citep{dunn2023distribution}.
+Its reported coverage is empirical and heterogeneous across infants. Wider calibration sets or
+a different cohort could change both coverage and width. The 24.02~bpm mean full width is
+therefore best treated as a readiness diagnostic for the present single-channel pipeline, not
+as a sensor specification or immutable information-theoretic bound.
+
+The NICU recordings also contain plausible sources of ambiguity that are not represented by a
+stationary phantom. At the session level, the fraction of windows in the cardiac HR/2 collision
+band was associated with excess respiratory-rate error (Spearman $\rho=+0.696$,
+$p<10^{-4}$). This association is consistent with harmonic ambiguity but does not prove that
+cardiac motion caused the error. Session~11.1 had an I/Q standard-deviation ratio of 5.86,
+absolute I/Q correlation of 0.863, and clipping in 5.06\% of samples; its shared-lag RMSE was
+12.65~bpm. Session~9.2 also contained intervals where the recorded UCD status was not
+\texttt{ChildPresent}. Random body movement and receiver or firmware interruptions add further
+variation. These examples document observed failure contexts; they do not provide a causal
+decomposition of the whole cohort.
+
+The target reference itself is a limitation. The 1~Hz monitor stream and the trigger-derived
+rates do not measure exactly the same quantity. One comparison excludes inter-trigger gaps over
+five seconds, while a whole-window count includes the pause duration; these pause-like windows
+are not clinically adjudicated apnea diagnoses. Differences between references, monitor delay,
+and synchronization can all affect measured error. A prospective evaluation will need a
+prespecified reference protocol, explicit timing alignment, and a clear treatment of pauses,
+missingness, and alarm events. Neither the present internal references nor the stationary
+phantom can show that a radar alarm would improve outcomes or safely replace a wired monitor.
+
+Label-dependent online conformal adaptation does not remove this gap by itself. In standard
+adaptive conformal inference, the update uses the realized miss indicator
+$e_t=\mathbb{1}\{y_t\notin\widehat{C}_t(\alpha_t)\}$ to modify the next miscoverage level, for example
+\[
+  \alpha_{t+1}=\alpha_t+\gamma(\alpha-e_t).
+\]
+The indicator cannot be computed until a reference respiratory rate is observed. If a bedside
+system has no concurrent reference label, this feedback update is unavailable; it cannot
+autonomously adapt its interval from the radar stream alone. ACI and related online methods remain
+possible in a supervised shadow study, or with delayed and independently measured labels, but
+their label requirement and operational delay must be part of the design \citep{gibbs2024conformal,angelopoulos2024conformal}.
+
+\section{Limitations and claim boundaries}
+\label{sec:ch7_limitations}
+
+Several limitations qualify the conclusions. First, the internal cohort contains eleven infants
+and 28 synchronized sessions. The infant, rather than the one-hertz window, is the relevant
+independent unit for claims about performance across patients. This sample constrains power for
+close model comparisons, subgroup analysis, and patient-level conformal calibration. In
+particular, failure to detect an R2e--R1a difference is not proof of equivalence.
+
+Second, the references are imperfect and operationally distinct. The monitor trend has temporal
+smoothing and delay; respiratory-trigger rates depend on trigger timing and on whether long gaps
+are omitted from the rate denominator. The chapter results consequently answer a comparison
+question under defined reference constructions, not an absolute measurement-accuracy question
+against a universally valid gold standard. Patient-level analyses reduce the risk of treating
+correlated windows as independent evidence, but they cannot resolve uncertainty in the reference
+labels themselves.
+
+Third, the acquisition and front-end choices bound the observable rate range. The locked
+64-tap zero-phase Kaiser FIR passband is 0.30--3.00~Hz. The 5--10~bpm phantom conditions lie
+below its lower edge, and rates in that region cannot be inferred reliably from the current
+filtered representation. Raising the low-frequency response or changing the window and
+separation stages could extend the range, but those changes would alter the frozen pipeline and
+require new tests of latency, motion artifacts, harmonic confusion, and patient-level safety.
+The present work does not validate severe bradypnea detection.
+
+Fourth, some uncertainty design choices remain empirical. U6b's fixed cutoff of 0.90 and
+three-hop history satisfy the selected pause and white-noise criteria on this cohort, while
+nearby choices reveal a trade-off. The HQI harmonic-deficit normalization also compresses its
+observed range and is highly correlated with an alternative non-overlapping denominator
+(Spearman $\rho=0.999945$); this is a reason to interpret its scale cautiously, even though the
+ranking is similar. These engineering decisions should be frozen before external clinical
+testing and assessed across receiver settings and care conditions.
+
+Fifth, Stage~4 is deliberately narrow. It tests stationary sinusoidal phantom movement on
+independent 24.2~GHz hardware and supports a zero-touch L4 transfer result for the tested
+protocol. The performance does not establish transfer to infants, across institutions, or to
+different radar placements and waveforms. Exact reproduction of the original Beltr\~ao et al.
+clinical subset also remains unresolved because cohort identifiers, the precise denominator,
+and parts of the synchronization and solver protocol are unavailable. The work therefore does
+not claim exact reproduction of that study (L2), nor clinical bedside utility, autonomous apnea
+alarming, or superiority to wired NICU monitoring (L5) \citep{beltrao2022contactless}.
+
+These boundaries are consistent with broader reviews of neonatal non-contact and wireless
+monitoring, which report small studies, limited evaluation of feasibility and safety, and
+methodological gaps alongside technical promise \citep{senechal2026next}. Such context does not
+validate or invalidate the present estimator; it reinforces the need to evaluate signal
+availability, safety, reference quality, and workflow in addition to point accuracy.
+
+\section{Next research steps}
+\label{sec:ch7_future}
+
+The next phase should address both sensing ambiguity and the lack of independent patient-level
+evidence. On the engineering side, multi-antenna or wideband FMCW measurements could provide
+range and spatial information that a single-channel CW system does not observe. Range-bin
+isolation may help distinguish thoracic motion from other moving reflectors, while optical or
+time-of-flight channels could provide complementary motion information. These are research
+directions, not guaranteed fixes: additional channels introduce calibration, synchronization,
+privacy, and device-integration requirements. Recent neonatal radar and multimodal studies
+provide relevant starting points for controlled comparisons \citep{liao2025noncontact,hari2025contactless,gleichauf2021automated}.
+
+The statistical work should first expand the number of independent infants. Nineteen calibration
+patients is the rank-based minimum for a finite patient-level 95\% interval under the stated
+order-statistic rule; a larger multicenter cohort will be needed to estimate performance across
+gestational ages, body sizes, clinical support, motion states, and sites. The final sample size
+should follow a prespecified precision or power calculation and account for unusable recordings
+and site-level variation. Calibration and evaluation must be separated at the patient and,
+where appropriate, site level. Any proposed conformal procedure should be audited for its actual
+exchangeability unit, finite-sample rank, coverage by patient and subgroup, interval width, and
+behavior under distribution shift rather than relying on a stored validity flag alone.
+
+Clinical testing should proceed prospectively in shadow mode while existing monitoring remains
+available. The protocol should define the intended use before data collection: respiratory-rate
+trend display, quality warning, or candidate alarm support are different functions and require
+different endpoints. It should measure usable-data availability, time alignment, error and
+coverage by infant, false and missed alarms, alert delay, pause handling, and the burden of
+non-actionable alerts. Any transition toward interventional use would require ethics review,
+appropriate parent or guardian consent, privacy and data-governance protections, and a clear
+clinical oversight and escalation pathway. The safety case must make abstention visible and must
+not turn a rejected radar window into silence when the underlying event could be clinically
+important.
+
+\section{Ethics, reproducibility, and conclusion}
+\label{sec:ch7_ethics_conclusion}
+
+The principal ethical constraint is to avoid presenting a research estimate as a replacement for
+clinical observation. In particular, a quality filter that rejects a pause-like window can hide
+the very period that requires review. Future interfaces should distinguish a low-confidence
+estimate from a low respiratory rate, preserve access to the underlying signal and quality
+status, and defer clinical action to an approved workflow. Data use, access, storage, and any
+future model update must follow the applicable institutional and clinical governance. The use
+of Paper Orchestra and other AI-assisted drafting or editorial tools should be disclosed
+in the required authorship declaration, including the tools and scope of assistance and the
+distinction between editorial support and scientific analysis. Responsibility for the scientific
+claims, analyses, and final text remains with the author.
+
+The project records a frozen analysis basis at commit \texttt{5e458c1}, with the legacy baseline
+environment identified as Python~3.9.6 and the WP1--WP5 research pipeline as Python~3.10.19.
+The reproducibility appendix reports integrity checks for the archived scripts, caches,
+figures, bibliography, and notation contract. Those records support review of how the reported
+results were produced; they do not substitute for independent replication or release of data
+that cannot ethically or legally be shared.
+
+In conclusion, this thesis finds that a compact, physics-constrained causal estimator can
+outperform a memoryless baseline across two defined NICU references and can transfer with very
+low error to an independent stationary phantom. It also shows that posterior uncertainty and a
+carefully selected quality barrier can help characterize when estimates may be unreliable, while
+finite patient counts impose sharp limits on interval resolution. The evidence is strongest for
+the value of explicit structure and disciplined evaluation within the tested system. It remains
+insufficient for a claim of prospective bedside utility. The responsible next step is larger,
+patient-level, multicenter validation with transparent uncertainty, preserved standard care, and
+predefined safety outcomes.

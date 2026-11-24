@@ -1,0 +1,140 @@
+\begin{figure}[htbp]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[
+  x=1cm, y=1cm,
+  font=\footnotesize\sffamily,
+  >=Stealth,
+  blk/.style={
+    draw=oiBlue!80!black, fill=oiLightBg, rounded corners=3pt,
+    thick, align=center, inner sep=4pt
+  },
+  gate/.style={
+    draw=oiVermilion!85!black, fill=oiWarnBg, rounded corners=2pt,
+    thick, align=center, inner sep=3.5pt, font=\scriptsize\sffamily
+  },
+  safe/.style={
+    draw=oiGreen!80!black, fill=oiSafeBg, rounded corners=3pt,
+    thick, align=center, inner sep=4pt
+  },
+  blockbadge/.style={
+    draw=oiVermilion!85!black, fill=oiVermilion!12, rounded corners=2pt,
+    thick, align=center, inner sep=3pt, font=\scriptsize\sffamily
+  },
+  passbadge/.style={
+    draw=oiGreen!80!black, fill=oiSafeBg, rounded corners=2pt,
+    thick, align=center, inner sep=3pt, font=\scriptsize\sffamily
+  }
+]
+
+% --- BAND A: Strictly non-overlapping vertical zones via anchor=north ---
+% Top heading: y = 12.60 .. 12.95
+\node[font=\small\bfseries\sffamily, anchor=south west,
+      text=oiBlue!85!black] at (0, 12.60)
+  {A. Causal signal-processing, inference, and safety pipeline};
+
+% Top blocks: top y = 12.40 down to min y ~ 10.25
+\node[blk, anchor=north west, text width=2.45cm, minimum height=2.05cm] (raw)
+  at (0.05, 12.40)
+  {\textbf{24\,GHz CW I/Q}\\[2pt]
+   $\iqComplex=\iqI+j\iqQ$\\
+   $\fsRadar=\SI{16}{\hertz}$, $\winSec=\SI{30}{\second}$};
+
+\node[blk, anchor=north west, text width=2.60cm, minimum height=2.05cm] (prep)
+  at (3.10, 12.40)
+  {\textbf{WP1 and filter}\\[2pt]
+   $\csdSignal=\mathrm{csd}(\iqComplex)$\\
+   Kaiser FIR \SIrange{0.3}{3.0}{\hertz}\\
+   (64 taps, $\kaiserBeta=6.5$)};
+
+\node[blk, anchor=north west, text width=2.85cm, minimum height=2.05cm] (hpss)
+  at (6.30, 12.40)
+  {\textbf{WP2 STFT/HPSS}\\[2pt]
+   Rect.\ $48/16/256$\\
+   $\hpssMask=\dfrac{\hpssHarm^2}{\hpssHarm^2+\hpssPerc^2+\varepsilon}$\\
+   (\SI{3.0}{\second} lookahead)};
+
+\node[blk, anchor=north west, text width=2.75cm, minimum height=2.05cm] (rungs)
+  at (9.75, 12.40)
+  {\textbf{Rung 0--3 tracking}\\[2pt]
+   R0 (0p) / R1 (3p)\\
+   R2e FilterSafe (8p)\\
+   Foils R3 (439--16k)};
+
+\node[safe, anchor=north west, text width=2.55cm, minimum height=2.05cm,
+      font=\scriptsize\sffamily] (uq)
+  at (13.05, 12.40)
+  {\textbf{WP4 UQ \& conformal}\\[2pt]
+   U2 post.\ SD (0p)\\
+   U6b barrier ($\tau_{\mathrm{ood}}=0.90$)\\
+   C5 patient quantiles};
+
+\draw[->, thick, oiBlue!85!black] (raw.east) -- (prep.west);
+\draw[->, thick, oiBlue!85!black] (prep.east) -- (hpss.west);
+\draw[->, thick, oiBlue!85!black] (hpss.east) -- (rungs.west);
+\draw[->, thick, oiBlue!85!black] (rungs.east) -- (uq.west);
+
+% Gates row: top y = 9.75 down to y ~ 8.85 (at least 0.50 cm clear below y=10.35)
+\node[gate, anchor=north, text width=2.60cm, minimum height=0.82cm] (g1)
+  at (4.55, 9.75)
+  {\textbf{Gate G1: retain F0}\\F1--F3 Holm $p=1.0$};
+\node[gate, anchor=north, text width=2.80cm, minimum height=0.82cm] (g2)
+  at (7.87, 9.75)
+  {\textbf{Gate G2: retain H0}\\TOST $\pm\SI{0.5}{\bpm}$ fail};
+\node[gate, anchor=north, text width=2.65cm, minimum height=0.82cm] (g4)
+  at (14.47, 9.75)
+  {\textbf{Gate G4: hard freeze}\\SHA \texttt{af33a83e}; 0p ext.};
+
+\draw[->, dashed, oiVermilion!80!black] (prep.south) -- (g1.north);
+\draw[->, dashed, oiVermilion!80!black] (hpss.south) -- (g2.north);
+\draw[->, dashed, oiVermilion!80!black] (uq.south) -- (g4.north);
+
+% --- ROUTING BUS at y = 8.40 & y = 8.20 (well above Section B heading at y = 7.65) ---
+% --- BAND B heading at y = 7.65 .. 8.00 ---
+\node[font=\small\bfseries\sffamily, anchor=south west,
+      text=oiBlue!85!black] at (0, 7.55)
+  {B. Evaluation design and claim gates};
+
+% Bottom evaluation boxes: top y = 7.35 down to y = 5.85
+\node[blk, anchor=north west, text width=7.10cm, minimum height=1.45cm] (internal)
+  at (0.05, 7.35)
+  {\textbf{Internal LOPO ($K=11$, $\sessCount=28$)}\\[2pt]
+   \SI{1}{\hertz} trend versus \SI{1024}{\hertz} trigger ($-\SI{10}{\second}$)\\
+   Quiet apnea ($>\SI{5}{\second}$, $n=1581$) and WGN OOD};
+
+\node[safe, anchor=north west, text width=7.10cm, minimum height=1.45cm] (external)
+  at (8.40, 7.35)
+  {\textbf{External zero-touch (\texttt{L4})}\\[2pt]
+   \SI{24.2}{\giga\hertz} phantom (\texttt{gleichauf2024})\\
+   14 in-band ($\ge\SI{28}{\bpm}$) plus 6 sub-band scenarios};
+
+% Route rungs -> internal cleanly right of Section B heading (~5.4 cm wide)
+\draw[->, thick, oiGray] (rungs.south) |- (6.95, 8.35) -- (6.95, 7.35);
+\draw[->, thick, oiGreen!80!black] (g4.south) |- (12.10, 8.35) -- (12.10, 7.35);
+\draw[->, thick, oiBlue!85!black] (internal.east) -- (external.west);
+
+% Band C: Epistemic Claim Gates cleanly below y = 5.45
+\node[font=\scriptsize\bfseries\sffamily, anchor=south west,
+      text=oiGray] at (0.05, 5.15) {Epistemic claim gates};
+
+\node[passbadge, anchor=north west, text width=2.65cm, minimum height=0.78cm] (l01)
+  at (0.05, 4.98) {\textbf{L0--L1}\\Parity authorized};
+\node[blockbadge, anchor=north west, text width=2.65cm, minimum height=0.78cm] (l2)
+  at (3.25, 4.98) {\textbf{L2 blocked}\\Exact cohort};
+\node[passbadge, anchor=north west, text width=2.65cm, minimum height=0.78cm] (l3)
+  at (6.45, 4.98) {\textbf{L3 / L3+}\\Internal LOPO};
+\node[passbadge, anchor=north west, text width=2.65cm, minimum height=0.78cm] (l4)
+  at (9.65, 4.98) {\textbf{L4 pass}\\Gate G5 verified};
+\node[blockbadge, anchor=north west, text width=2.65cm, minimum height=0.78cm] (l5)
+  at (12.85, 4.98) {\textbf{L5 blocked}\\Bedside utility};
+
+\begin{pgfonlayer}{background}
+  \node[draw=oiGray!45, dashed, rounded corners=3pt, fit=(l01)(l2)(l3)(l4)(l5),
+        inner sep=6pt, fill=white] {};
+\end{pgfonlayer}
+
+\end{tikzpicture}%
+}
+\caption[End-to-End Pipeline and Claim-Gate Architecture]{End-to-end 24\,GHz CW radar respiratory-monitoring pipeline, verification gates (\texttt{G1}, \texttt{G2}, \texttt{G4}, \texttt{G5}), dual-reference 11-infant LOPO evaluation, zero-touch 24.2\,GHz external transfer, and strict epistemic claim boundaries blocking \texttt{L2} and \texttt{L5}.}
+\label{fig:ch1_architecture}
+\end{figure}

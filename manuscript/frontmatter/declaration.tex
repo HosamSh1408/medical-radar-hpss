@@ -1,0 +1,54 @@
+\chapter*{Declaration of Authorship}
+\addcontentsline{toc}{chapter}{Declaration of Authorship}
+\markboth{Declaration of Authorship}{Declaration of Authorship}
+
+{\sloppy
+I hereby certify that I have written this Master's Thesis titled
+\emph{``\ThesisTitle''}
+independently, that I have not submitted it elsewhere for examination purposes,
+and that I have used only the sources, datasets, and computational aids
+explicitly declared herein. All passages quoted verbatim or adapted closely
+from published or unpublished works are marked as such and cited appropriately.
+\par}
+
+\vspace{0.75cm}
+\noindent
+\begin{tabular}{@{}p{6.8cm}@{\hspace{2.4cm}}p{6.8cm}@{}}
+  \rule{6.8cm}{0.5pt} & \rule{6.8cm}{0.5pt} \\
+  \small\SubmissionPlace, Date & \small\ThesisAuthor\ (\ThesisMatriculation) \\
+\end{tabular}
+
+\vspace{0.85cm}
+\section*{Disclosure of Generative AI Tooling and Scientific Software Provenance}
+
+In accordance with BTU Cottbus--Senftenberg examination regulations for Module~13600,
+all software environments, frozen artifact manifests, and AI-assisted editorial workflows
+used in executing and documenting this research are disclosed transparently in
+Table~\ref{tab:ai_software_provenance}. All mathematical formulations, hypothesis tests,
+source-code verification controls, and scientific claims were verified deterministically
+directly from immutable output logs prior to manuscript compilation.
+
+\begin{table}[h!]
+  \centering
+  \footnotesize
+  \caption{Software Provenance, Frozen Manifests, and Generative AI Tooling Disclosure.}
+  \label{tab:ai_software_provenance}
+  \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{4.0cm} >{\raggedright\arraybackslash}X@{}}
+    \toprule
+    \textbf{Component / Aid} & \textbf{Declared Scope and Verification Safeguard} \\
+    \midrule
+    Locked \texttt{v1} Baseline Engine &
+    Python~3.9.6 (\texttt{paper\_\allowbreak workspace/\allowbreak src/}, \texttt{main-v3-audit-fix-2}, commit \texttt{6b19fdd}); \texttt{154/154} SHA-256 baseline hashes, \texttt{33/33} caches, and \texttt{19/19} unit tests verified untouched throughout all thesis experiments. \\
+    \addlinespace
+    \texttt{WP1--WP5} Research Pipeline &
+    Python~3.10.19 (\texttt{thesis/*.py}, \texttt{tests/*.py}); sealed permanently at commit \FrozenGitCommit{} (\texttt{113/113} freeze manifest hashes, \texttt{35/35} pytest invariance, gradient, and causality checks); frozen Stage~4 archive \FrozenArchiveHash{}. \\
+    \addlinespace
+    Clinical \& External Data &
+    Preterm NICU 24\,GHz CW radar corpus (\texttt{beltrao\_data/}, $K=11$ synced infants, $S=28$ primary sessions) and public 24.2\,GHz neonatal thorax simulator benchmark (\texttt{external\_\allowbreak data/\allowbreak gleichauf2024/}, \texttt{49/49} manifest hashes, zero-touch \texttt{L4} run only). \\
+    \addlinespace
+    Generative AI \& Editorial Tooling &
+    AI engineering and writing assistance (Antigravity agentic coding/verification harness and \texttt{PaperOrchestra} modular outline preparation protocol) was used for test-suite authoring, adversarial red-team auditing, figure-layout scripting, and LaTeX manuscript drafting/typesetting. Every quantitative value, statistical test, citation key, and LaTeX theorem/figure was machine-checked against raw JSON outputs, source-code ASTs, and compiled PDF inspection. \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+\cleardoublepage

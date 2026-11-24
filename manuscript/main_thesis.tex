@@ -1,0 +1,136 @@
+% =============================================================================
+% main_thesis.tex — Master Document (KOMA-Script scrreprt, A4, XeTeX/Tectonic)
+% =============================================================================
+\documentclass[
+  11pt,
+  a4paper,
+  oneside,
+  bibliography=totoc,
+  listof=totoc,
+  numbers=noenddot
+]{scrreprt}
+
+% --- Page Geometry (16.0 cm text width cleanly accommodates nomenclature tables) ---
+\usepackage[
+  a4paper,
+  left=2.5cm,
+  right=2.5cm,
+  top=2.5cm,
+  bottom=2.5cm,
+  headheight=18pt
+]{geometry}
+
+% --- Fonts, Microtypography & Line Spacing ---
+\usepackage{fontspec}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{setspace}
+\setstretch{1.25}
+
+% --- Mathematics, Tables & SI Units ---
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage{booktabs,longtable,array,tabularx,multirow}
+\usepackage{siunitx}
+\DeclareSIUnit{\bpm}{bpm}
+\sisetup{
+  detect-all=true,
+  per-mode=symbol,
+  range-phrase=\text{--},
+  range-units=single
+}
+
+% --- Graphics, Colors & Pure-TikZ Diagrams ---
+\usepackage{graphicx}
+\graphicspath{{../paper_orchestra_bundle/raw_materials/figures/}}
+\usepackage[table]{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,fit,backgrounds,calc}
+
+% Okabe-Ito Colorblind-Safe Palette (matched across Matplotlib & TikZ figures)
+\definecolor{oiBlue}{HTML}{0072B2}
+\definecolor{oiVermilion}{HTML}{D55E00}
+\definecolor{oiGreen}{HTML}{009E73}
+\definecolor{oiOrange}{HTML}{E69F00}
+\definecolor{oiSky}{HTML}{56B4E9}
+\definecolor{oiPurple}{HTML}{CC79A7}
+\definecolor{oiGray}{HTML}{595959}
+\definecolor{oiLightBg}{HTML}{F7F9FB}
+\definecolor{oiWarnBg}{HTML}{FFF5F0}
+\definecolor{oiSafeBg}{HTML}{F0F9F6}
+
+% --- Headers, Captions & Floats ---
+\usepackage[automark,headsepline]{scrlayer-scrpage}
+\clearpairofpagestyles
+\ihead{\headmark}
+\ohead{\pagemark}
+\pagestyle{scrheadings}
+
+\usepackage{enumitem}
+\setlist{nosep,topsep=4pt}
+
+% --- Citations (bib entries verified 71/71 in seed_references.bib) ---
+\usepackage[numbers,sort&compress]{natbib}
+
+% --- Centralized Metadata & Locked Notation Contract ---
+\input{metadata.tex}
+
+\def\NOTATIONMACROSONLY{1}
+\input{../paper_orchestra_bundle/raw_materials/notation_glossary.tex}
+
+% --- Hyperlinks & Smart Cross-References (load last) ---
+\usepackage[
+  colorlinks=true,
+  linkcolor=oiBlue!85!black,
+  citecolor=oiBlue!85!black,
+  urlcolor=oiBlue!85!black,
+  pdftitle={Physics-Constrained Machine Learning for Contactless Neonatal Radar Respiratory Monitoring},
+  pdfauthor={Hosam Shibly}
+]{hyperref}
+\usepackage[noabbrev,capitalize,nameinlink]{cleveref}
+
+% Clean float placement defaults
+\renewcommand{\topfraction}{0.90}
+\renewcommand{\bottomfraction}{0.80}
+\renewcommand{\textfraction}{0.10}
+\renewcommand{\floatpagefraction}{0.75}
+
+% =============================================================================
+\begin{document}
+
+% --- FRONT MATTER (Roman Page Numbers) ---
+\pagenumbering{roman}
+\input{frontmatter/titlepage.tex}
+\input{frontmatter/declaration.tex}
+\input{frontmatter/abstract.tex}
+
+\cleardoublepage
+\tableofcontents
+\cleardoublepage
+\listoffigures
+\cleardoublepage
+\listoftables
+
+% --- MAIN MATTER (Arabic Page Numbers) ---
+\cleardoublepage
+\pagenumbering{arabic}
+
+\include{chapters/ch1_introduction}
+\include{chapters/ch2_physics_related_work}
+\include{chapters/ch3_forensics_viterbi}
+\include{chapters/ch4_parsimony_complexity}
+\include{chapters/ch5_uncertainty_conformal}
+\include{chapters/ch6_external_transfer}
+\include{chapters/ch7_discussion_conclusion}
+
+% --- BIBLIOGRAPHY ---
+\cleardoublepage
+\bibliographystyle{unsrtnat}
+\bibliography{../paper_orchestra_bundle/raw_materials/seed_references}
+
+% --- APPENDICES ---
+\appendix
+\include{appendices/appendix_notation}
+\include{appendices/appendix_tables}
+\include{appendices/appendix_reproducibility}
+
+\end{document}

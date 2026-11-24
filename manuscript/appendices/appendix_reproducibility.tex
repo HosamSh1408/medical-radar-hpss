@@ -1,0 +1,25 @@
+\chapter{Reproducibility Manifests and Dual-Interpreter Verification}
+\label{app:reproducibility}
+
+All empirical results, statistical hypothesis tests, and vector figures in this thesis are backed
+by an immutable dual-interpreter execution contract sealed prior to manuscript drafting on branch
+\texttt{thesis/main} at commit \FrozenGitCommit{}:
+
+\begin{itemize}\raggedright
+  \item \textbf{Locked \texttt{v1} Baseline Verification (\texttt{Python 3.9.6}):}
+    \texttt{DEVELOPER\_\allowbreak DIR=\allowbreak /Library/\allowbreak Developer/\allowbreak CommandLineTools}
+    \texttt{PYTHONDONTWRITEBYTECODE=1}
+    \texttt{/usr/\allowbreak bin/\allowbreak python3 -m paper\_\allowbreak workspace.\allowbreak src.\allowbreak test\_\allowbreak pipeline}
+    verifies \texttt{19/19} baseline unit tests and \texttt{154/154} SHA-256 baseline manifest files
+    plus \texttt{33/33} locked caches (\texttt{main-v3-audit-fix-2}).
+  \item \textbf{Research Experiment \& Adversarial Control Suite (\texttt{Python 3.10.19}):}
+    \texttt{PYTHONDONTWRITEBYTECODE=1} \texttt{MPLCONFIGDIR=/tmp/mpl} \texttt{OMP\_\allowbreak NUM\_\allowbreak THREADS=1}
+    \texttt{/opt/\allowbreak homebrew/\allowbreak bin/\allowbreak python3.10 -m pytest --rootdir=. -v}
+    verifies \texttt{35/35} causal, $O(2)\times\mathbb{R}_{>0}$-invariance, finite-difference BPTT gradient,
+    and external transfer tests.
+  \item \textbf{Artifact Integrity:}
+    \texttt{shasum -a 256 -c audit/\allowbreak thesis\_\allowbreak freeze\_\allowbreak manifest.sha256}
+    verifies \texttt{113/113} frozen scripts, JSON caches, figures, bibliography, and notation contract
+    files, with frozen Stage~4 model archive SHA-256
+    \texttt{af33a83e\allowbreak 157f7d2e\allowbreak fb0f47e5\allowbreak 0c9544ee\allowbreak 19bacb7d\allowbreak a88ab0e0\allowbreak 235ccead\allowbreak 029cbcc4}.
+\end{itemize}

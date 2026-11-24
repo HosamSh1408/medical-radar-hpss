@@ -1,0 +1,326 @@
+\chapter{Introduction}
+\label{ch:introduction}
+
+\section{Clinical Motivation and Contactless NICU Monitoring}
+\label{sec:ch1_motivation}
+
+Premature infants born before $37$ weeks of gestational age require uninterrupted cardiorespiratory
+surveillance in the Neonatal Intensive Care Unit (NICU) to detect tachypnea, periodic breathing,
+and central or mixed apnea episodes before severe bradycardia and hypoxemia occur
+\citep{beltrao2022contactless,krbec2024emerging,senechal2026next}. In routine clinical care,
+continuous breathing rate ($\brRef$) is derived primarily via thoracic impedance pneumography
+measured across adhesive electrocardiogram (ECG) electrodes or via nasal thermistors. Although
+clinically entrenched, wired contact sensors inflict epidermal stripping on underdeveloped preterm
+stratum corneum, restrict kangaroo mother care and routine nursing handling, exacerbate
+environmental stress, and suffer chronic false-alarm fatigue triggered by superficial lead detachment
+and infant movement \citep{beltrao2022contactless,krbec2024emerging,lee2020feasibility}.
+
+Contactless radio-frequency (RF) Doppler radar offers a physically compelling alternative: coherent
+microwave or millimeter-wave transceivers penetrate cotton swaddles, incubator canopies, and plastic
+bassinets without optical illumination, line-of-sight skin exposure, or ionizing radiation
+\citep{droitcour2004range,li2013review,kim2019noncontact,liao2025noncontact,hari2025contactless}.
+At a continuous-wave (CW) quadrature carrier frequency of $\carrierFreq = \SI{24}{\giga\hertz}$
+(free-space wavelength $\radarLambda = \speedLight/\carrierFreq = \SI{12.5}{\milli\meter}$), a
+preterm thoracic excursion $\chestDisp$ of merely \SIrange{0.2}{1.5}{\milli\meter} modulates the
+reflected RF carrier phase $\phaseSig = \phaseZero + \frac{4\pi}{\radarLambda}\chestDisp$ across
+measurable quadrature baseband channels $\iqComplex = \iqI + j\iqQ$
+\citep{li2008random,morgan2009novel,beltrao2022contactless,gleichauf2021automated}. Compared with
+ultra-wideband impulse radar (IR-UWB) \citep{kim2019noncontact,lee2020feasibility,wang2020experimental}
+or frequency-modulated continuous-wave (FMCW) millimeter-wave arrays \citep{liao2025noncontact},
+single-channel \SI{24}{\giga\hertz} CW radar minimizes radio complexity, spectral bandwidth, and
+cost, making bedside retrofit atop acrylic incubators logistically straightforward
+\citep{beltrao2022contactless,gleichauf2021automated,schellenberger2020dataset}.
+
+Despite promising feasibility reports, however, a systematic review encompassing $60$
+observational neonatal monitoring studies \citep{senechal2026next} alongside recent engineering
+appraisals \citep{krbec2024emerging,gleichauf2024time} highlights a persistent translational gap
+between prototype point-accuracy summaries and safety-critical clinical deployment. Four
+interlocking technical barriers explain why bedside adoption remains elusive: electromagnetic
+intermodulation from cardiac motion, weak methodological controls on tiny cohorts ($K \approx
+10\text{--}20$ infants), susceptibility of high-capacity neural models to dataset shortcuts, and
+the absence of apnea-safe uncertainty quantification.
+
+\section{Problem Statement: Inductive Bias, Shortcut Learning, and Unaudited Uncertainty}
+\label{sec:ch1_problem}
+
+Reconstructing preterm breathing rates from single-channel \SI{24}{\giga\hertz} CW radar inside an
+active NICU exposes four concrete scientific and statistical vulnerabilities that prior studies
+frequently leave unexamined:
+
+\begin{enumerate}
+  \item \textbf{Synchronization Leakage and Reference Ambiguity (\texttt{WP0}):}
+    Because preterm infants typically breathe between $30$ and $80$ breaths per minute (\si{bpm})
+    while resting heart rates occupy \SIrange{120}{180}{bpm}, weak first-order thoracic motion is
+    frequently confounded by fundamental cardiac motion ($f_h$), cardiac subharmonic aliasing
+    ($f_h/2 \in [60,90]\,\mathrm{bpm}$), respiratory Bessel harmonics ($2\brRef$) driven by
+    Jacobi--Anger phase nonlinearity $\besselJ{n}{\modIndex}$ \citep{morgan2009novel}, and episodic
+    random body movements (RBM) \citep{li2008random,beltrao2022contactless}. Even before algorithmic
+    modeling, our forensic reconstruction of the publicly archived clinical benchmark
+    \citep{beltrao2022contactless} uncovered branch-specific synchronization leakage (where candidate
+    non-negative matrix factorization [NMF] branches select distinct alignment lags $\syncLag$),
+    unclustered window-pooled metrics violating intra-infant correlation structures
+    \citep{bland2007agreement}, and an unaligned \SI{10}{\second} hardware trend delay between the
+    hospital monitor's smoothed \SI{1}{\hertz} \texttt{RespRate} export and raw \SI{1024}{\hertz}
+    physical breath triggers (\texttt{Resp.-Trigger}). Critically, $1581$ of $6640$ valid windows
+    ($23.8\%$) in our primary synchronized cohort contain genuine quiescent breathing pauses
+    exceeding \SI{5}{\second} where rate definitions diverge sharply.
+
+  \item \textbf{Causal Delay versus Neural Shortcut Memorization (\texttt{WP1--WP3}):}
+    Memoryless baseline pipelines such as Harmonic--Percussive Source Separation paired with
+    harmonic nonlinear least squares (\texttt{HPSS+NLS}, \texttt{R0}) \citep{fitzgerald2010harmonic,beltrao2022contactless}
+    process each sliding $\winSec = \SI{30}{\second}$ window independently ($\rmseSess =
+    \SI{7.8173}{bpm}$ on \SI{1}{\hertz} trends and \SI{8.7268}{bpm} on lag-aligned triggers). Adding
+    discrete state-space temporal continuity via Viterbi or Forward--Backward decoding
+    \citep{rabiner1989tutorial,ye2021spectral} suppresses sporadic octave jumps, yet naive
+    over-parameterized neural regressors (ridge regression, multilayer perceptrons, dilated temporal
+    convolutional networks) risk committing \emph{shortcut learning} \citep{geirhos2020shortcut}:
+    instead of decoding physical chest periodicity, unconstrained predictors can memorize the
+    smoothed low-pass dynamics of the bedside VitaGuard monitor and shrink estimates toward the
+    \SIrange{45}{50}{bpm} NICU cohort prior. Such shortcuts inflate apparent in-distribution \SI{1}{\hertz}
+    scores while failing silently on physical breath triggers and collapsing under hardware or
+    rate-regime shifts \citep{riou2023pesto,geirhos2020shortcut}.
+
+  \item \textbf{The Quiet-Apnea Safety versus Out-of-Distribution Paradox (\texttt{WP4}):}
+    Safe clinical decision support requires abstaining when radar returns are corrupted by
+    out-of-distribution (OOD) white noise or device faults \citep{orphanidou2015signal,geifman2017selective,traub2024overcoming}.
+    Yet memoryless spectral-flatness or spectral-entropy quality indices exhibit a dangerous blind
+    spot in neonatal care: during a true central apnea pause exceeding \SI{5}{\second}, the
+    spectrum flattens cleanly alongside SNR drops, causing memoryless spectral proxies to
+    disproportionately reject clinically critical pause episodes rather than preserving alarm visibility
+    \citep{krbec2024emerging}. Conversely, pure Markov posterior spread from an intact dynamical prior
+    safely bridges brief respiratory pauses but can remain overconfident on sustained broadband noise.
+
+  \item \textbf{Finite-$K$ Conformal Invalidity Under Hierarchical Clustering (\texttt{WP4--WP5}):}
+    Point error averages obscure wide patient-to-patient variability. Deploying split conformal
+    prediction naive to intra-infant serial correlation—by splitting random windows or pooling
+    calibration residuals across sessions within leave-one-patient-out (LOPO) folds—violates
+    exchangeability and silently under-covers held-out infants \citep{dunn2023distribution,barber2023conformal}.
+    Simultaneously, enforcing strict distribution-free patient-level exchangeability over $K=11$
+    infants ($K_{\mathrm{cal}}=10$ calibration infants per LOPO fold) hits a hard mathematical
+    miscoverage barrier at $\alpha_{\min} = 1/(K_{\mathrm{cal}}+1) = 1/11 \approx 0.0909$. Under
+    this current calibration design, $95\%$ prediction intervals are therefore mathematically
+    vacuous; non-vacuous $95\%$ patient-exchangeable intervals require at least $K_{\mathrm{cal}}\geq19$
+    calibration infants, motivating larger multicenter cohorts.
+    Equally important, online adaptive conformal inference requiring live feedback labels
+    \citep{gibbs2024conformal} cannot be operated autonomously at an unmonitored bedside where
+    concurrent ground truth $\brRef$ is absent.
+\end{enumerate}
+
+\section{Research Questions and Central Parsimony Thesis}
+\label{sec:ch1_rqs}
+
+To resolve these four vulnerabilities without overclaiming clinical maturity, this thesis advances
+and rigorously stress-tests the following \textbf{Central Parsimony Hypothesis}:
+\begin{quote}
+\itshape
+Across both contactless respiratory-rate tracking and safety-critical uncertainty quantification,
+encoding exact CW Doppler radar domain symmetries—frequency-shift equivariance,
+$SO(2)\times\mathbb{R}_{>0}$ baseband invariance, and causal discrete Markov transition
+continuity—into ultra-parsimonious physics-constrained operators outperforms high-capacity
+unconstrained regressors on small neonatal cohorts ($K=11$) and transfers zero-touch across
+independent radar hardware.
+\end{quote}
+
+We operationalize this hypothesis through four concrete research questions aligned cleanly with
+work packages \texttt{WP0--WP5} and frozen verification gates \texttt{G1--G5}:
+
+\begin{itemize}
+  \item \textbf{RQ1 (Forensic De-Leakage and Front-End Representation Parsimony — Chapters~\ref{ch:forensics_viterbi}--\ref{ch:parsimony_complexity}, Stage~0--1):}
+    What fraction of locked baseline \texttt{v1} error originates from branch-dependent synchronization
+    leakage versus physical cardiac/harmonic interference or hardware dropouts, and do multi-parameter
+    I/Q preconditioning (\texttt{F1--F3}, Gate~\texttt{G1}) or strictly causal zero-lookahead STFT
+    redesigns (\texttt{H1--H6}, Gate~\texttt{G2}) improve over locked complex signal demodulation
+    (\texttt{F0}) and $64$-tap zero-phase Kaiser FIR filtering (\texttt{H0}, \SIrange{0.30}{3.00}{\hertz})?
+
+  \item \textbf{RQ2 (Physical Inductive Bias versus Neural Shortcuts — Chapter~\ref{ch:parsimony_complexity}, Stage~2):}
+    Can an $8$-parameter, filter-safe, shift-equivariant differentiable Hidden Markov Model
+    (\texttt{FilterSafe-8}, \texttt{R2e}) optimized end-to-end via exact Backpropagation Through
+    Time (BPTT) \citep{mensch2018differentiable,riou2023pesto} surpass the memoryless \texttt{0}-parameter
+    baseline (\texttt{R0}) across \emph{both} smoothed \SI{1}{\hertz} monitor trends and lag-aligned
+    \SI{1024}{\hertz} breath triggers under strict $11$-infant LOPO validation, while avoiding the
+    variance shrinkage and frequency-memorization shortcuts of $439$--$15{,}817$-parameter neural
+    regressors (\texttt{R3a--R3c}) \citep{geirhos2020shortcut}?
+
+  \item \textbf{RQ3 (Apnea-Safe Selective Uncertainty and Finite-$K$ Conformal Bounds — Chapter~\ref{ch:uncertainty_conformal}, Stage~3):}
+    How can intrinsic posterior spread and causal spectral OOD cues resolve the quiet-apnea safety
+    versus OOD paradox without over-rejecting true $> \SI{5}{\second}$ breathing pauses or overfitting
+    learned calibration weights, and what exact sample-size and interval-width limits govern valid
+    hierarchical conformal prediction sets at $K_{\mathrm{cal}}=10$ NICU infants
+    \citep{dunn2023distribution}?
+
+  \item \textbf{RQ4 (Zero-Touch Hardware Transfer and Readiness Boundaries — Chapters~\ref{ch:external_transfer}--\ref{ch:discussion_conclusion}, Stage~4):}
+    When all front-end hyperparameters, HMM weights, uncertainty composites, and conformal quantiles
+    are hard-frozen at Gate~\texttt{G4}, how accurately do physics-constrained versus neural shortcut
+    models transfer zero-touch to an external \SI{24.2}{\giga\hertz} six-port neonatal thorax
+    simulator spanning \SIrange{5}{80}{\bpm} \citep{gleichauf2024time}, and what quantitative
+    uncertainty gap separates stationary physical transfer (\texttt{L4}) from bedside utility
+    (\texttt{L5})?
+\end{itemize}
+
+\section{Epistemic Claim-Gate Architecture and Governance}
+\label{sec:ch1_gates}
+
+Because medical signal-processing evaluations on small clinical cohorts can easily conflate
+reimplementation parity, internal cross-validation, physical bench transfer, and bedside utility,
+every experiment and claim in this monograph is governed by an explicit six-tier epistemic ladder
+(\texttt{L0--L5}), codified prior to external evaluation in
+\texttt{claim\_\allowbreak gate\_\allowbreak status.\allowbreak json} and
+\texttt{unresolved\_\allowbreak protocol\_\allowbreak items.\allowbreak yaml}. Two upper-level
+claims are permanently
+\textbf{blocked} by structural evidence gaps: Level~\texttt{L2} (exact reproduction of the
+published $N=18$ subset, $\approx 4964$ window denominator, and proprietary synchronization/solver
+details of Beltrão~et~al.\ \citep{beltrao2022contactless}) and Level~\texttt{L5} (prospective clinical
+bedside utility, autonomous apnea alarming, or superiority over wired NICU leads).
+
+\begin{table}[htbp]
+  \centering
+  \small
+  \caption{Epistemic Claim-Gate Specification (\texttt{L0--L5}) Governing All Thesis Experiments.}
+  \label{tab:claim_gates}
+  \begin{tabularx}{\textwidth}{@{}>{\bfseries\raggedright\arraybackslash}p{1.2cm} >{\raggedright\arraybackslash}p{2.35cm} >{\raggedright\arraybackslash}p{5.25cm} >{\raggedright\arraybackslash}X@{}}
+    \toprule
+    Level & Authorization & Verification Standard & Concrete Thesis Status \& Anchors \\
+    \midrule
+    \texttt{L0} & \textbf{\textcolor{oiGreen}{Authorized}} &
+    SHA-256 baseline locks (\texttt{154/154}), dual Python~3.9.6 / 3.10.19 parity (\texttt{33/33} caches). &
+    Verified throughout: locked \texttt{v1} parity exact to $\le \num{2.31e-14}\,\mathrm{bpm}$; \texttt{113/113} freeze hashes intact. \\
+    \addlinespace
+    \texttt{L1} & \textbf{\textcolor{oiGreen}{Authorized}} &
+    Independent constrained reconstruction on local EDF/radar pairs using TOST equivalence ($\tostMargin = \SI{0.50}{bpm}$). &
+    \texttt{HPSS+NLS} TOST-equivalent to \texttt{NMF+NLS} ($\le \SI{0.50}{bpm}$, $p \le 0.0456$) across 4 cohorts at $6.1\times$--$9.2\times$ speedup. \\
+    \addlinespace
+    \texttt{L2} & \textbf{\textcolor{oiVermilion}{BLOCKED}} &
+    Requires verified original $18$-session IDs, exact denominator reconstruction, and identical solver/sync rules \citep{beltrao2022contactless}. &
+    \textbf{Prohibited:} author contact unavailable; local subset IDs and exact window gating remain unresolved in archived metadata. \\
+    \addlinespace
+    \texttt{L3 / L3+} & \textbf{\textcolor{oiGreen}{Authorized}} &
+    Strict $K=11$ infant LOPO evaluation, branch-neutral lag alignment, dual references (\SI{1}{\hertz} \& Trig $-10\,\mathrm{s}$), Holm--Bonferroni \& invariance fuzzing. &
+    Confirms \texttt{FilterSafe-8} (\texttt{R2e}) superiority over \texttt{R0}, pause-safe \texttt{U2}/\texttt{U6b}, and finite-$K$ conformal bounds. \\
+    \addlinespace
+    \texttt{L4} & \textbf{\textcolor{oiGreen}{Authorized}} &
+    Strict zero-touch forward pass after hard Gate~\texttt{G4} freeze onto independent \SI{24.2}{\giga\hertz} phantom \citep{gleichauf2024time} (\SIrange{5}{80}{bpm}). &
+    Gate~\texttt{G5} passed (\SI{0.0197}{bpm} in-band RMSE, slope $0.9994$, $0$ outliers; neural foils collapse at \SIrange{3.18}{3.64}{bpm}). \\
+    \addlinespace
+    \texttt{L5} & \textbf{\textcolor{oiVermilion}{BLOCKED}} &
+    Prospective NICU workflow trial, multi-site calibration ($K \ge 19$), alarm-latency clinical endpoints \citep{senechal2026next,krbec2024emerging}. &
+    \textbf{Prohibited:} \SI{24.02}{bpm} 80\% hierarchical interval width quantifies single-channel CW physical limits. \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+Figure~\ref{fig:ch1_architecture} illustrates the complete dataflow, gate decisions, dual-reference
+evaluation design, and claim-gate restrictions governing Chapters~\ref{ch:forensics_viterbi}--\ref{ch:discussion_conclusion}.
+
+\input{figures/tikz_ch1_architecture.tex}
+
+\section{Summary of Contributions}
+\label{sec:ch1_contributions}
+
+Grounded directly in our locked verification artifacts at commit \FrozenGitCommit{}, this thesis
+makes five original scientific and methodological contributions:
+
+\begin{enumerate}
+  \item \textbf{Forensic De-Leakage and Dual-Reference Exposure (\texttt{WP0}, Chapter~\ref{ch:forensics_viterbi}):}
+    Replacing cached branch-specific NMF lags with branch-neutral synchronization shifts
+    Session~\texttt{12.1} from \SI{18.63}{\bpm} ($10$ windows) to \SI{3.47}{\bpm} ($9$ windows,
+    with persistent I/Q imbalance $\rho_{IQ}=5.96$) and lowers \texttt{pool30\_\allowbreak sync}
+    \texttt{HPSS+\allowbreak NLS} $\rmseSess$ from \SI{8.0854}{} to \SI{7.8173}{\bpm} ($\rWithin =
+    0.4229$, $S=28$, $|\mathcal{W}|=6640$). We isolate remaining physical error drivers---severe
+    quadrature collinearity ($\rho_{IQ} = 5.86$ in Session~\texttt{11.1}, \SI{12.65}{\bpm}),
+    hardware status dropouts (Session~\texttt{9.2}, \SI{18.75}{\bpm}), and cardiac harmonic
+    collision ($\rho_{\mathrm{excess}} = +0.696$, $p < 10^{-4}$)---while revealing the
+    \SI{10}{\second} group delay of hospital \SI{1}{\hertz} trends and quantifying $1581$ quiet
+    breathing pause windows ($23.8\%$).
+
+  \item \textbf{Causal Front-End Falsification and First Proof of Parsimony (\texttt{WP1--WP3}, Chapter~\ref{ch:parsimony_complexity}):}
+    Through pre-registered Gates~\texttt{G1} and~\texttt{G2}, we falsify multi-parameter I/Q
+    preconditioning ($p_{\mathrm{pat,Holm}} = 1.00$ across \texttt{F1--F3}) and show that strictly
+    zero-lookahead STFT replacements (\texttt{H5}/\texttt{H6}) fail $\pm\SI{0.50}{\bpm}$ TOST
+    equivalence, preserving locked complex demodulation (\texttt{F0}) and the $64$-tap Kaiser FIR
+    filter (\SIrange{0.30}{3.00}{\hertz}, $\kaiserBeta=6.5$). Across the Stage~2 four-rung ladder
+    (\texttt{R0--R3}), our $8$-parameter shift-equivariant differentiable HMM
+    (\texttt{FilterSafe-8}, \texttt{R2e}, maximum audited finite-difference discrepancy
+    $\le\num{4.77e-9}$ across differentiable-program checks,
+    $SO(2)\times\mathbb{R}_{>0}$ invariance $\le\num{3.38e-14}$, translation equivariance
+    $\le\num{1.42e-14}\,\mathrm{bpm}$) reduces NICU $\rmseSess$ to \SI{6.8486}{\bpm} on \SI{1}{\hertz}
+    trends ($\Delta_{\mathrm{R0}} = -0.9687\;[-1.1347,-0.8034]\,\mathrm{bpm}$, $11/11$ infants,
+    $p_{\mathrm{pat,Holm}} = 0.0117$) and \SI{8.0634}{\bpm} on lag-aligned physical breath triggers
+    ($\Delta_{\mathrm{R0}} = -0.6635\;[-0.8833,-0.4464]\,\mathrm{bpm}$, $10/11$ infants,
+    $p_{\mathrm{pat,Holm}} = 0.0215$). Crucially, \texttt{R2e} shows no statistically significant
+    difference after Holm correction relative to its $3$-parameter \texttt{R1a} specialization
+    ($p_{\mathrm{pat}} = 0.0830$, $p_{\mathrm{pat,Holm}} = 0.6641$ on \SI{1}{\hertz};
+    $p_{\mathrm{pat}} = 0.5771$, $p_{\mathrm{pat,Holm}} = 1.0000$ on \texttt{Trig}), indicating that
+    parsimony saturates near $3$--$8$ physical parameters whereas unconstrained
+    $439$--$15{,}817$-parameter regressors fail physical triggers
+    ($p_{\mathrm{pat,Holm}} = 1.00$) via shortcut memorization.
+
+  \item \textbf{Second Independent Proof of Parsimony via Pause-Safe Selective Uncertainty (\texttt{WP4}, Chapter~\ref{ch:uncertainty_conformal}):}
+    Inside selective prediction, strictly zero-parameter, threshold-free posterior spread
+    (\texttt{U2\_\allowbreak Posterior\_\allowbreak SD}) shows consistent selective-risk
+    improvements on $10/11$ infants ($\eaurcMetric_{\mathrm{sess}} = -0.2454$
+    $[-0.4069,-0.1168]\,\mathrm{bpm}$ on \SI{1}{\hertz}, raw $p_{\mathrm{pat}} = 0.0098$, Holm
+    $0.0781$; $-0.2929$ $[-0.4555,-0.1436]\,\mathrm{bpm}$ on \texttt{Trig~$-10\,\mathrm{s}$}, raw
+    $p_{\mathrm{pat}} = 0.0244$, Holm $0.1953$) with negligible quiet-apnea bias ($1.02\times$ risk
+    ratio), beating a $5$-parameter LOPO-fitted ridge composite (\texttt{U6c}) whose \SI{1}{\hertz}
+    confidence interval crosses zero ($[-0.5926,\allowbreak +0.0266]$) and whose pause rejection
+    violates clinical safety ($1.23\times > 1.15\times$). Combining posterior SD with a
+    zero-fitted-weight heuristic entropy barrier (\texttt{U6b}, $\tau_{\mathrm{ood}}=0.90$, $3$
+    causal hops) resolves the pause-safety versus OOD paradox ($1.13\times \le 1.15\times$ pause
+    safety, $0.9986$ WGN OOD AUROC at $0.0036$ FPR@95\%TPR, $0.0$ false triggers on simulated
+    \SI{0.2}{\milli\meter} shallow breathing), supported by explicit sensitivity profiling across
+    $\tau_{\mathrm{ood}}\in[0.90,0.92]$.
+
+  \item \textbf{Exact Finite-$K$ Conformal Bounds Under Clinical Clustering (\texttt{WP4--WP5}, Chapter~\ref{ch:uncertainty_conformal}):}
+    We prove analytically ($\alpha_{\min} = 1/(K_{\mathrm{cal}}+1) = 1/11$) and verify empirically
+    that $95\%$ patient-exchangeable prediction sets are vacuous ($\mathrm{width}=\infty$) at
+    $K_{\mathrm{cal}}=10$ (requiring $K_{\mathrm{cal}}\ge 19$ infants), while exposing silent
+    under-coverage in naive window-pooled LOPO conformal (\texttt{C2}: $0.772$ mean, $0.398$ worst-infant
+    coverage at $80\%$). Adaptive two-level hierarchical calibration (\texttt{C5}, inspired by
+    Dunn~et~al.\ \citep{dunn2023distribution}) achieves the audited empirical coverage profile
+    ($0.963$ at $90\%$, $0.864$ at $80\%$, and $0.766$ at $70\%$). At the $80\%$ target, the
+    mean coverage is $0.8636$, the minimum patient coverage is $0.5856$, and $2/11$ infants are
+    undercovered; these results are therefore reported as an empirical calibration profile, not as
+    a universal clinical guarantee. The method tightens full interval width from \SI{30.54}{bpm} to
+    \SI{17.96}{bpm} between high- and low-uncertainty windows at $80\%$ coverage.
+
+  \item \textbf{Zero-Touch \texttt{L4} Cross-Hardware Verification (\texttt{WP5}, Chapter~\ref{ch:external_transfer}):}
+    Evaluated strictly zero-touch after Gate~\texttt{G4} freeze against an external \SI{24.2}{\giga\hertz}
+    neonatal simulator \citep{gleichauf2024time} across an exhaustive $14+6=20$-scenario frequency
+    partition, \texttt{FilterSafe-8} transfers at \SI{0.0197}{bpm} in-band RMSE (slope $0.9994$,
+    $r=0.999999$, $0$ outliers $>\SI{0.5}{bpm}$, \SI{20}{bpm} FIR-skirt RMSE \SI{0.0949}{bpm}) alongside
+    \SI{0.9998}{} zero-touch \texttt{U6b} stopband OOD AUROC and $100\%$ in-band \texttt{C5} conformal
+    coverage (\SI{18.02}{bpm} at $80\%$). Simultaneously, all unconstrained neural models collapse across
+    rate boundaries (\SIrange{3.1782}{3.6353}{bpm} in-band; \SIrange{11.7783}{32.7040}{bpm} on the
+    \SI{20}{bpm} skirt), furnishing direct external proof of shortcut fragility.
+\end{enumerate}
+
+Taken together, these contributions establish an audited methodological result rather than a
+clinical deployment claim. They show how physical constraints, causal evaluation, clustered
+statistics, and explicit uncertainty boundaries can make a small-cohort radar study more
+reproducible and more honest about its limits. They do not demonstrate prospective bedside utility,
+autonomous apnea alarming, or superiority over wired NICU monitoring; those claims remain outside
+the authorized evidence levels of this thesis.
+
+\section{Thesis Organization}
+\label{sec:ch1_organization}
+
+The remainder of this monograph proceeds as follows.
+\textbf{Chapter~\ref{ch:physics_related_work}} develops first-principles \SI{24}{\giga\hertz} CW
+quadrature and Jacobi--Anger harmonic radar physics alongside a structured synthesis of $71$
+peer-reviewed references across NICU sensing, HPSS/NMF source separation, differentiable state-space
+tracking, selective prediction, and clustered conformal statistics.
+\textbf{Chapter~\ref{ch:forensics_viterbi}} executes the \texttt{EXP-0} forensic de-leakage audit and
+Stage~0 Viterbi reproduction, resolving cached lag artifacts and unanchored spectral traps.
+\textbf{Chapter~\ref{ch:parsimony_complexity}} presents Stages~1--2: representation pruning under
+Gates~\texttt{G1--G2}, derivation and BPTT gradient verification of \texttt{FilterSafe-8}, and the
+dual-reference Stage~2 Complexity Ladder.
+\textbf{Chapter~\ref{ch:uncertainty_conformal}} investigates Stage~3 selective uncertainty, resolves
+the pause-safety versus OOD paradox, and delivers the finite-$K$ hierarchical conformal audit
+benchmarked directly against Dunn~et~al.\ \citep{dunn2023distribution}.
+\textbf{Chapter~\ref{ch:external_transfer}} reports the zero-touch Stage~4 external evaluation on
+\texttt{gleichauf2024}, including exhaustive frequency strata and shortcut failure diagnostics.
+\textbf{Chapter~\ref{ch:discussion_conclusion}} synthesizes our findings, defines the quantitative
+\SI{24.02}{bpm} boundary separating verified hardware transfer from bedside deployment, discusses
+clinical ethics and architectural limitations, and outlines next-generation MIMO/FMCW translational
+work. Finally, \textbf{Appendices~\ref{app:notation}--\ref{app:reproducibility}} house the locked
+notation contract, extended Holm and conformal tables, and cryptographic reproducibility commands.

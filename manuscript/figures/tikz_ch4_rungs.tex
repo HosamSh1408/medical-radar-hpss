@@ -1,0 +1,76 @@
+\begin{figure}[htbp]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[
+  x=1cm, y=1cm,
+  font=\footnotesize\sffamily,
+  >=Stealth,
+  physbox/.style={
+    draw=oiGreen!80!black, fill=oiSafeBg, rounded corners=3pt,
+    thick, align=center, inner sep=6pt
+  },
+  shortcutbox/.style={
+    draw=oiVermilion!85!black, fill=oiWarnBg, rounded corners=3pt,
+    thick, align=center, inner sep=6pt
+  },
+  featbox/.style={
+    draw=oiBlue!80!black, fill=oiLightBg, rounded corners=3pt,
+    thick, align=center, inner sep=6pt
+  },
+  statpill/.style={
+    draw=oiGray!65, fill=white, rounded corners=2pt,
+    thin, align=center, inner sep=5pt, font=\scriptsize\sffamily
+  }
+]
+
+% Left Input Node centered vertically at y = 3.35
+\node[featbox, text width=3.65cm, minimum height=6.40cm] (input) at (1.90, 3.35)
+  {\textbf{Folded Harmonic}\\ \textbf{Salience Tensor}\\$\mathbf{\Phi}_t \in \mathbb{R}^{K_q \times d}$\\[7pt]
+   $6$ orthogonal channels\\across grid $q\in[18,90]$\,bpm:\\[5pt]
+   \scriptsize $P_{\mathrm{clean}}(f),\; P_{\mathrm{clean}}(2f)$\\[2pt]
+   $P_{\mathrm{clean}}(3f),\; P_{\mathrm{clean}}(f/2)$\\[2pt]
+   $\phi_{\mathrm{anchor}},\; P_{\mathrm{raw}}(f)$\\[8pt]
+   \scriptsize $SO(2)\times\mathbb{R}_{>0}$-invariant,\\zero-leakage \texttt{csd()} + HPSS};
+
+% Top Branch: Rung 1 & Rung 2 Equivariant Path (y = 5.45 -> ~0.95 cm clear above bottom box)
+\node[physbox, text width=6.35cm, minimum height=2.25cm] (r2) at (7.80, 5.45)
+  {\textbf{Rung 1 (3p) \& Rung 2 FilterSafe-8 (8p):}\\
+   \textbf{Shift-Equivariant Differentiable 1D-HMM}\\[5pt]
+   $\eta_t(q) = \sum_m w_m \Phi_{t,m}(q)$ (zero absolute bin weights)\\
+   Exact BPTT Forward--Backward ($\le\num{3.6e-9}$ grad err)\\
+   Shift equivariant: $+10\,\mathrm{bpm}$ err $= \SI{1.4e-14}{\bpm}$};
+
+\node[statpill, text width=4.20cm, minimum height=2.25cm, right=0.55cm of r2] (r2res)
+  {\textbf{Dual-Reference \& \texttt{L4} Verified}\\[3pt]
+   NICU 1\,Hz: $\mathbf{6.849}$ ($p_{\mathrm{Holm}}=\mathbf{0.0117}$)\\
+   NICU Trig $-10\,\mathrm{s}$: $\mathbf{8.063}$ ($p_{\mathrm{Holm}}=\mathbf{0.0215}$)\\
+   \texttt{gleichauf2024}: $\mathbf{0.0197}$\,bpm, slope $\mathbf{0.9994}$\\
+   20\,bpm skirt: $\mathbf{0.0949}$\,bpm\\
+   80\,bpm in-band: $\mathbf{0.0089}$\,bpm};
+
+% Bottom Branch: Rung 3 Shortcut Path (y = 1.25)
+\node[shortcutbox, text width=6.35cm, minimum height=2.25cm] (r3) at (7.80, 1.25)
+  {\textbf{Rung 3 (439--15,817p):}\\
+   \textbf{Unconstrained Absolute-Frequency Regressors}\\[5pt]
+   \texttt{R3c} Ridge (439p), \texttt{R3b} MLP (15k), \texttt{R3a} TCN (16k)\\
+   Break translation symmetry $\implies$ memorize VitaGuard\\
+   \SI{10}{\second} trend lag \& training cohort prior ($\sim\SIrange{45}{50}{\bpm}$)};
+
+\node[statpill, text width=4.20cm, minimum height=2.25cm, right=0.55cm of r3] (r3res)
+  {\textbf{In-Band Illusion / \texttt{L4} Collapse}\\[3pt]
+   NICU 1\,Hz: $5.798$--$6.584$\,bpm (variance $\times 0.52$)\\
+   NICU Trig $-10\,\mathrm{s}$: $8.102$--$8.515$ ($p_{\mathrm{Holm}}=1.00$)\\
+   \texttt{gleichauf2024}: $\mathbf{3.18}$--$\mathbf{3.64}$\,bpm (slope $0.709$)\\
+   20\,bpm skirt: $\mathbf{11.78}$--$\mathbf{32.70}$\,bpm collapse};
+
+% Connections
+\draw[->, very thick, oiGreen!80!black] (input.east) |- (r2.west);
+\draw[->, very thick, oiGreen!80!black] (r2.east) -- (r2res.west);
+\draw[->, very thick, oiVermilion!85!black] (input.east) |- (r3.west);
+\draw[->, very thick, oiVermilion!85!black] (r3.east) -- (r3res.west);
+
+\end{tikzpicture}%
+}
+\caption[Physical Equivariance vs.\ Shortcut Complexity Architecture]{Architectural contrast across the Stage~2 Complexity Ladder (\texttt{Rung 1--3}): weight-shared zero-offset 1D-HMM operators (\texttt{R1a}, \texttt{R2e FilterSafe-8}) preserve exact translation equivariance and transfer zero-touch to \texttt{gleichauf2024}, whereas unconstrained absolute-frequency regressors (\texttt{R3c}, \texttt{R3b}, \texttt{R3a}) memorize VitaGuard \SI{1}{\hertz} smoothing and the NICU rate prior.}
+\label{fig:ch4_rungs}
+\end{figure}

@@ -1,0 +1,148 @@
+\chapter{Extended Statistical, Holm--Bonferroni, and Lag-Sweep Tables}
+\label{app:tables}
+
+This appendix records four complete supplementary quantitative tables verifying the internal
+statistical multiplicity controls, monitor hardware-delay characterization, learned parameter
+interpretability, and cross-cohort stability underlying Chapters~\ref{ch:parsimony_complexity}
+and~\ref{ch:uncertainty_conformal}. Every entry is transcribed directly from the sealed Stage~1--3
+JSON outputs and independent verification logs at commit \FrozenGitCommit{}.
+
+\section{Audited Stage~1 Paired Family Versus Offline Viterbi (\texttt{R1g})}
+\label{app:sec_r1g_holm}
+
+Table~\ref{tab:app_r1g_holm} reports the complete $n=8$ Holm--Bonferroni family comparing all Stage~1
+Rung~1 estimators against the noncausal offline Viterbi decoder (\texttt{R1g}, $\rmseSess =
+\SI{6.498}{\bpm}$ on \SI{1}{\hertz} trends and \SI{7.876}{\bpm} on recorded-time triggers) over
+\texttt{pool30\_sync} ($S=28$, $K=11$ infants). Positive $\Delta$ values denote higher error than
+offline Viterbi.
+
+\begin{table}[htbp]
+  \centering
+  \footnotesize
+  \setlength{\tabcolsep}{3.5pt}
+  \caption{Audited Stage~1 paired comparison against noncausal offline Viterbi (\texttt{R1g}, $n=8$
+  Holm--Bonferroni family, \texttt{pool30\_sync}). Parentheses show raw / Holm-adjusted $p$-values.}
+  \label{tab:app_r1g_holm}
+  \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}X rc rrr@{}}
+    \toprule
+    & \multicolumn{2}{c}{\textbf{1\,Hz Monitor Reference}} & \multicolumn{3}{c}{\textbf{Recorded-Time Trigger (0\,s)}} \\
+    \cmidrule(lr){2-3} \cmidrule(l){4-6}
+    Model (Lookahead Blk / STFT) & $\Delta_{\mathrm{R1g}}$ & $p_{\mathrm{pat}}$ (raw / Holm) & $\Delta_{\mathrm{R1g}}$ & Wins & $p_{\mathrm{pat}}$ (raw / Holm) \\
+    \midrule
+    \texttt{R1a} Online Fwd MMSE (0 / 3\,s) & $+0.493$ & 0.0137 / 0.0957 & $+0.748$ & 0/11 & 0.0010 / 0.0078 \\
+    \texttt{R1b} Online Fwd MAP (0 / 3\,s) & $+0.960$ & 0.0010 / 0.0078 & $+1.110$ & 0/11 & 0.0010 / 0.0078 \\
+    \texttt{R1c} Fixed-Lag MMSE (4 / 3\,s) & $+0.395$ & 0.0420 / 0.1680 & $+0.525$ & 1/11 & 0.0049 / 0.0195 \\
+    \texttt{R1d} Fixed-Lag MMSE (8 / 3\,s) & $+0.289$ & 0.1016 / 0.2031 & $+0.370$ & 1/11 & 0.0420 / 0.1260 \\
+    \texttt{R1e} Fixed-Lag MMSE (16 / 3\,s) & $+0.261$ & 0.3203 / 0.3203 & $+0.207$ & 5/11 & 0.5195 / 0.5195 \\
+    \texttt{R1f} Offline FB MMSE ($\infty$ / 3\,s) & $-0.103$ & 0.0674 / 0.2021 & $-0.087$ & 9/11 & 0.1016 / 0.2031 \\
+    \texttt{R1h} H5 Zero-STFT Fwd (0 / 0\,s) & $+0.639$ & 0.0244 / 0.1465 & $+0.988$ & 0/11 & 0.0010 / 0.0078 \\
+    \texttt{R1i} H6 Zero-STFT Fwd (0 / 0\,s) & $+0.621$ & 0.0322 / 0.1611 & $+1.040$ & 0/11 & 0.0010 / 0.0078 \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\section{VitaGuard Reference Group-Delay Sweep (\SIrange{-20}{+20}{\second})}
+\label{app:sec_lag_sweep}
+
+Table~\ref{tab:app_lag_sweep} details equal-session $\rmseSess$ across shared reference time shifts
+applied uniformly to \SI{1024}{\hertz} physical respiratory triggers (\texttt{pool30\_sync}, $S=28$).
+Five of six unshifted architectures attain minimum error (bold) or peak correlation at
+$+\SI{8}{\second}$ to $+\SI{10}{\second}$ (\texttt{Trig $-10$\,s}), confirming hardware monitor lag.
+
+\begin{table}[htbp]
+  \centering
+  \footnotesize
+  \setlength{\tabcolsep}{4pt}
+  \caption{Uniform EDF trigger lag sweep across \SIrange{-20}{+20}{\second} (\texttt{pool30\_sync},
+  $\rmseSess$ in \si{\bpm}). Note that $\Delta\tau = +\SI{10}{\second}$ defines the shared
+  \texttt{Trig $-10$\,s} evaluation regime.}
+  \label{tab:app_lag_sweep}
+  \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}r rrrrrr rr@{}}
+    \toprule
+    Offset & \texttt{R0} (0p) & \texttt{R1a} (3p) & \texttt{R2e} (8p) & \texttt{R3c} (439p) & \texttt{R3b} (15k) & \texttt{R3a} (16k) & \texttt{R2e} $\rWithin$ & \texttt{U2} $\eaurcMetric$ \\
+    \midrule
+    $-20\,\mathrm{s}$ & 10.688 & 9.970 & 10.073 & 9.062 & 9.599 & 9.170 & 0.198 & $-0.242$ \\
+    $-16\,\mathrm{s}$ & 10.318 & 9.665 &  9.759 & 8.742 & 9.294 & 8.859 & 0.222 & $-0.231$ \\
+    $-12\,\mathrm{s}$ &  9.895 & 9.396 &  9.404 & 8.488 & 9.047 & 8.660 & 0.247 & $-0.150$ \\
+    $-10\,\mathrm{s}$ &  9.767 & 9.306 &  9.270 & 8.421 & 8.976 & 8.641 & 0.258 & $-0.155$ \\
+    $-8\,\mathrm{s}$  &  9.571 & 9.167 &  9.109 & 8.388 & 8.944 & 8.623 & 0.273 & $-0.165$ \\
+    $-4\,\mathrm{s}$  &  9.294 & 8.897 &  8.797 & 8.372 & 8.908 & 8.643 & 0.310 & $-0.245$ \\
+    $0\,\mathrm{s}$   &  8.968 & 8.624 &  8.473 & 8.255 & 8.791 & 8.586 & 0.352 & $-0.277$ \\
+    $+4\,\mathrm{s}$  &  8.773 & 8.365 &  8.231 & 8.130 & 8.610 & \textbf{8.438} & 0.397 & $-0.228$ \\
+    $+8\,\mathrm{s}$  &  \textbf{8.706} & 8.221 & 8.071 & 8.108 & 8.555 & 8.463 & 0.430 & $-0.252$ \\
+    \textbf{$+10\,\mathrm{s}$} & 8.727 & \textbf{8.197} & \textbf{8.063} & \textbf{8.102} & \textbf{8.515} & 8.498 & 0.441 & $-0.293$ \\
+    $+12\,\mathrm{s}$ &  8.852 & 8.230 &  8.149 & 8.157 & 8.570 & 8.555 & \textbf{0.446} & $-0.290$ \\
+    $+16\,\mathrm{s}$ &  9.253 & 8.452 &  8.509 & 8.291 & 8.700 & 8.651 & 0.435 & \textbf{$-0.338$} \\
+    $+20\,\mathrm{s}$ &  9.751 & 8.811 &  9.001 & 8.531 & 8.897 & 8.886 & 0.405 & $-0.295$ \\
+    \bottomrule
+  \end{tabular*}
+\end{table}
+
+\section{Interpretable Rung~2 Parameters Across LOPO Folds and Frozen Full Refit}
+\label{app:sec_rung2_weights}
+
+Table~\ref{tab:app_rung2_weights} contrasts the $11$-fold LOPO parameter means and standard
+deviations with the frozen Stage~4 full-cohort ($K=11$) refit values for \texttt{R2e}, \texttt{R2a},
+and \texttt{R2d}. For \texttt{FilterSafe-8} (\texttt{R2e}), harmonic/subharmonic weights $w_2, w_3,
+w_4$ are structurally clamped to zero to preserve filter-edge equivariance.
+
+\begin{table}[htbp]
+  \centering
+  \scriptsize
+  \setlength{\tabcolsep}{3.5pt}
+  \caption{Interpretable Stage~2 Rung~2 learned parameters across $11$ LOPO folds (mean $\pm$ SD) and
+  frozen full-cohort ($K=11$) Stage~4 refits.}
+  \label{tab:app_rung2_weights}
+  \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}X rr rr rr@{}}
+    \toprule
+    & \multicolumn{2}{c}{\texttt{R2e FilterSafe-8}} & \multicolumn{2}{c}{\texttt{R2a Linear11}} & \multicolumn{2}{c}{\texttt{R2d H5 Linear11}} \\
+    \cmidrule(lr){2-3} \cmidrule(lr){4-5} \cmidrule(l){6-7}
+    Parameter & LOPO Mean $\pm$ SD & Full $K=11$ & LOPO Mean $\pm$ SD & Full $K=11$ & LOPO Mean $\pm$ SD & Full $K=11$ \\
+    \midrule
+    $w_1$ ($P_{\mathrm{clean}}(f)$) & $+2.000 \pm 0.000$ & $+2.000$ & $+2.000 \pm 0.000$ & $+2.000$ & $+2.000 \pm 0.000$ & $+2.000$ \\
+    $w_2$ ($P_{\mathrm{clean}}(2f)$) & $0.000$ (fixed) & $0.000$ & $+0.760 \pm 0.401$ & $+0.909$ & $+0.422 \pm 0.288$ & $+0.202$ \\
+    $w_3$ ($P_{\mathrm{clean}}(3f)$) & $0.000$ (fixed) & $0.000$ & $+1.046 \pm 0.107$ & $+0.968$ & $+0.803 \pm 0.212$ & $+0.582$ \\
+    $w_4$ ($P_{\mathrm{clean}}(f/2)$) & $0.000$ (fixed) & $0.000$ & $-0.476 \pm 0.060$ & $-0.500$ & $-0.359 \pm 0.227$ & $-0.500$ \\
+    $w_5$ ($\phi_{\mathrm{anchor}}$) & $+3.925 \pm 0.133$ & $+3.995$ & $+2.351 \pm 0.391$ & $+2.240$ & $+1.772 \pm 0.369$ & $+1.274$ \\
+    $w_6$ ($P_{\mathrm{raw}}(f)$) & $-0.500 \pm 0.000$ & $-0.500$ & $-0.500 \pm 0.000$ & $-0.500$ & $-0.500 \pm 0.000$ & $-0.500$ \\
+    $\sigma_{\mathrm{slow}}$ (bpm) & $1.081 \pm 0.143$ & $1.000$ & $2.153 \pm 0.621$ & $2.421$ & $2.338 \pm 1.900$ & $1.462$ \\
+    $\sigma_{\mathrm{jump}}$ (bpm) & $5.000 \pm 0.000$ & $5.000$ & $12.723 \pm 2.932$ & $14.247$ & $12.919 \pm 1.930$ & $10.764$ \\
+    $\pi_{\mathrm{jump}}$ & $0.0009 \pm 0.000$ & $0.0009$ & $0.0101 \pm 0.0019$ & $0.0110$ & $0.0072 \pm 0.0047$ & $0.0110$ \\
+    $\kappa_1$ (context) & $0.000 \pm 0.000$ & $0.000$ & $0.000 \pm 0.000$ & $0.000$ & $0.000 \pm 0.000$ & $0.000$ \\
+    $\kappa_2$ (context) & $0.012 \pm 0.026$ & $0.000$ & $0.051 \pm 0.043$ & $0.081$ & $0.026 \pm 0.048$ & $0.000$ \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\section{Cross-Cohort Stage~2 Sensitivity Matrix}
+\label{app:sec_cohort_matrix}
+
+Table~\ref{tab:app_cohort_matrix} verifies that the Stage~2 ordering between causal structured
+operators (\texttt{R1a}, \texttt{R2e}) and unconstrained Rung~3 regressors persists across the
+confirmatory \texttt{pool30\_sync} ($S=28$), named-exclusion \texttt{retained23} ($S=23$), and
+historical \texttt{PAPER\_18} ($S=18$) cohort definitions on both evaluation references.
+
+\begin{table}[htbp]
+  \centering
+  \scriptsize
+  \setlength{\tabcolsep}{4pt}
+  \caption{Stage~2 $\rmseSess$ (\si{\bpm}) and $\rWithin$ sensitivity across the three local LOPO
+  cohorts and both clinical references.}
+  \label{tab:app_cohort_matrix}
+  \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}X rr rr rr@{}}
+    \toprule
+    & \multicolumn{2}{c}{\texttt{pool30\_sync} ($S=28$)} & \multicolumn{2}{c}{\texttt{retained23} ($S=23$)} & \multicolumn{2}{c}{\texttt{PAPER\_18} ($S=18$)} \\
+    \cmidrule(lr){2-3} \cmidrule(lr){4-5} \cmidrule(l){6-7}
+    Model & 1\,Hz ($\rWithin$) & Trig $-10$\,s ($\rWithin$) & 1\,Hz ($\rWithin$) & Trig $-10$\,s ($\rWithin$) & 1\,Hz ($\rWithin$) & Trig $-10$\,s ($\rWithin$) \\
+    \midrule
+    \texttt{R0} locked (0p) & 7.817 (0.423) & 8.727 (0.402) & 7.973 (0.421) & 8.856 (0.400) & 7.135 (0.426) & 7.731 (0.416) \\
+    \texttt{R1a} Fwd MMSE (3p) & 6.990 (0.454) & 8.197 (0.408) & 7.349 (0.452) & 8.374 (0.406) & 6.437 (0.466) & 7.134 (0.447) \\
+    \texttt{R1f} Offline FB (3p) & 6.395 (0.454) & 7.597 (0.430) & 6.560 (0.456) & 7.717 (0.432) & 5.953 (0.463) & 6.806 (0.441) \\
+    \texttt{R2e} FilterSafe-8 (8p) & 6.849 (0.465) & 8.063 (0.441) & 7.152 (0.464) & 8.186 (0.438) & 6.368 (0.469) & 7.105 (0.456) \\
+    \texttt{R2a} Linear HMM (11p) & 6.870 (0.496) & 8.350 (0.455) & 7.244 (0.503) & 8.500 (0.449) & 6.693 (0.490) & 7.690 (0.447) \\
+    \texttt{R3c} Ridge (439p) & 5.798 (0.490) & 8.102 (0.425) & 6.449 (0.493) & 8.255 (0.431) & 5.583 (0.527) & 7.118 (0.486) \\
+    \texttt{R3b} MLP (14.6k) & 6.584 (0.481) & 8.515 (0.412) & 6.894 (0.478) & 8.500 (0.413) & 6.381 (0.492) & 7.684 (0.438) \\
+    \texttt{R3a} TCN (15.8k) & 6.075 (0.466) & 8.498 (0.404) & 6.855 (0.423) & 8.772 (0.354) & 5.999 (0.417) & 7.842 (0.360) \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
