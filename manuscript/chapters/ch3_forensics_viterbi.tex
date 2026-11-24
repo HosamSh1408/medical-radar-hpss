@@ -13,7 +13,7 @@ The evidence is intentionally bounded. The frozen baseline can be checked agains
 outputs, and the reconstructed methods can be compared on the local cohort variants. The supplied
 materials do not identify the original 18 measurement IDs, fully specify the published valid-window
 denominator, settle all reference and synchronization details, or specify a complete NMF solver
-configuration. Exact reproduction of Beltrão et al. is therefore blocked. The Viterbi results in
+configuration. Exact reproduction of Beltr\~ao et al. is therefore blocked. The Viterbi results in
 this chapter are an internal reconstruction and ablation of the thesis's earlier proposed method;
 they are neither a reproduction of an externally published Viterbi system nor a clinical
 validation \citep{beltrao2022contactless}.
@@ -31,7 +31,7 @@ original paper exactly.
 
 That distinction matters because the original study reports 18 retained measurements and
 approximately 4,964 valid estimates, whereas the active local \texttt{PAPER\_18} variant contains 5,466
-valid two-second windows. Several items needed to reconstruct the original analysis are unresolved:
+valid 30-second sliding windows stepped every two seconds. Several items needed to reconstruct the original analysis are unresolved:
 the original measurement identifiers are not supplied; the reference-target construction and
 complete synchronization rule are not uniquely determined; the precise validity gate behind the
 published denominator is not recoverable; and the paper does not give a complete
@@ -42,15 +42,16 @@ NMF comparison also records convergence because a substantial fraction of window
 iteration cap; the available information does not justify calling that solver identical to the
 published solver.
 
-The analysis consequently uses a cohort multiverse rather than treating one locally assembled
-subset as definitive. The branch-neutral regime is the primary internal comparison. The other
-cohorts expose sensitivity to inclusion rules and the use of the historical 18-measurement subset.
+The analysis consequently uses a cohort multiverse (Table~\ref{tab:ch3_cohorts}) rather than
+treating one locally assembled subset as definitive. The branch-neutral regime is the primary
+internal comparison. The other cohorts expose sensitivity to inclusion rules and the use of the
+historical 18-measurement subset.
 
 \begin{table}[htbp]
   \centering
   \small
   \caption{Local cohort variants used in the baseline and Stage~0 analyses. Window counts refer
-  to valid two-second windows under the branch-neutral synchronization regime.}
+  to valid 30-second sliding windows (two-second update hop) under the branch-neutral synchronization regime.}
   \label{tab:ch3_cohorts}
   \begin{tabular}{@{}lrrl@{}}
     \toprule
@@ -67,13 +68,15 @@ cohorts expose sensitivity to inclusion rules and the use of the historical 18-m
 The primary error estimand is the equal-session macro-average of session RMSEs,
 $\rmseSess= S^{-1}\sum_s \rmseSession{s}$. Each session therefore contributes equally,
 regardless of how many valid windows it contains. The window-pooled statistic $\rmsePool$ weights
-windows equally and can differ materially. Accuracy is the percentage of valid windows for which
-$|e_{s,w}|<\delta$, reported as $\accTau{\delta}$; the threshold is a strict inequality.
+windows equally and can differ materially. Accuracy is defined per window as the percentage of
+valid windows for which $|e_{s,w}|<\delta$, written $\accTau{\delta}$ with a strict inequality;
+unless explicitly labeled as pooled, cohort tables in this chapter report the equal-session
+macro-average of per-session $\accTau{\delta}$.
 Within-session association, $\rWithin$, is the repeated-measures ANCOVA correlation, while
 $\rWithinSessMean$ is the unweighted mean of per-session Pearson correlations. These summaries
 answer different questions and are not interchangeable. For example, under the cached v1 lag on
 \texttt{PAPER\_18}, HPSS has $\rmseSess=6.798$ bpm and $\rmsePool=7.217$ bpm; the mean of per-session
-correlations is 0.465, whereas $\rWithin=0.445$.
+correlations is $\rWithinSessMean=0.465$, whereas $\rWithin=0.445$.
 
 The cohort-specific LOSO constant predictor is a useful reference for whether a method improves
 on predicting a training-derived cohort rate without using the current session's labels. It is
@@ -90,7 +93,7 @@ the v1 synchronization lag associated with the NMF branch is retained. In the br
 regime, one shared raw-NLS-derived lag is used for the competing raw, NMF, and HPSS branches. This
 prevents a different candidate branch from receiving its own selected lag in the head-to-head
 comparison. The lag is still reference-assisted: it comes from the local synchronization workflow
-that aligns radar estimates to the one-hertz reference. “Branch-neutral” therefore means shared
+that aligns radar estimates to the one-hertz reference. ``Branch-neutral'' therefore means shared
 across the candidate processing branches, not independent of the reference or outcome. The
 pure-metadata regime instead applies the header-clock offset without a correlation search; it is a
 clock-only sensitivity analysis, not the primary alignment.
@@ -110,11 +113,11 @@ branch-specific lag selection affecting the comparison, but the entire differenc
 attributed to lag alone. This limitation is particularly clear in Session~12.1: the cached lag is
 $-116$ s with 10 valid windows, compared with $-21$ s and 9 valid windows under the shared
 raw-NLS lag. HPSS error changes from 18.63 to 3.47 bpm. The local forensic label identifies this
-as a lag-pull pattern, but the session also has a large I/Q spread ratio (5.96), I/Q correlation
-0.813, and 2.95\% clipped samples. The result shows strong synchronization and gating sensitivity;
+as a lag-pull pattern, but the session also has a large I/Q spread ratio (5.96), absolute I/Q
+correlation 0.813 (signed $-0.813$), and 2.95\% clipped samples. The result shows strong synchronization and gating sensitivity;
 it does not show that the physical signal is otherwise clean or isolate lag as the sole cause.
 
-The clock-only regime is substantially worse. On 27 sessions and 6,426 valid windows in
+The clock-only regime is substantially worse (Table~\ref{tab:ch3_lag_regimes}). On 27 sessions and 6,426 valid windows in
 \texttt{pool30\_sync}, HPSS reaches $\rmseSess=10.428$ bpm, compared with a LOSO constant baseline of
 8.792 bpm. This indicates that the available header timing alone is not sufficient for this local
 comparison. It does not establish that a particular reference-assisted alignment is unbiased;
@@ -138,7 +141,7 @@ all such alignment choices should be described as part of the measurement protoc
   \end{tabular}
 \end{table}
 
-The broader multiverse gives the same warning against a single headline number. Under the shared
+The broader multiverse (Figure~\ref{fig:ch3_session_error}) gives the same warning against a single headline number. Under the shared
 lag, \texttt{all\_paired} yields 8.119 bpm, \texttt{pool30\_sync} 7.817 bpm, \texttt{retained23} 7.973 bpm, and
 \texttt{PAPER\_18} 7.135 bpm. The original paper's approximately 4,964 valid estimates are not reproduced
 by any of these counts. Cohort and denominator uncertainty remain part of the result rather than
@@ -158,16 +161,18 @@ bookkeeping details.
 
 The local EDF contains both a one-hertz \texttt{RespRate} channel and high-rate respiratory trigger
 events. These channels represent different constructions of the reference: one is a monitor rate
-stream, while the other supports an event-interval estimate. Across 7,101 valid windows, the
+stream, while the other supports an event-interval estimate. Across 7,101 valid windows in the
+31-session neutral-alignment set (\texttt{all\_paired}), the
 1,024-Hz respiratory-trigger rate has a mean signed difference of +2.214 bpm and a mean absolute
 difference of 5.175 bpm relative to the one-hertz \texttt{RespRate} channel. The disagreement is not
 evidence that either channel is universally correct. A trigger-derived inter-breath rate and a
 monitor's smoothed rate can respond differently to pauses, timing, and averaging. It does show
 that agreement with the one-hertz channel alone does not fully describe respiratory-event tracking.
 
-The same audit provides a useful channel check: for windows with \texttt{SignalIQ >= 50}, the 1,024-Hz
+The same audit provides a useful channel check: for windows with \texttt{SignalIQ >= 50} and monitor
+heart rate above 50~bpm in the same 31-session set, the 1,024-Hz
 cardiac R-trigger rate has a 0.935-bpm mean absolute difference from the one-hertz heart-rate
-channel across 7,081 windows. This supports the internal consistency of that cardiac trigger
+channel across 7,081 windows (Figure~\ref{fig:ch3_reference_agreement}). This supports the internal consistency of that cardiac trigger
 comparison under the stated filter. It does not validate the respiratory trigger as a clinical
 ground truth or transfer that validation to the radar estimate.
 
@@ -182,13 +187,17 @@ monitoring.
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=0.92\textwidth]{exp0_edf256_reference_agreement}
-  \caption{Agreement between high-rate EDF trigger-derived rates and one-hertz monitor channels.
-  The trigger and monitor channels are related references, not interchangeable measurements.}
+  \caption{Agreement between high-rate EDF trigger-derived rates and one-hertz monitor channels on
+  \texttt{pool30\_sync} (28 sessions; 6,638 valid respiratory-trigger windows, bias $+2.15$~bpm;
+  cardiac R-trigger $\mathrm{MAE}=0.95$~bpm for \texttt{SignalIQ >= 50}), complementing the
+  31-session \texttt{all\_paired} text summaries (7,101 and 7,081 windows). The trigger and monitor
+  channels are related references, not interchangeable measurements.}
   \label{fig:ch3_reference_agreement}
 \end{figure}
 
-To characterize session error, EXP-0 relates eight telemetry and rate-collision covariates to
-excess HPSS error under the shared-lag regime. Here, excess is defined as the session's HPSS RMSE
+To characterize session error, EXP-0 evaluates 15 telemetry, reference-volatility, and rate-collision
+covariates against excess HPSS error under the shared-lag regime (the summary archive retains the top
+eight by $|\rho_{\mathrm{excess}}|$, and Table~\ref{tab:ch3_error_drivers} lists the top five). Here, excess is defined as the session's HPSS RMSE
 minus the within-session reference-SD oracle described above. The associations use 28 sessions
 from 11 infants and are exploratory Spearman correlations; the listed p-values are nominal and
 not adjusted for testing multiple covariates. They identify patterns for follow-up, not causal
@@ -197,12 +206,13 @@ effects.
 \begin{table}[htbp]
   \centering
   \small
-  \caption{Selected exploratory associations with excess session error on \texttt{pool30\_sync}.
-  Correlations are across 28 sessions; p-values are nominal and unadjusted.}
+  \caption{Top five exploratory associations (from 15 evaluated covariates) with excess session error
+  on \texttt{pool30\_sync}. Correlations are across 28 sessions; p-values are nominal and unadjusted,
+  and the rightmost column reports the Spearman correlation with per-session Pearson correlation $r_s$.}
   \label{tab:ch3_error_drivers}
   \begin{tabularx}{\textwidth}{@{}Xrrr@{}}
     \toprule
-    Session covariate & Spearman $\rho$ with excess error & $p$ & $\rho$ with $\rWithin$ \\
+    Session covariate & Spearman $\rho$ with excess error & $p$ & $\rho$ with $r_s$ \\
     \midrule
     HR-collision-band window fraction & +0.696 & $<10^{-4}$ & -0.073 \\
     Minimal-movement window fraction & -0.563 & 0.0018 & +0.512 \\
@@ -219,8 +229,9 @@ windows being easier to track, but both variables are measured at the session le
 other causes. The HR/2 and double-octave patterns are consistent with harmonic ambiguity described
 in Chapter~2. The UCD non-child fraction is weaker in this sample and its nominal p-value exceeds
 0.05. None of these findings alone shows that cardiac interference, movement, or a device state
-caused a specific error. The physics-error and session-decomposition figures are diagnostic
-summaries, not interventions.
+caused a specific error. The physics-error (Figure~\ref{fig:ch3_physics_error}) and
+session-decomposition (Figure~\ref{fig:ch3_session_error}) figures are diagnostic summaries, not
+interventions.
 
 \begin{figure}[htbp]
   \centering
@@ -232,7 +243,7 @@ summaries, not interventions.
 
 Two individual sessions illustrate distinct failure modes that remain after synchronization is
 standardized. Session~11.1 has an I/Q standard-deviation ratio of 5.86, absolute I/Q correlation
-of 0.863, and clipping in 5.06\% of samples. Its HPSS $\rmseSess$ is 12.65 bpm with the shared
+of 0.863, and clipping in 5.06\% of samples. Its HPSS session error ($\rmseSession{11.1}$) is 12.65 bpm with the shared
 lag, 13.81 bpm under the cached lag, and 16.22 bpm under metadata-only timing. A large spread
 imbalance, collinearity, and clipping can make a quadrature trajectory poorly conditioned, but
 these measurements do not identify which receiver or motion mechanism dominates the error.
@@ -255,11 +266,14 @@ NMF preprocessing. The B-series explores alternative spectral evidence; the C-se
 one-dimensional or joint breathing--heart-rate states, harmonic-aware penalties, and
 leave-one-patient-out (LOPO) transition selection.
 
-For each window, the tracker receives a score over a discrete breathing-rate grid. The basic
-one-dimensional model uses candidate rates from 18 to 90 bpm at 2-bpm spacing. A transition term
+For each window, the tracker receives a score over a discrete breathing-rate grid spanning
+18 to 90~bpm: Welch variants (\texttt{C1}--\texttt{C3}) use 2-bpm spacing (37 states), whereas
+harmonic-NLS and anchored harmonic-NLS variants (\texttt{B5a}, \texttt{C4}, \texttt{C6b}--\texttt{C6e})
+use finer 1-bpm spacing (73 states). A transition term
 penalizes large adjacent rate changes with a Gaussian-shaped log score. The Viterbi recursion
 maximizes the summed emission and transition scores over the complete sequence. The two-dimensional
-variant adds a heart-rate state on a 90--210 bpm grid and a harmonic-quality term that penalizes
+variant adds a heart-rate state on a 90--210~bpm grid at 2-bpm spacing (61 states) and a
+harmonic-quality term that penalizes
 breathing candidates that collide with plausible cardiac harmonics. It is a joint latent-state
 decoder; it should not be interpreted as a validated heart-rate output.
 
@@ -274,13 +288,15 @@ the decoded path itself still uses the full held-out session and is offline.
 The anchored harmonic-NLS peak baseline (\texttt{B5a}) reaches 7.701 bpm equal-session RMSE,
 compared with 7.817 bpm for \texttt{A4\_HPSS\_NLS}. This modest difference shows that local
 anchoring changes the candidate evidence even before sequence decoding. The Viterbi ablations
-then test whether temporal structure improves that anchored representation.
+then test whether temporal structure improves that anchored representation (Table~\ref{tab:ch3_viterbi_ladder}).
 
 \begin{table}[htbp]
   \centering
   \small
   \caption{Representative Stage~0 methods on \texttt{pool30\_sync} with the shared lag. $\Delta$ is
-  the change in equal-session RMSE relative to \texttt{A4\_HPSS\_NLS}; negative values favor the method.}
+  the change in equal-session RMSE relative to \texttt{A4\_HPSS\_NLS}; negative values favor the method.
+  Here $\accTau{10}$ reports equal-session macro-averaged per-session strict $|e_{s,w}|<10$~bpm
+  accuracy (pooled values are 2.5--7.3 percentage points higher).}
   \label{tab:ch3_viterbi_ladder}
   \begin{tabular}{@{}lrrrrr@{}}
     \toprule
@@ -291,11 +307,11 @@ then test whether temporal structure improves that anchored representation.
     A2 raw NLS & 8.172 & 8.021 & 77.1 & 0.466 & +0.355 \\
     A3 NMF-NLS & 8.074 & 8.146 & 79.1 & 0.377 & +0.256 \\
     A4 HPSS-NLS & 7.817 & 7.970 & 79.4 & 0.423 & 0.000 \\
-    B5a anchored harmonic-NLS peak & 7.701 & 7.887 & 79.3 & 0.431 & -0.116 \\
+    B5a anchored harmonic-NLS peak & 7.701 & 7.887 & 79.3 & 0.430 & -0.116 \\
     C1b 1D Welch Viterbi & 10.109 & 10.219 & 70.7 & 0.361 & +2.292 \\
     C2b 1D HQI Viterbi & 10.077 & 10.160 & 70.4 & 0.369 & +2.259 \\
     C3b joint BR/HR Viterbi & 9.648 & 9.923 & 72.3 & 0.359 & +1.831 \\
-    C4b unanchored harmonic-NLS Viterbi & 13.030 & 14.344 & 55.9 & 0.159 & +5.213 \\
+    C4b unanchored harmonic-NLS Viterbi & 13.030 & 14.344 & 55.9 & 0.159 & +5.212 \\
     C4c anchored 1D Viterbi & 7.182 & 7.513 & 81.6 & 0.452 & -0.636 \\
     C4d anchored joint Viterbi & 7.036 & 7.306 & 82.0 & 0.471 & -0.782 \\
     C6d LOPO wide anchored Viterbi & 6.877 & 7.205 & 83.7 & 0.456 & -0.941 \\
@@ -320,7 +336,9 @@ correction ($p_{\mathrm{pat,Holm}}=0.0205$). This is internal evidence for the t
 branch-neutral cohort and reference, not evidence of generalization to an unseen site or bedside
 benefit. \texttt{C6e}, the corresponding NMF variant, has a slightly lower point RMSE of 6.826 bpm, but
 its result also depends on the incompletely specified local NMF solver and is not the primary
-HPSS reconstruction.
+HPSS reconstruction. The ablation ladder (Figure~\ref{fig:ch3_ablation_ladder}) and forensic bridge
+(Figure~\ref{fig:ch3_forensic_bridge}) summarize these transitions, noting that the frozen Stage~0
+plotting script automatically displays the lowest-RMSE LOPO variant (\texttt{C6e}, NMF).
 
 The LOPO analysis has a further selection boundary. The wide search evaluates a finite grid of
 one- and two-dimensional settings, and \texttt{C6d} selects a boundary-valued configuration in all 11
@@ -333,15 +351,21 @@ further search or regularization.
   \centering
   \includegraphics[width=0.92\textwidth]{viterbi_repro_ablation_ladder}
   \caption{Stage~0 ablation ladder. Unanchored sequence decoding degrades the baseline, whereas
-  anchored harmonic evidence recovers lower error on the tested local cohort.}
+  anchored harmonic evidence recovers lower error on the tested local cohort; panel~(b) reports
+  equal-session $\accTau{10}$, and the rightmost LOPO bar plots the automatically selected
+  lowest-RMSE variant \texttt{C6e} (NMF, 6.826~bpm) rather than the primary HPSS model
+  \texttt{C6d} (6.877~bpm).}
   \label{fig:ch3_ablation_ladder}
 \end{figure}
 
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=0.92\textwidth]{viterbi_repro_forensic_bridge}
-  \caption{Forensic bridge from the signal-processing baseline to Viterbi variants, including
-  the role of candidate evidence and temporal structure.}
+  \caption{Forensic bridge on \texttt{retained23} (23 sessions; 6,447 valid 30-second windows on
+  the two-second hop) from the signal-processing baseline to Stage~0 Viterbi variants (plotting
+  auto-selected \texttt{C6e}, NMF). Horizontal reference lines compare against earlier exploratory
+  draft benchmarks computed on a denser 12,397-window one-second grid (17.47~bpm naive FFT and
+  9.34~bpm proposed).}
   \label{fig:ch3_forensic_bridge}
 \end{figure}
 
@@ -351,7 +375,8 @@ further search or regularization.
 RMSE is not a sufficient description of a tracker. A path can reduce average error while losing
 dynamic association with the reference, and pooled-window metrics can conceal session-level
 disagreement. The reconstructed analysis therefore reports equal-session and pooled RMSE,
-within-session correlation, strict-threshold accuracy, and Bland--Altman summaries separately.
+within-session correlation, strict-threshold accuracy, and Bland--Altman summaries separately
+(Figures~\ref{fig:ch3_bland_altman} and~\ref{fig:ch3_tracking_examples}).
 On \texttt{PAPER\_18}, the difference between $\rmseSess$ and $\rmsePool$ is about 0.42 bpm for the
 cached HPSS baseline, illustrating why the aggregation rule must accompany a result.
 
@@ -372,15 +397,20 @@ and improve average error on a restricted sample while tracking less of the with
 variation. This control argues against selecting a tracker from RMSE alone.
 
 Synthetic checks support implementation behavior under constructed conditions, with limits. The
-anchored 2D tracker returns the exact 45-bpm state in the stationary 45-bpm/150-bpm-heart-rate
-example. In the constructed 35-to-65-bpm chirp with movement and a 150-bpm cardiac component, its
-RMSE is approximately 0.326 bpm. These results show that the tested code can resolve those
-specified synthetic mixtures; they do not establish that real neonatal signals follow the same
-model or that the method handles unmodeled movement and reference error.
+anchored 2D tracker returns the exact 45-bpm state on its 1-bpm grid in the stationary
+45-bpm/150-bpm-heart-rate example (whereas the 2-bpm Welch trackers \texttt{C1b} and \texttt{C3b}
+incur 1.0-bpm grid quantization error). In the constructed 35-to-65-bpm chirp with movement and a
+150-bpm cardiac component, its RMSE is approximately 0.326 bpm. These results show that the tested
+code can resolve those specified synthetic mixtures; they do not establish that real neonatal
+signals follow the same model or that the method handles unmodeled movement and reference error.
 
-The HR component of the joint state was also evaluated against the high-rate R-trigger reference
-as a separate output. None of nine cardiac extractors passes the predefined 50\% within-10-bpm
-criterion; the best session-averaged result is 39.8\%. Thus, the HR state in the joint decoder is
+The HR trajectories were also evaluated against the high-rate R-trigger reference across 6,618
+\texttt{pool30\_sync} windows (\texttt{SignalIQ >= 50} and monitor heart rate above 50~bpm). None
+of nine cardiac extractors—six standalone spectral or velocity peak extractors plus three
+joint-Viterbi HR paths (\texttt{C3b}, \texttt{C4b}, \texttt{C4d})—passes the predefined 50\%
+within-10-bpm Gate~G2 criterion ($|e|\le 10$~bpm): the highest session-averaged accuracy is 39.8\%
+for the standalone HPSS-velocity peak (\texttt{hr\_peak\_hpss\_vel}), while the best joint-Viterbi
+HR state (\texttt{C4d}) reaches 36.6\%. Thus, the HR state in the joint decoder is
 used as auxiliary evidence for harmonic ambiguity. The present analysis does not validate it as a
 clinical heart-rate measurement.
 
@@ -394,16 +424,19 @@ apnea detection.
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=0.92\textwidth]{viterbi_repro_bland_altman}
-  \caption{Agreement summaries for representative Stage~0 methods. Limits and bias are shown
-  with session structure retained; correlation alone would not characterize this agreement.}
+  \caption{Session-mean Bland--Altman limits of agreement (LoA) and repeated-measures limits
+  (RM-LoA) on \texttt{retained23} and \texttt{pool30\_sync}, comparing audited \texttt{HPSS+NLS}
+  against the auto-selected lowest-RMSE LOPO variant \texttt{C6e} (NMF); correlation alone would not
+  characterize this agreement.}
   \label{fig:ch3_bland_altman}
 \end{figure}
 
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=0.92\textwidth]{viterbi_repro_tracking_examples}
-  \caption{Example tracking trajectories illustrating candidate selection and temporal
-  continuity. These selected sessions illustrate mechanisms and are not a substitute for the
+  \caption{Example tracking trajectories in Sessions~7.3 and~9.3 comparing \texttt{VitaGuard}
+  reference, Clean Welch, audited \texttt{NMF+NLS}, audited \texttt{HPSS+NLS}, and auto-selected
+  \texttt{C6e} (NMF). These selected sessions illustrate mechanisms and are not a substitute for the
   cohort-level summaries.}
   \label{fig:ch3_tracking_examples}
 \end{figure}
