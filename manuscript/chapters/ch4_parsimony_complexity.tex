@@ -35,7 +35,7 @@ The Stage~1 benchmark carries forward the distinction between the one-hertz
 cohort, the trigger-derived interval rate differs from the monitor rate by a mean of
 $+2.15$~bpm when pooled across windows and $+1.65$~bpm when averaged equally across sessions,
 with differences defined as trigger rate minus monitor rate.
-Its window-level mean absolute difference is $5.03$~bpm, and its within-session association with
+Its window-level mean absolute difference is $5.03$~bpm (Table~\ref{tab:ch4_dual_reference}), and its within-session association with
 the monitor is $\rWithin=0.606$ at zero offset. These are comparisons between two measurement
 constructions, not an adjudication that either one is a universal ground truth.
 
@@ -58,7 +58,7 @@ the target rate depends on the reference definition, especially during quiet int
   \label{tab:ch4_dual_reference}
   \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}Xrrrrr@{}}
     \toprule
-    Cohort & Sessions & Monitor win & Trigger win & Mean diff (sess / pool) & MAE \\
+    Cohort & Sessions & Monitor win & Trigger win & Mean diff (sess / pool) & MAE (pool) \\
     \midrule
     \texttt{pool30\_sync} & 28 & 6,640 & 6,638 & $+1.65 / +2.15$ & 5.03 \\
     \texttt{retained23} & 23 & 6,447 & 6,445 & $+1.64 / +2.13$ & 5.01 \\
@@ -95,13 +95,15 @@ channel-wise or joint interpolation at ADC rail hits, three symmetric whitening 
 combined clipping-and-whitening treatment. All were evaluated against both the monitor and the
 high-rate trigger reference.
 
-None of the six alternatives has patient-level Holm-adjusted support on either reference:
-all adjusted $p$-values are $1.000$. The largest point improvement among the whitening variants
-on the one-hertz reference is small relative to between-session variation and is not reproduced
-as a supported result on the trigger reference. The sentinel sessions reinforce the concern.
-For example, the clean sentinel Session~2.3 moves from 11.73~bpm under the locked method to
-13.71--14.31~bpm for the whitening variants; Session~11.1 moves from 12.65~bpm to
-12.78--13.21~bpm. In addition, channel-wise interpolation and the combined channel-wise
+None of the six alternatives has patient-level Holm-adjusted support on either reference
+(Table~\ref{tab:ch4_wp1}): all adjusted $p$-values are $1.000$. The largest point improvement
+among the whitening variants on the one-hertz reference is small relative to between-session
+variation and is not reproduced as a supported result on the trigger reference. The sentinel
+sessions reinforce the concern. For example, the heavily clipped sentinel Session~2.3
+(18.5\% ADC rail clipping) moves from 11.73~bpm under the locked method to 13.95--14.31~bpm
+for standalone whitening (13.71~bpm under combined clipping-and-whitening \texttt{F3});
+Session~11.1 moves from 12.65~bpm to 12.78--13.21~bpm for standalone whitening (12.98~bpm under
+\texttt{F3}). In addition, channel-wise interpolation and the combined channel-wise
 procedure depend on the I/Q axes and do not preserve the same unconditional rotation invariance
 as the locked complex representation.
 
@@ -119,9 +121,9 @@ as the locked complex representation.
     F0 locked CSD & 7.817 & anchor & 8.968 & -- & Locked reference \\
     F1a channel clip repair & 7.832 & $+0.014$ & 8.963 & 1.000 / 1.000 & Axis-dependent mask \\
     F1b joint clip repair & 7.831 & $+0.014$ & 8.966 & 1.000 / 1.000 & Conditional shared mask \\
-    F2a sym.\ whitening ($\lambda=0.05$) & 7.804 & $-0.014$ & 8.949 & 1.000 / 1.000 & No supported gain \\
-    F2b sym.\ whitening ($\lambda=0.10$) & 7.833 & $+0.015$ & 8.976 & 1.000 / 1.000 & No supported gain \\
-    F2c sym.\ whitening ($\lambda=0.25$) & 7.689 & $-0.128$ & 8.804 & 1.000 / 1.000 & Sentinel degradation \\
+    F2a sym.\ whitening ($\lambda_{\mathrm{wh}}=0.05$) & 7.804 & $-0.014$ & 8.949 & 1.000 / 1.000 & No supported gain \\
+    F2b sym.\ whitening ($\lambda_{\mathrm{wh}}=0.10$) & 7.833 & $+0.015$ & 8.976 & 1.000 / 1.000 & No supported gain \\
+    F2c sym.\ whitening ($\lambda_{\mathrm{wh}}=0.25$) & 7.689 & $-0.128$ & 8.804 & 1.000 / 1.000 & Sentinel degradation \\
     F3 clipping + whitening & 7.812 & $-0.006$ & 8.935 & 1.000 / 1.000 & Axis-dependent clipping \\
     \bottomrule
   \end{tabularx}
@@ -140,7 +142,8 @@ future context used by harmonic--percussive source separation (HPSS). The locked
 \texttt{H0}, uses the rectangular $48/16/256$ STFT configuration and the existing 64-tap
 zero-phase Kaiser FIR bandpass over $[0.30,3.00]$~Hz with $\kaiserBeta=6.5$. The bandpass is the
 project's locked filter throughout Stages~0--4; it is not a Butterworth alternative. The HPSS
-windowing variants range from three seconds of STFT lookahead to zero seconds.
+windowing variants range from three seconds of STFT lookahead to zero seconds
+(Table~\ref{tab:ch4_wp2}).
 
 \begin{table}[htbp]
   \centering
@@ -190,8 +193,8 @@ forward-MMSE form updates a breathing-rate posterior over the $[18,90]$~bpm cand
 window's evidence and a transition model. At each step it reports the posterior mean without
 backtracking through future windows. The MAP variant reports the most probable state, while the
 fixed-lag and offline variants deliberately use increasing amounts of future context. The
-comparison tests both whether temporal continuity is useful and how much latency is required to
-obtain it.
+comparison in Table~\ref{tab:ch4_rung1} tests both whether temporal continuity is useful and how
+much latency is required to obtain it.
 
 \begin{table}[htbp]
   \centering
@@ -199,11 +202,12 @@ obtain it.
   \setlength{\tabcolsep}{4pt}
   \caption{Rung~1 causality frontier on \texttt{pool30\_sync}. Block lookahead describes sequence
   decoding; STFT lookahead describes HPSS frame context, not total pipeline latency. The H0-backed
-  rows retain three seconds of STFT lookahead.}
+  rows retain three seconds of STFT lookahead; $\accTau{10}$ reports the equal-session mean of
+  per-session strict $|e_{s,w}|<10$~bpm accuracy on the one-hertz reference.}
   \label{tab:ch4_rung1}
   \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}Xrrrrrr@{}}
     \toprule
-    Method & Params & Blk / STFT & $\rmseSess$ (1\,Hz) & $\accTau{10}$ & $\rWithin$ (1\,Hz) & $\rmseSess$ (Trig 0\,s) \\
+    Method & Params & Blk / STFT & $\rmseSess$ (1\,Hz) & $\accTau{10}$ (1\,Hz) & $\rWithin$ (1\,Hz) & $\rmseSess$ (Trig 0\,s) \\
     \midrule
     R0 locked HPSS-NLS & 0 & 0 / 3\,s & 7.817 & 79.4\% & 0.423 & 8.968 \\
     R1a forward MMSE & 3 & 0 / 3\,s & 6.990 & 82.6\% & 0.454 & 8.624 \\
@@ -236,7 +240,7 @@ affect agreement. It should not be interpreted as an equal-latency comparison.
 
 Two controls test whether the forward filter is merely producing a smooth, inertial trace. First,
 the shifted-grid midpoint audit compares candidate ranges $[18,90]$ and $[18,120]$~bpm on five
-sessions. The legacy stiff transition changes its bias by $+0.26$~bpm, and a memoryless naive
+sessions. The legacy wide-transition, high-floor filter (8~bpm transition width and 0.05 uniform floor) changes its bias by $+0.26$~bpm, and a memoryless naive
 MMSE estimator changes by $+2.82$~bpm. The equivariant forward-MMSE and forward--backward
 operators show $+0.00$~bpm shift. Second, in five radar phase-scramble runs, the R1a
 within-session correlation falls from $0.454$ to $0.006$ and its RMSE rises from 6.990 to
@@ -276,11 +280,11 @@ rate itself changes \citep{geirhos2020shortcut}.
 
 All models are trained within patient-disjoint LOPO folds using only \texttt{br\_1hz\_30s}. The
 one-hertz results are therefore the training-reference evaluation; the recorded-time and
-lag-adjusted trigger results are blind reference evaluations. The table reports equal-session and
-window-pooled RMSE for both references, within-session association, and the prediction-to-reference
-standard-deviation ratio. A ratio below one means that the predictions vary less than the
-reference across the evaluated windows; it can accompany a favorable average error when the
-estimator compresses the dynamic range.
+lag-adjusted trigger results are blind reference evaluations. Table~\ref{tab:ch4_complexity_ladder} reports equal-session and
+window-pooled RMSE for both references, within-session association, and the equal-session mean
+of the per-session prediction-to-reference standard-deviation ratio. A ratio below one means
+that, on average across sessions, the predictions vary less than the reference; it can
+accompany a favorable average error when the estimator compresses the dynamic range.
 
 \begin{table}[htbp]
   \centering
@@ -288,8 +292,8 @@ estimator compresses the dynamic range.
   \setlength{\tabcolsep}{3.5pt}
   \caption{Stage~2 complexity ladder on \texttt{pool30\_sync}. Lookahead is block-decoder
   lookahead / HPSS STFT frame lookahead in seconds; the latter is not total pipeline latency.
-  The SD-ratio column gives prediction-to-reference standard-deviation ratios for 1\,Hz and
-  lag-adjusted trigger (\texttt{T10}).}
+  The SD-ratio column gives equal-session mean prediction-to-reference standard-deviation
+  ratios for 1\,Hz and lag-adjusted trigger (\texttt{T10}).}
   \label{tab:ch4_complexity_ladder}
   \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}Xrcc rrr c rrr@{}}
     \toprule
@@ -351,7 +355,8 @@ shortcut stress tests, but neither comparison isolates parameter count from trai
 \end{table}
 
 R2e is the only causal architecture in this comparison that passes patient-level Holm correction
-against R0 on both the one-hertz and lag-adjusted trigger references. Its mean paired differences
+against R0 on both the one-hertz and lag-adjusted trigger references
+(Table~\ref{tab:ch4_r2e_inference}). Its mean paired differences
 are $-0.969$~bpm and $-0.663$~bpm, respectively. This supports R2e over the zero-parameter
 baseline within the stated evaluation. It does not show that eight parameters outperform the
 three-parameter R1a forward filter: R2e's patient-level adjusted $p$-values against R1a are
@@ -370,7 +375,8 @@ patient-level evidence against R0 under the second reference.
 On the recorded-time trigger, R2e's $\rmseSess$ is 8.473~bpm, compared with 8.968~bpm for R0,
 8.624~bpm for R1a, and 8.255~bpm for R3c. These zero-offset comparisons are affected by the
 observed monitor delay and the causal filter's group delay. The adjusted trigger comparisons are
-therefore reported alongside them rather than substituted for them.
+therefore reported alongside them rather than substituted for them
+(Figure~\ref{fig:ch4_complexity_ladder}).
 
 \begin{figure}[htbp]
   \centering
@@ -387,7 +393,8 @@ therefore reported alongside them rather than substituted for them.
 \subsection{Lag profile and the shared trigger correction}
 \label{sec:ch4_lag}
 
-The Stage~2 lag sweep shifts the trigger reference from $-20$ to $+20$~s using the same offset
+In addition to the Stage~2 $[-16,+16]$~s within-session correlation profiles, an independent
+post-freeze lag sweep shifts the trigger reference from $-20$ to $+20$~s using the same offset
 for each model. Five of the six unshifted models---R0, R1a, R2e, R3c, and R3b---reach their
 minimum error or maximum $\rWithin$ at an offset between $+8$ and $+10$~s. For example, R2e
 changes from 8.473~bpm at the recorded trigger timing to 8.063~bpm at the project-defined
@@ -406,12 +413,17 @@ monitor streams encode different rate definitions, particularly in pause-contain
 The structured models were checked against several implementation-level controls. On an
 interior rate grid, the Rung~2 operators respond to a rigid $+10$~bpm translation with
 numerical error at or below $1.42\times10^{-14}$~bpm for R2e, $7.11\times10^{-15}$~bpm for
-R2a, and zero at reported precision for R2b. On the clinical $[18,90]$~bpm grid, the shifted
-grid bias changes by $0.0000$~bpm for R2e, $0.0188$~bpm for R2a, and $0.0163$~bpm for R2b.
-The absolute-frequency R3 models show larger shifts in the same clinical-grid audit. On the
-separate 24~GHz waveform probe, which changes the input from 36 to 46~bpm, the structured R2e
-and R2a outputs change by 9.987 and 10.001~bpm, close to the imposed shift of 10~bpm. The
-unconstrained R3c, R3b, and R3a changes are 6.523, 15.043, and 5.465~bpm.
+R2a, and zero at reported precision for R2b. Under the clinical $[18,90]$~bpm grid
+frequency-shift audit ($36\to46$~bpm rigid salience translation), the maximum absolute errors
+are $1.20\times10^{-7}$~bpm for R2e, $3.18\times10^{-5}$~bpm for R2a, and
+$4.29\times10^{-5}$~bpm for R2b, whereas the absolute-frequency R3c, R3b, and R3a foils show
+errors of $3.01$, $5.66$, and $8.86$~bpm. In a separate candidate-grid expansion audit comparing
+$[18,90]$ against $[18,120]$~bpm for the flexible-grid Rung~2 decoders, the mean bias shifts
+by $0.0000$~bpm for R2e, $0.0188$~bpm for R2a, and $0.0163$~bpm for R2b (the fixed 73-bin
+Rung~3 regressors are not defined on the expanded 103-bin grid). On the separate 24~GHz
+waveform probe, which changes the input from 36 to 46~bpm, the structured R2e and R2a outputs
+change by 9.987 and 10.001~bpm, close to the imposed shift of 10~bpm. The unconstrained R3c,
+R3b, and R3a changes are 6.523, 15.043, and 5.465~bpm.
 
 Random future perturbations produce zero reported output difference for the causal forward
 decoders and the causal TCN. This is a sequence-level statement about future windows. For
@@ -442,8 +454,9 @@ rule out shortcut learning in the unperturbed recordings.
 
 Synthetic frequency sweeps provide a different test: can the learned mapping follow rates that
 were not selected from the NICU cohort's observed distribution? Across stationary 28, 35, 50,
-65, and 80~bpm signals and a 30-to-75~bpm chirp, the passband-safe R2e has low stationary
-MAE, from 0.01 to 0.04~bpm. The unconstrained R3 errors vary substantially with rate. R3c,
+65, and 80~bpm signals and a 30-to-75~bpm chirp (Table~\ref{tab:ch4_synthetic_sweep};
+Figure~\ref{fig:ch4_synthetic_sweep}), the passband-safe R2e has low stationary MAE, from 0.01
+to 0.04~bpm. The unconstrained R3 errors vary substantially with rate. R3c,
 for example, has 7.51~bpm MAE at 28~bpm and 11.18~bpm at 80~bpm; the TCN has 12.45 and
 11.14~bpm errors at those rates. These are controlled synthetic signals, so the results
 demonstrate behavior under specified mixtures rather than a guarantee for real infants.
@@ -480,9 +493,9 @@ directly interchangeable.
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=0.94\textwidth]{stage2_synthetic_sweep_and_weights}
-  \caption{Synthetic rate-sweep results and interpretable Rung~2 weights. The frequency sweep
-  reveals rate-dependent errors in unconstrained regressors and a distinct low-edge limitation
-  in the shared front end.}
+  \caption{Passband synthetic rate-sweep results (28--80~bpm) and interpretable Rung~2 weights.
+  The frequency sweep reveals rate-dependent errors in unconstrained regressors; the separate
+  20~bpm Kaiser low-edge diagnostic is reported in the text.}
   \label{fig:ch4_synthetic_sweep}
 \end{figure}
 
