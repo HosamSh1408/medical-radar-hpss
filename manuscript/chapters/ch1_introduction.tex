@@ -61,10 +61,10 @@ frequently leave unexamined:
     \citep{beltrao2022contactless} uncovered branch-specific synchronization leakage (where candidate
     non-negative matrix factorization [NMF] branches select distinct alignment lags $\syncLag$),
     unclustered window-pooled metrics violating intra-infant correlation structures
-    \citep{bland2007agreement}, and an unaligned \SI{10}{\second} hardware trend delay between the
+    \citep{bland2007agreement}, and an unaligned \SI{10}{\second} effective trend group delay between the
     hospital monitor's smoothed \SI{1}{\hertz} \texttt{RespRate} export and raw \SI{1024}{\hertz}
     physical breath triggers (\texttt{Resp.-Trigger}). Critically, $1581$ of $6640$ valid windows
-    ($23.8\%$) in our primary synchronized cohort contain genuine quiescent breathing pauses
+    ($23.8\%$) in our primary synchronized cohort contain quiet breathing pauses
     exceeding \SI{5}{\second} where rate definitions diverge sharply.
 
   \item \textbf{Causal Delay versus Neural Shortcut Memorization (\texttt{WP1--WP3}):}
@@ -96,8 +96,8 @@ frequently leave unexamined:
 
   \item \textbf{Finite-$K$ Conformal Invalidity Under Hierarchical Clustering (\texttt{WP4--WP5}):}
     Point error averages obscure wide patient-to-patient variability. Deploying split conformal
-    prediction naive to intra-infant serial correlation—by splitting random windows or pooling
-    calibration residuals across sessions within leave-one-patient-out (LOPO) folds—violates
+    prediction naive to intra-infant serial correlation---by splitting random windows or pooling
+    calibration residuals across sessions within leave-one-patient-out (LOPO) folds---violates
     exchangeability and silently under-covers held-out infants \citep{dunn2023distribution,barber2023conformal}.
     Simultaneously, enforcing strict distribution-free patient-level exchangeability over $K=11$
     infants ($K_{\mathrm{cal}}=10$ calibration infants per LOPO fold) hits a hard mathematical
@@ -118,9 +118,9 @@ and rigorously stress-tests the following \textbf{Central Parsimony Hypothesis}:
 \begin{quote}
 \itshape
 Across both contactless respiratory-rate tracking and safety-critical uncertainty quantification,
-encoding exact CW Doppler radar domain symmetries—frequency-shift equivariance,
+encoding exact CW Doppler radar domain symmetries---frequency-shift equivariance,
 $SO(2)\times\mathbb{R}_{>0}$ baseband invariance, and causal discrete Markov transition
-continuity—into ultra-parsimonious physics-constrained operators outperforms high-capacity
+continuity---into ultra-parsimonious physics-constrained operators outperforms high-capacity
 unconstrained regressors on small neonatal cohorts ($K=11$) and transfers zero-touch across
 independent radar hardware.
 \end{quote}
@@ -129,14 +129,14 @@ We operationalize this hypothesis through four concrete research questions align
 work packages \texttt{WP0--WP5} and frozen verification gates \texttt{G1--G5}:
 
 \begin{itemize}
-  \item \textbf{RQ1 (Forensic De-Leakage and Front-End Representation Parsimony — Chapters~\ref{ch:forensics_viterbi}--\ref{ch:parsimony_complexity}, Stage~0--1):}
+  \item \textbf{RQ1 (Forensic De-Leakage and Front-End Representation Parsimony -- Chapters~\ref{ch:forensics_viterbi}--\ref{ch:parsimony_complexity}, Stage~0--1):}
     What fraction of locked baseline \texttt{v1} error originates from branch-dependent synchronization
-    leakage versus physical cardiac/harmonic interference or hardware dropouts, and do multi-parameter
-    I/Q preconditioning (\texttt{F1--F3}, Gate~\texttt{G1}) or strictly causal zero-lookahead STFT
+    leakage versus physical cardiac/harmonic interference or hardware dropouts, and do clipping-repair
+    and symmetric I/Q whitening front-ends (\texttt{F1--F3}, Gate~\texttt{G1}) or strictly causal zero-lookahead STFT
     redesigns (\texttt{H1--H6}, Gate~\texttt{G2}) improve over locked complex signal demodulation
     (\texttt{F0}) and $64$-tap zero-phase Kaiser FIR filtering (\texttt{H0}, \SIrange{0.30}{3.00}{\hertz})?
 
-  \item \textbf{RQ2 (Physical Inductive Bias versus Neural Shortcuts — Chapter~\ref{ch:parsimony_complexity}, Stage~2):}
+  \item \textbf{RQ2 (Physical Inductive Bias versus Neural Shortcuts -- Chapter~\ref{ch:parsimony_complexity}, Stage~2):}
     Can an $8$-parameter, filter-safe, shift-equivariant differentiable Hidden Markov Model
     (\texttt{FilterSafe-8}, \texttt{R2e}) optimized end-to-end via exact Backpropagation Through
     Time (BPTT) \citep{mensch2018differentiable,riou2023pesto} surpass the memoryless \texttt{0}-parameter
@@ -145,14 +145,14 @@ work packages \texttt{WP0--WP5} and frozen verification gates \texttt{G1--G5}:
     variance shrinkage and frequency-memorization shortcuts of $439$--$15{,}817$-parameter unconstrained
     regressors (\texttt{R3a--R3c}) \citep{geirhos2020shortcut}?
 
-  \item \textbf{RQ3 (Apnea-Safe Selective Uncertainty and Finite-$K$ Conformal Bounds — Chapter~\ref{ch:uncertainty_conformal}, Stage~3):}
+  \item \textbf{RQ3 (Apnea-Safe Selective Uncertainty and Finite-$K$ Conformal Bounds -- Chapter~\ref{ch:uncertainty_conformal}, Stage~3):}
     How can intrinsic posterior spread and causal spectral OOD cues resolve the quiet-apnea safety
-    versus OOD paradox without over-rejecting true $> \SI{5}{\second}$ breathing pauses or overfitting
+    versus OOD paradox without over-rejecting quiet $> \SI{5}{\second}$ breathing pauses or overfitting
     learned calibration weights, and what exact sample-size and interval-width limits govern valid
     hierarchical conformal prediction sets at $K_{\mathrm{cal}}=10$ NICU infants
     \citep{dunn2023distribution}?
 
-  \item \textbf{RQ4 (Zero-Touch Hardware Transfer and Readiness Boundaries — Chapters~\ref{ch:external_transfer}--\ref{ch:discussion_conclusion}, Stage~4):}
+  \item \textbf{RQ4 (Zero-Touch Hardware Transfer and Readiness Boundaries -- Chapters~\ref{ch:external_transfer}--\ref{ch:discussion_conclusion}, Stage~4):}
     When all front-end hyperparameters, HMM weights, uncertainty composites, and conformal quantiles
     are hard-frozen at Gate~\texttt{G4}, how accurately do physics-constrained versus neural shortcut
     models transfer zero-touch to an external \SI{24.2}{\giga\hertz} CW radar neonatal thorax
@@ -167,14 +167,14 @@ work packages \texttt{WP0--WP5} and frozen verification gates \texttt{G1--G5}:
 Because medical signal-processing evaluations on small clinical cohorts can easily conflate
 reimplementation parity, internal cross-validation, physical bench transfer, and bedside utility,
 every experiment and claim in this monograph is governed by an explicit six-tier epistemic ladder
-(\texttt{L0--L5}), codified in
+(\texttt{L0--L5}, Table~\ref{tab:claim_gates}), codified in
 \texttt{claim\_\allowbreak gate\_\allowbreak status.\allowbreak json} and
 \texttt{unresolved\_\allowbreak protocol\_\allowbreak items.\allowbreak yaml} and extended by
 the Stage~3--4 \texttt{G4}/\texttt{G5} manifests. Two upper-level
 claims are permanently
 \textbf{blocked} by structural evidence gaps: Level~\texttt{L2} (exact reproduction of the
 published $N=18$ subset, $\approx 4964$ window denominator, and proprietary synchronization/solver
-details of Beltrão~et~al.\ \citep{beltrao2022contactless}) and Level~\texttt{L5} (prospective clinical
+details of Beltr\~ao~et~al.\ \citep{beltrao2022contactless}) and Level~\texttt{L5} (prospective clinical
 bedside utility, autonomous apnea alarming, or superiority over wired NICU leads).
 
 \begin{table}[htbp]
@@ -239,8 +239,8 @@ makes five original scientific and methodological contributions:
     breathing pause windows ($23.8\%$).
 
   \item \textbf{Causal Front-End Falsification and First Proof of Parsimony (\texttt{WP1--WP3}, Chapter~\ref{ch:parsimony_complexity}):}
-    Through pre-registered Gates~\texttt{G1} and~\texttt{G2}, we falsify multi-parameter I/Q
-    preconditioning ($p_{\mathrm{pat,Holm}} = 1.00$ across \texttt{F1--F3}) and show that strictly
+    Through pre-registered Gates~\texttt{G1} and~\texttt{G2}, we reject clipping-repair and symmetric I/Q
+    whitening front-ends ($p_{\mathrm{pat,Holm}} = 1.00$ across \texttt{F1--F3}) and show that strictly
     zero-lookahead STFT replacements (\texttt{H5}/\texttt{H6}) fail $\pm\SI{0.50}{\bpm}$ TOST
     equivalence, preserving locked complex demodulation (\texttt{F0}) and the $64$-tap Kaiser FIR
     filter (\SIrange{0.30}{3.00}{\hertz}, $\kaiserBeta=6.5$). Across the Stage~2 four-rung ladder
@@ -268,7 +268,7 @@ makes five original scientific and methodological contributions:
     $[-0.4069,-0.1168]\,\mathrm{bpm}$ on \SI{1}{\hertz}, $10/11$ infants, raw $p_{\mathrm{pat}} = 0.0098$, Holm
     $0.0781$; $-0.2929$ $[-0.4555,-0.1436]\,\mathrm{bpm}$ on \texttt{Trig~$-10\,\mathrm{s}$}, $9/11$ infants, raw
     $p_{\mathrm{pat}} = 0.0244$, Holm $0.1953$) with negligible quiet-pause bias ($1.02\times$ pooled risk
-    ratio), outperforming a $5$-parameter LOPO-fitted ridge composite (\texttt{U6c}) in patient
+    ratio), outperforming a $5$-parameter LOPO-calibrated regularized linear composite (\texttt{U6c}) in patient
     consistency, CI reliability, and pause neutrality---\texttt{U6c}'s \SI{1}{\hertz} confidence
     interval crosses zero ($[-0.5926,\allowbreak +0.0266]$) and its pause rejection violates the
     project's diagnostic pause-safety criterion ($1.23\times > 1.15\times$). Combining posterior SD
@@ -332,6 +332,6 @@ benchmarked directly against Dunn~et~al.\ \citep{dunn2023distribution}.
 \textbf{Chapter~\ref{ch:discussion_conclusion}} synthesizes our findings, defines the quantitative
 \SI{24.02}{\bpm} boundary separating verified hardware transfer from bedside deployment, discusses
 clinical ethics and architectural limitations, and outlines next-generation MIMO/FMCW translational
-work. Finally, \textbf{Appendices~\ref{app:notation}--\ref{app:reproducibility}} house the locked
+work. Finally, \textbf{Appendices~\ref{app:notation}, \ref{app:tables}, and~\ref{app:reproducibility}} house the locked
 notation contract, extended Holm--Bonferroni, VitaGuard lag-sweep, Rung~2 parameter, and
 cross-cohort sensitivity tables, and cryptographic reproducibility commands.

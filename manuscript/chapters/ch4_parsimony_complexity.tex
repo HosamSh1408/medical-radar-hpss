@@ -231,7 +231,7 @@ comparators, not online alternatives: they use future windows and cannot be emit
 of measurement. The forward filter's improvement over R0 is also not a clinical performance
 claim; the trigger timing and pause definition still affect the measured error.
 
-The R1a--R1g paired audit illustrates the uncertainty at this cohort size. R1a's RMSE is
+The R1a--R1g paired audit (complete $n=8$ Holm--Bonferroni family in Appendix~\ref{app:sec_r1g_holm}, Table~\ref{tab:app_r1g_holm}) illustrates the uncertainty at this cohort size. R1a's RMSE is
 0.493~bpm higher than offline Viterbi under the one-hertz reference; its patient-level Holm
 adjusted $p$-value is $0.0957$. Against the recorded-time trigger, the difference is
 $+0.748$~bpm and the adjusted patient-level $p$-value is $0.0078$. The offline advantage is
@@ -268,7 +268,7 @@ fundamental power---along with two symmetric smoothing taps and three transition
 Restricting the evidence to these channels avoids relying on harmonic bins that cross the
 locked $0.30$--$3.00$~Hz filter boundaries as the candidate rate changes. \texttt{R2a} uses all
 six channels with eleven parameters; \texttt{R2b} uses a 43-parameter nonlinear residual model.
-The offline Rung~2 models use the same emissions with future-window smoothing.
+The offline Rung~2 models use the same emissions with future-window smoothing (fold-level LOPO parameter statistics and frozen full-cohort refit weights are listed in Appendix~\ref{app:sec_rung2_weights}, Table~\ref{tab:app_rung2_weights}).
 
 Rung~3 consists of a 439-parameter ridge regressor, a 14,593-parameter spectral multilayer
 perceptron, and a 15,817-parameter causal temporal convolutional network. These models can fit
@@ -376,7 +376,9 @@ On the recorded-time trigger, R2e's $\rmseSess$ is 8.473~bpm, compared with 8.96
 8.624~bpm for R1a, and 8.255~bpm for R3c. These zero-offset comparisons are affected by the
 observed monitor delay and the causal filter's group delay. The adjusted trigger comparisons are
 therefore reported alongside them rather than substituted for them
-(Figure~\ref{fig:ch4_complexity_ladder}).
+(Figure~\ref{fig:ch4_complexity_ladder}); cross-cohort sensitivity across \texttt{pool30\_sync},
+\texttt{retained23}, and \texttt{PAPER\_18} is tabulated in Appendix~\ref{app:sec_cohort_matrix}
+(Table~\ref{tab:app_cohort_matrix}).
 
 \begin{figure}[htbp]
   \centering
@@ -395,8 +397,10 @@ therefore reported alongside them rather than substituted for them
 
 In addition to the Stage~2 $[-16,+16]$~s within-session correlation profiles, an independent
 post-freeze lag sweep shifts the trigger reference from $-20$ to $+20$~s using the same offset
-for each model. Five of the six unshifted models---R0, R1a, R2e, R3c, and R3b---reach their
-minimum error or maximum $\rWithin$ at an offset between $+8$ and $+10$~s. For example, R2e
+for each model (Appendix~\ref{app:sec_lag_sweep}, Table~\ref{tab:app_lag_sweep}). Five of the
+six evaluated models---R0, R1a, R2e, R3c, and R3b---reach their minimum $\rmseSess$ at an offset
+between $+8$ and $+10$~s (while causal TCN R3a reaches its minimum at $+4$~s and R2e $\rWithin$
+peaks at $+12$~s). For example, R2e
 changes from 8.473~bpm at the recorded trigger timing to 8.063~bpm at the project-defined
 \texttt{Trig -10 s} alignment, while R1a changes from 8.624 to 8.197~bpm. The common optimum
 across architectures is evidence against a model-specific lag search as the explanation for the

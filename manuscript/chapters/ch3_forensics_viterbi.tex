@@ -104,7 +104,7 @@ the shared raw-NLS lag, the estimate is 7.817 bpm on 6,640 windows. The LOSO con
 also reproduced in the Stage~0 cache. Across \texttt{all\_paired}, HPSS changes from 8.361 to 8.119 bpm;
 on the branch-neutral cohort variants it is 7.973 bpm for \texttt{retained23} and 7.135 bpm for
 \texttt{PAPER\_18}. These cohort values are not a ranking of populations: membership, valid-window count,
-and—in the historical subset—selection procedure differ.
+and---in the historical subset---selection procedure differ.
 
 The small change in valid-window count is material. The cached and branch-neutral \texttt{pool30\_\allowbreak sync}
 metrics are not a strict same-windows counterfactual, because changing lag also changes which
@@ -406,8 +406,8 @@ signals follow the same model or that the method handles unmodeled movement and 
 
 The HR trajectories were also evaluated against the high-rate R-trigger reference across 6,618
 \texttt{pool30\_sync} windows (\texttt{SignalIQ >= 50} and monitor heart rate above 50~bpm). None
-of nine cardiac extractors—six standalone spectral or velocity peak extractors plus three
-joint-Viterbi HR paths (\texttt{C3b}, \texttt{C4b}, \texttt{C4d})—passes the predefined 50\%
+of nine cardiac extractors---six standalone spectral or velocity peak extractors plus three
+joint-Viterbi HR paths (\texttt{C3b}, \texttt{C4b}, \texttt{C4d})---passes the predefined 50\%
 within-10-bpm Gate~G2 criterion ($|e|\le 10$~bpm): the highest session-averaged accuracy is 39.8\%
 for the standalone HPSS-velocity peak (\texttt{hr\_peak\_hpss\_vel}), while the best joint-Viterbi
 HR state (\texttt{C4d}) reaches 36.6\%. Thus, the HR state in the joint decoder is
