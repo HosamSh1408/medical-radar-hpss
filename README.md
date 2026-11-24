@@ -24,10 +24,12 @@ Rather than reading `19.3k` lines of orchestration and clean-room audit boilerpl
    python3 verify_submission.py
    ```
    Verifies `113/113` SHA-256 freeze-manifest hashes, checks the frozen Stage 4 model archive (`af33a83e...`), runs the `31/31` portable pytest tests on a fresh clone (auto-deselecting the `4` tests that require the unbundled `>4 GB` Zenodo/Figshare raw corpora; all `35/35` run automatically when the full raw corpora are present or via `--force-all-pytest`), and prints the Stage 2–4 tables straight from immutable JSON logs.
-2. **Run or browse the clean executable code tour (`~5 s`):**
+2. **Open the zero-install interactive NICU Session `7.3` live demo (`0` setup):**
+   - Double-click **[`examples/session_7_3_live_demo.html`](examples/session_7_3_live_demo.html)** offline in any browser to replay live causal `FilterSafe-8` (`R2e`) vs. `R0`/`R3a`/`R3b`/`R3c`, toggle `80% C5` conformal tubes & `U2`/`U6b` abstention, and run the `20 bpm` bradypnea & WGN dropout stress test (rebuildable via `python3 examples/build_interactive_demo.py`).
+3. **Run or browse the clean executable code tour (`~5 s`):**
    - View rendered outputs & Okabe-Ito plots inline on GitHub: **[`notebooks/supervisor_code_tour.ipynb`](notebooks/supervisor_code_tour.ipynb)**
    - Or run standalone in terminal: `python3 examples/filtersafe_tour.py`
-3. **Trace every thesis chapter & equation to exact symbols and line numbers:**
+4. **Trace every thesis chapter & equation to exact symbols and line numbers:**
    - **[`REVIEWER_GUIDE.md`](REVIEWER_GUIDE.md)** maps Chapters 2–6 directly to the `7` core algorithm modules (`~4.5k` LOC total).
 
 ---

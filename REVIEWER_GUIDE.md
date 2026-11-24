@@ -55,7 +55,8 @@ Every mathematical operator, baseline, control, and statistical test reported in
    python3 verify_submission.py
    ```
    Confirms `113/113` SHA-256 freeze-manifest hashes, frozen archive `af33a83e...`, `31/31` portable pytest checks out-of-the-box on a fresh clone (causality, $O(2)\times\mathbb{R}_{>0}$ invariance, finite-difference BPTT gradients, HQI/conformal bounds, Stage 0–4 contracts; plus `4` full-corpus raw-data provenance checks that run automatically when the unbundled Zenodo/Figshare datasets are present for `35/35`), and prints live headline tables from `paper_orchestra_bundle/raw_materials/metrics_stage*.json`.
-2. **Inspect the interactive walkthrough (`~5 s` execution or view rendered plots on GitHub):**
+2. **Inspect the interactive browser demo & walkthrough (`0` setup / `~5 s` execution):**
+   - Double-click **[`examples/session_7_3_live_demo.html`](examples/session_7_3_live_demo.html)** offline in any browser for live NICU Anchor Session `7.3` causal replay (`FilterSafe-8` vs. `R0`/`R3a`/`R3b`/`R3c`, `U2`/`U6b` abstention slider, and `20 bpm` bradypnea + WGN dropout stress views; rebuildable via `python3 examples/build_interactive_demo.py`).
    - View [`notebooks/supervisor_code_tour.ipynb`](notebooks/supervisor_code_tour.ipynb) directly on GitHub, **or** execute [`examples/filtersafe_tour.py`](examples/filtersafe_tour.py):
      ```bash
      python3 examples/filtersafe_tour.py

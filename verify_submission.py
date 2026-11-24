@@ -270,6 +270,17 @@ def main() -> None:
         raise RuntimeError(f"Frozen Stage 4 archive missing or hash mismatch: {arch}")
     print(f"  [PASS] frozen_stage4_models.npz SHA-256: {EXPECTED_FROZEN_ARCHIVE_SHA[:16]}... OK")
 
+    demo_fx = ROOT / "examples" / "session_7_3_lopo_fixture.npz"
+    demo_html = ROOT / "examples" / "session_7_3_live_demo.html"
+    if not demo_fx.is_file() or demo_fx.stat().st_size == 0:
+        raise RuntimeError(f"Interactive demo LOPO fixture missing or empty: {demo_fx}")
+    if not demo_html.is_file() or demo_html.stat().st_size == 0:
+        raise RuntimeError(f"Interactive demo HTML missing or empty: {demo_html}")
+    print(
+        f"  [PASS] interactive Session 7.3 demo bundle: "
+        f"{demo_html.name} ({demo_html.stat().st_size // 1024} KB) OK"
+    )
+
     has_b, has_g = detect_raw_datasets()
 
     if not args.skip_pytest:
