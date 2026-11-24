@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build a zero-install, offline interactive HTML5 dashboard for NICU Session 7.3.
+"""Build a zero-install, offline academic interactive HTML5 supplement for NICU Session 7.3.
 
 Usage:
   python3 examples/build_interactive_demo.py                    # Rebuilds HTML from tracked fixtures + live pipeline
@@ -55,6 +55,15 @@ LOPO_MODELS: tuple[tuple[str, str], ...] = (
 
 def _sha256_bytes(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _to_json_list(arr: np.ndarray, ndigits: int) -> list[float | None]:
+    """Convert numeric array to strict RFC-8259 JSON list (non-finite -> None/null)."""
+    out: list[float | None] = []
+    for raw in np.asarray(arr, dtype=np.float64).ravel():
+        val = float(raw)
+        out.append(round(val, ndigits) if math.isfinite(val) else None)
+    return out
 
 
 def load_frozen_bundle() -> dict[str, np.ndarray]:
@@ -148,7 +157,7 @@ def _quantize_rows_u8_b64(mat: np.ndarray) -> str:
 def compute_live_hmm_matrices(
     zf: dict[str, np.ndarray],
     lopo_data: dict[str, np.ndarray],
-) -> tuple[str, str, list[float], dict[str, float]]:
+) -> tuple[str, str, list[float | None], dict[str, float]]:
     """Run live signal extraction on tracked Session 7.3 & return salience/posterior base64 matrices."""
     bi, bq = load_radar("7.3")
     n_win = int(lopo_data["ref_1hz"].size)
@@ -163,12 +172,11 @@ def compute_live_hmm_matrices(
     ell, _ = D.hmm_emission_and_grad(phi_73, r2e_mean.theta, mode="linear_filtersafe")
     _, f_cache = D.forward_hmm_predictions_and_bptt(ell, t_mat, grid, decoder="causal_forward")
 
-    # Full-refit frozen FilterSafe-8 parameters for display
     r2e_full = D.DifferentiableSymmetricHMM(mode="linear_filtersafe", decoder="causal_forward", grid_bpm=grid)
     r2e_full.theta = np.asarray(zf["r2e_full_refit_theta"], dtype=np.float64).copy()
 
     c5_q80 = float(zf["c5_q_hat_norm_1hz"][2])
-    c5_half = np.round(c5_q80 * np.maximum(lopo_data["unc_sd_R2e_lopo"], 1.0), 3).tolist()
+    c5_half = _to_json_list(c5_q80 * np.maximum(lopo_data["unc_sd_R2e_lopo"], 1.0), 3)
     return (
         _quantize_rows_u8_b64(f_cache["e_mat"]),
         _quantize_rows_u8_b64(f_cache["alpha"]),
@@ -245,11 +253,12 @@ def compute_stress_benchmarks(zf: dict[str, np.ndarray]) -> dict[str, Any]:
         phi, s_anc, r0_est = _extract_iq_windows(bi, bq, n_win_sweep)
         preds, uq = _eval_foils_and_r2e(phi, s_anc, r0_est, zf, r2e, tcn)
         for mk in ("R0", "R1a", "R2e", "R3c", "R3b", "R3a"):
-            sweep[mk].append(round(float(np.mean(preds[mk][3:])), 2))
+            val = float(np.mean(preds[mk][3:]))
+            sweep[mk].append(round(val, 2) if math.isfinite(val) else None)
         for uk in ("U2", "U6b"):
-            sweep[uk].append(round(float(np.mean(uq[uk][3:])), 3))
+            val = float(np.mean(uq[uk][3:]))
+            sweep[uk].append(round(val, 3) if math.isfinite(val) else None)
 
-    # 36-window stress replay: 12 windows @ 20 bpm -> 12 windows WGN -> 12 windows @ 20 bpm
     bi20, bq20 = _synth_cw(20.0, duration_s=54.0)
     phi20_all, sanc20_all, r020_all = _extract_iq_windows(bi20, bq20, n_win_sweep)
     phi20, sanc20, r020 = phi20_all[-12:], sanc20_all[-12:], r020_all[-12:]
@@ -274,14 +283,13 @@ def compute_stress_benchmarks(zf: dict[str, np.ndarray]) -> dict[str, Any]:
 
     replay = {
         "n_win": 36,
-        "regime_labels": ["20 bpm Bradypnea"] * 12 + ["WGN Dropout"] * 12 + ["20 bpm Recovery"] * 12,
         "gt_bpm": [20.0] * 12 + [None] * 12 + [20.0] * 12,
-        "R0": np.round(sp_preds["R0"], 2).tolist(),
-        "R2e": np.round(sp_preds["R2e"], 2).tolist(),
-        "R3b": np.round(sp_preds["R3b"], 2).tolist(),
-        "R3a": np.round(sp_preds["R3a"], 2).tolist(),
-        "U2": np.round(sp_uq["U2"], 3).tolist(),
-        "U6b": np.round(sp_uq["U6b"], 3).tolist(),
+        "R0": _to_json_list(sp_preds["R0"], 2),
+        "R2e": _to_json_list(sp_preds["R2e"], 2),
+        "R3b": _to_json_list(sp_preds["R3b"], 2),
+        "R3a": _to_json_list(sp_preds["R3a"], 2),
+        "U2": _to_json_list(sp_uq["U2"], 3),
+        "U6b": _to_json_list(sp_uq["U6b"], 3),
     }
     return {"sweep": sweep, "dropout_replay": replay}
 
@@ -299,9 +307,10 @@ def load_audited_ladder(lopo_data: dict[str, np.ndarray]) -> list[dict[str, Any]
 
     valid = lopo_data["valid"]
     ref_1hz = lopo_data["ref_1hz"]
+    eval_mask = valid & np.isfinite(ref_1hz)
     rows_spec = [
         ("R0 HPSS+NLS", "0", "0 / 3 s", "pred_R0", "R0_HPSS_NLS_Locked", False),
-        ("R1a Fwd HMM", "3", "0 / 3 s", "pred_R1a", "R1a_Online_Forward_MMSE_0s", False),
+        ("R1a Forward HMM", "3", "0 / 3 s", "pred_R1a", "R1a_Online_Forward_MMSE_0s", False),
         ("R1f Offline FB HMM", "3", "inf / 3 s", "pred_R1f", "R1f_Offline_FB_MMSE_Inf", False),
         ("R2e FilterSafe-8 (Ours)", "8", "0 / 3 s", "pred_R2e_lopo", "R2e_Causal_DiffHMM_FilterSafe8", True),
         ("R3c Spectral Ridge", "439", "0 / 3 s", "pred_R3c", "R3c_Ridge_Spectral_439", False),
@@ -310,8 +319,9 @@ def load_audited_ladder(lopo_data: dict[str, np.ndarray]) -> list[dict[str, Any]
     ]
     rows: list[dict[str, Any]] = []
     for label, params, lookahead, lopo_key, mkey, is_ours in rows_spec:
-        err73 = lopo_data[lopo_key][valid] - ref_1hz[valid]
+        err73 = lopo_data[lopo_key][eval_mask] - ref_1hz[eval_mask]
         rmse73 = float(np.sqrt(np.mean(err73 ** 2)))
+        assert math.isfinite(rmse73), f"Non-finite Session 7.3 RMSE for {lopo_key}"
         ph = f"{p1[mkey]['p_wilcoxon_patient_holm']:.4f}" if mkey in p1 else "baseline"
         rows.append(
             {
@@ -339,7 +349,10 @@ def build_payload(refresh_fixture: bool) -> dict[str, Any]:
     ladder = load_audited_ladder(lopo)
 
     n_win = int(lopo["ref_1hz"].size)
-    t_min = np.round((np.arange(n_win, dtype=np.float64) * float(C.UPDATE_S) + float(C.WIN_S) / 2.0) / 60.0, 3).tolist()
+    t_min = _to_json_list(
+        (np.arange(n_win, dtype=np.float64) * float(C.UPDATE_S) + float(C.WIN_S) / 2.0) / 60.0,
+        3,
+    )
     return {
         "meta": {
             "session": "7.3",
@@ -356,18 +369,18 @@ def build_payload(refresh_fixture: bool) -> dict[str, Any]:
             "t_min": t_min,
             "valid": lopo["valid"].astype(int).tolist(),
             "pause": lopo["pause_gt5s"].astype(int).tolist(),
-            "ref_1hz": np.round(lopo["ref_1hz"], 3).tolist(),
-            "pred_R0": np.round(lopo["pred_R0"], 3).tolist(),
-            "pred_R1a": np.round(lopo["pred_R1a"], 3).tolist(),
-            "pred_R1f": np.round(lopo["pred_R1f"], 3).tolist(),
-            "pred_R2e": np.round(lopo["pred_R2e_lopo"], 3).tolist(),
-            "pred_R3c": np.round(lopo["pred_R3c"], 3).tolist(),
-            "pred_R3b": np.round(lopo["pred_R3b"], 3).tolist(),
-            "pred_R3a": np.round(lopo["pred_R3a"], 3).tolist(),
+            "ref_1hz": _to_json_list(lopo["ref_1hz"], 3),
+            "pred_R0": _to_json_list(lopo["pred_R0"], 3),
+            "pred_R1a": _to_json_list(lopo["pred_R1a"], 3),
+            "pred_R1f": _to_json_list(lopo["pred_R1f"], 3),
+            "pred_R2e": _to_json_list(lopo["pred_R2e_lopo"], 3),
+            "pred_R3c": _to_json_list(lopo["pred_R3c"], 3),
+            "pred_R3b": _to_json_list(lopo["pred_R3b"], 3),
+            "pred_R3a": _to_json_list(lopo["pred_R3a"], 3),
             "c5_half_80": c5_half,
-            "u2": np.round(lopo["u2_R2e_lopo"], 4).tolist(),
-            "u6b": np.round(lopo["u6b_R2e_lopo"], 4).tolist(),
-            "u6c": np.round(lopo["u6c_R2e_lopo"], 4).tolist(),
+            "u2": _to_json_list(lopo["u2_R2e_lopo"], 4),
+            "u6b": _to_json_list(lopo["u6b_R2e_lopo"], 4),
+            "u6c": _to_json_list(lopo["u6c_R2e_lopo"], 4),
             "sal_u8_b64": sal_b64,
             "post_u8_b64": post_b64,
         },
@@ -377,164 +390,212 @@ def build_payload(refresh_fixture: bool) -> dict[str, Any]:
 
 
 def render_html_document(payload: dict[str, Any]) -> str:
-    data_json = json.dumps(payload, separators=(",", ":")).replace("</", "<\\/")
+    # Strict RFC-8259 serialization: allow_nan=False prevents bare NaN from breaking JSON.parse
+    data_json = json.dumps(payload, separators=(",", ":"), allow_nan=False).replace("</", "<\\/")
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="color-scheme" content="light dark" />
-<title>FilterSafe-8 &amp; Causal UQ — Live NICU Session 7.3 Demo</title>
+<title>Companion Supplement — Causal FilterSafe-8 &amp; Uncertainty Quantification (Session 7.3)</title>
 <style>
   :root {{
     color-scheme: light dark;
-    --bg-light: #f6f8fb;
-    --bg-dark: #0e131b;
+    --font-serif: "Palatino Linotype", Palatino, "Book Antiqua", Georgia, Cambria, "Times New Roman", serif;
+    --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, monospace;
+
+    --bg-light: #fafaf7;
+    --bg-dark: #14171c;
     --card-light: #ffffff;
-    --card-dark: #161d29;
-    --surface2-light: #edf1f7;
-    --surface2-dark: #1e2736;
-    --border-light: #d3dbe6;
-    --border-dark: #2c3749;
-    --fg-light: #121926;
-    --fg-dark: #eef2f8;
-    --muted-light: #4a576d;
-    --muted-dark: #9fb0c8;
-    --brand-light: #006c4f;
-    --brand-dark: #10c492;
-    --accent-light: #005896;
-    --accent-dark: #56b4e9;
-    --warn-light: #b54500;
-    --warn-dark: #ff8c42;
-    --danger-light: #a61d56;
-    --danger-dark: #f0629e;
-    --purple-light: #6d28d9;
-    --purple-dark: #b694f9;
+    --card-dark: #1b1f26;
+    --surface2-light: #f2f4f7;
+    --surface2-dark: #232831;
+    --border-light: #cfd5df;
+    --border-dark: #333b48;
+    --rule-strong-light: #1f2937;
+    --rule-strong-dark: #cbd5e1;
+    --fg-light: #141821;
+    --fg-dark: #e6e9ef;
+    --muted-light: #4b5565;
+    --muted-dark: #9ba5b5;
+    --brand-light: #1b4d3e;
+    --brand-dark: #3ca385;
+    --accent-light: #1b365d;
+    --accent-dark: #6ba4e8;
+    --warn-light: #9a3412;
+    --warn-dark: #e88a45;
+    --danger-light: #881337;
+    --danger-dark: #e06c96;
 
     --bg: var(--bg-light);
     --card: var(--card-light);
     --surface2: var(--surface2-light);
     --border: var(--border-light);
+    --rule-strong: var(--rule-strong-light);
     --fg: var(--fg-light);
     --muted: var(--muted-light);
     --brand-color: var(--brand-light);
     --accent: var(--accent-light);
     --warn: var(--warn-light);
     --danger: var(--danger-light);
-    --purple: var(--purple-light);
 
-    --color-scrollbar-track: #e6ebf2;
+    --color-scrollbar-track: #eaedf2;
     --color-scrollbar-thumb: #6b7280;
     scrollbar-color: var(--color-scrollbar-thumb) var(--color-scrollbar-track);
     accent-color: var(--brand-color);
   }}
 
   @media (prefers-color-scheme: dark) {{
-    :root {{
+    :root:not([data-theme="light"]) {{
       --bg: var(--bg-dark);
       --card: var(--card-dark);
       --surface2: var(--surface2-dark);
       --border: var(--border-dark);
+      --rule-strong: var(--rule-strong-dark);
       --fg: var(--fg-dark);
       --muted: var(--muted-dark);
       --brand-color: var(--brand-dark);
       --accent: var(--accent-dark);
       --warn: var(--warn-dark);
       --danger: var(--danger-dark);
-      --purple: var(--purple-dark);
-      --color-scrollbar-track: #1b2230;
-      --color-scrollbar-thumb: #8a99ad;
+      --color-scrollbar-track: #1b1f26;
+      --color-scrollbar-thumb: #7b8596;
     }}
   }}
 
   @supports (color: light-dark(white, black)) {{
-    :root {{
+    :root:not([data-theme]) {{
       --bg: light-dark(var(--bg-light), var(--bg-dark));
       --card: light-dark(var(--card-light), var(--card-dark));
       --surface2: light-dark(var(--surface2-light), var(--surface2-dark));
       --border: light-dark(var(--border-light), var(--border-dark));
+      --rule-strong: light-dark(var(--rule-strong-light), var(--rule-strong-dark));
       --fg: light-dark(var(--fg-light), var(--fg-dark));
       --muted: light-dark(var(--muted-light), var(--muted-dark));
       --brand-color: light-dark(var(--brand-light), var(--brand-dark));
       --accent: light-dark(var(--accent-light), var(--accent-dark));
       --warn: light-dark(var(--warn-light), var(--warn-dark));
       --danger: light-dark(var(--danger-light), var(--danger-dark));
-      --purple: light-dark(var(--purple-light), var(--purple-dark));
-      --color-scrollbar-track: light-dark(#e6ebf2, #1b2230);
-      --color-scrollbar-thumb: light-dark(#6b7280, #8a99ad);
+      --color-scrollbar-track: light-dark(#eaedf2, #1b1f26);
+      --color-scrollbar-thumb: light-dark(#6b7280, #7b8596);
     }}
+  }}
+
+  html[data-theme="light"] {{
+    color-scheme: light;
+    --bg: var(--bg-light);
+    --card: var(--card-light);
+    --surface2: var(--surface2-light);
+    --border: var(--border-light);
+    --rule-strong: var(--rule-strong-light);
+    --fg: var(--fg-light);
+    --muted: var(--muted-light);
+    --brand-color: var(--brand-light);
+    --accent: var(--accent-light);
+    --warn: var(--warn-light);
+    --danger: var(--danger-light);
+    --color-scrollbar-track: #eaedf2;
+    --color-scrollbar-thumb: #6b7280;
+  }}
+
+  html[data-theme="dark"] {{
+    color-scheme: dark;
+    --bg: var(--bg-dark);
+    --card: var(--card-dark);
+    --surface2: var(--surface2-dark);
+    --border: var(--border-dark);
+    --rule-strong: var(--rule-strong-dark);
+    --fg: var(--fg-dark);
+    --muted: var(--muted-dark);
+    --brand-color: var(--brand-dark);
+    --accent: var(--accent-dark);
+    --warn: var(--warn-dark);
+    --danger: var(--danger-dark);
+    --color-scrollbar-track: #1b1f26;
+    --color-scrollbar-thumb: #7b8596;
   }}
 
   * {{ box-sizing: border-box; }}
   body {{
     margin: 0;
     padding: 0;
-    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-family: var(--font-sans);
     background: var(--bg);
     color: var(--fg);
-    line-height: 1.45;
-    font-size: 14px;
+    line-height: 1.48;
+    font-size: 13.5px;
   }}
 
-  .app-shell {{
-    max-width: 1380px;
+  .monograph-shell {{
+    max-width: 1320px;
     margin: 0 auto;
-    padding: 16px 20px 28px;
+    padding: 18px 24px 32px;
   }}
 
-  .topbar {{
+  /* Monograph Masthead */
+  .masthead {{
+    border-top: 2.5px solid var(--rule-strong);
+    border-bottom: 1.5px solid var(--rule-strong);
+    padding: 12px 0 10px;
+    margin-bottom: 14px;
+  }}
+  .rubric {{
+    font-family: var(--font-sans);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 4px;
+  }}
+  .masthead-title {{
+    font-family: var(--font-serif);
+    font-size: 1.42rem;
+    font-weight: 700;
+    line-height: 1.24;
+    margin: 0 0 3px;
+    color: var(--fg);
+  }}
+  .masthead-sub {{
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 0.96rem;
+    color: var(--muted);
+    margin: 0 0 9px;
+  }}
+  .meta-bar {{
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
-    align-items: flex-start;
-    gap: 12px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 14px;
-  }}
-
-  .title-wrap h1 {{
-    margin: 0 0 4px;
-    font-size: 1.28rem;
-    font-weight: 700;
-    letter-spacing: -0.01em;
-  }}
-  .subtitle {{
-    margin: 0;
+    align-items: center;
+    gap: 8px 16px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+    font-size: 0.8rem;
     color: var(--muted);
-    font-size: 0.86rem;
   }}
-
-  .badge-row {{
+  .meta-items {{
     display: flex;
     flex-wrap: wrap;
-    align-items: center;
-    gap: 8px;
-  }}
-  .pill {{
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 4px 10px;
-    border-radius: 999px;
-    border: 1px solid var(--border);
-    background: var(--card);
-    font-size: 0.78rem;
-    font-weight: 600;
+    gap: 6px 14px;
     font-variant-numeric: tabular-nums;
   }}
-  .pill-brand {{ border-color: var(--brand-color); color: var(--brand-color); }}
-
-  /* Tabs guidance: single horizontal row, shape indicator ::after, no panel padding/bg */
-  .tabs {{
-    width: 100%;
+  .meta-items code {{
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--fg);
   }}
+
+  /* Tabs guidance: single horizontal row, shape ::after indicator, no panel padding/bg */
+  .tabs {{ width: 100%; }}
   .tablist {{
     display: flex;
     overflow-x: auto;
     border-bottom: 1px solid var(--border);
     margin-bottom: 14px;
-    gap: 4px;
+    gap: 6px;
   }}
   [role="tab"] {{
     position: relative;
@@ -542,9 +603,9 @@ def render_html_document(payload: dict[str, Any]) -> str:
     appearance: none;
     background: transparent;
     border: 0;
-    padding: 10px 14px;
-    font: inherit;
-    font-size: 0.9rem;
+    padding: 9px 12px;
+    font-family: var(--font-serif);
+    font-size: 0.94rem;
     font-weight: 600;
     color: var(--muted);
     cursor: pointer;
@@ -554,64 +615,26 @@ def render_html_document(payload: dict[str, Any]) -> str:
   [role="tab"]:focus-visible {{
     outline: 2px solid var(--accent);
     outline-offset: -3px;
-    border-radius: 4px;
   }}
-  [role="tab"][aria-selected="true"] {{
-    color: var(--accent);
-  }}
+  [role="tab"][aria-selected="true"] {{ color: var(--accent); }}
   [role="tab"][aria-selected="true"]::after {{
     content: "";
     position: absolute;
     inset: auto 0 0;
-    border-block-end: 3px solid var(--accent);
+    border-block-end: 2.5px solid var(--accent);
   }}
 
-  /* Panel spacing strictly on inner wrapper per tabs guide */
   .panel-inner {{
     display: flex;
     flex-direction: column;
     gap: 14px;
   }}
 
-  .card {{
+  .plate {{
     background: var(--card);
     border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 14px 16px;
-  }}
-
-  .card-header {{
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 10px;
-  }}
-  .card-title {{
-    margin: 0;
-    font-size: 0.96rem;
-    font-weight: 700;
-  }}
-  .card-note {{
-    margin: 0;
-    font-size: 0.8rem;
-    color: var(--muted);
-  }}
-
-  .grid-main {{
-    display: grid;
-    grid-template-columns: minmax(0, 2.2fr) minmax(300px, 1fr);
-    gap: 14px;
-    align-items: start;
-  }}
-  .grid-two {{
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 14px;
-  }}
-  @media (max-width: 980px) {{
-    .grid-main, .grid-two {{ grid-template-columns: 1fr; }}
+    border-radius: 4px;
+    padding: 13px 15px;
   }}
 
   .controls-bar {{
@@ -625,10 +648,10 @@ def render_html_document(payload: dict[str, Any]) -> str:
     border: 1px solid var(--border);
     background: var(--surface2);
     color: var(--fg);
-    border-radius: 7px;
-    padding: 6px 12px;
+    border-radius: 3px;
+    padding: 5px 11px;
     font: inherit;
-    font-size: 0.82rem;
+    font-size: 0.8rem;
     font-weight: 600;
     cursor: pointer;
     font-variant-numeric: tabular-nums;
@@ -636,23 +659,23 @@ def render_html_document(payload: dict[str, Any]) -> str:
   .btn:hover {{ border-color: var(--accent); }}
   .btn:focus-visible {{ outline: 2px solid var(--accent); outline-offset: 2px; }}
   .btn-primary {{
-    background: var(--brand-color);
-    border-color: var(--brand-color);
+    background: var(--accent);
+    border-color: var(--accent);
     color: #ffffff;
   }}
+  html[data-theme="dark"] .btn-primary {{ color: #0c1118; }}
   @media (prefers-color-scheme: dark) {{
-    .btn-primary {{ color: #062119; }}
+    :root:not([data-theme="light"]) .btn-primary {{ color: #0c1118; }}
   }}
 
   select.sel {{
     background: var(--surface2);
     color: var(--fg);
     border: 1px solid var(--border);
-    border-radius: 7px;
-    padding: 5px 9px;
+    border-radius: 3px;
+    padding: 4px 8px;
     font: inherit;
-    font-size: 0.82rem;
-    font-weight: 600;
+    font-size: 0.8rem;
   }}
 
   .scrubber-wrap {{
@@ -663,19 +686,19 @@ def render_html_document(payload: dict[str, Any]) -> str:
     min-width: 220px;
   }}
   .mono-val {{
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
-    font-size: 0.82rem;
+    font-size: 0.8rem;
   }}
 
   /* Range Slider styling per slider guide (separate WebKit/Firefox blocks) */
   input[type="range"] {{
-    --slider-track-size: 0.45rem;
-    --slider-thumb-size: 1.15rem;
-    --slider-track-radius: 999px;
+    --slider-track-size: 0.35rem;
+    --slider-thumb-size: 1.05rem;
+    --slider-track-radius: 2px;
     --slider-thumb-radius: 50%;
     --slider-track-color: var(--border);
-    --slider-fill-color: var(--brand-color);
+    --slider-fill-color: var(--accent);
     --slider-thumb-color: var(--slider-fill-color);
     --slider-direction: to right;
     --attr-min: attr(min type(<number>), 0);
@@ -713,7 +736,7 @@ def render_html_document(payload: dict[str, Any]) -> str:
     inline-size: var(--slider-thumb-size);
     block-size: var(--slider-thumb-size);
     margin-block-start: calc((var(--slider-track-size) - var(--slider-thumb-size)) / 2);
-    border: 0;
+    border: 1.5px solid var(--card);
     border-radius: var(--slider-thumb-radius);
     background: var(--slider-thumb-color);
   }}
@@ -731,7 +754,7 @@ def render_html_document(payload: dict[str, Any]) -> str:
   input[type="range"]::-moz-range-thumb {{
     inline-size: var(--slider-thumb-size);
     block-size: var(--slider-thumb-size);
-    border: 0;
+    border: 1.5px solid var(--card);
     border-radius: var(--slider-thumb-radius);
     background: var(--slider-thumb-color);
   }}
@@ -744,23 +767,24 @@ def render_html_document(payload: dict[str, Any]) -> str:
   .toggle-list {{
     display: flex;
     flex-wrap: wrap;
-    gap: 8px 14px;
-    margin-top: 8px;
+    gap: 7px 14px;
+    padding-top: 9px;
+    border-top: 1px solid var(--border);
+    margin-top: 4px;
   }}
   .chk-label {{
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    font-size: 0.82rem;
-    font-weight: 600;
+    gap: 5px;
+    font-size: 0.79rem;
     cursor: pointer;
     user-select: none;
   }}
   .swatch {{
-    width: 11px;
-    height: 3px;
-    border-radius: 2px;
+    width: 14px;
+    height: 2.5px;
     display: inline-block;
+    vertical-align: middle;
   }}
   @supports not (accent-color: var(--brand-color)) {{
     .chk-label input[type="checkbox"].visually-hidden {{
@@ -774,18 +798,18 @@ def render_html_document(payload: dict[str, Any]) -> str:
       border: 0 !important;
       white-space: nowrap !important;
     }}
-    .chk-label {{ position: relative; padding-left: 1.5rem; }}
+    .chk-label {{ position: relative; padding-left: 1.4rem; }}
     .chk-label input[type="checkbox"] + span::before {{
       content: "";
       position: absolute;
       left: 0;
       top: 50%;
       transform: translateY(-50%);
-      width: 1rem;
-      height: 1rem;
-      border: 2px solid var(--border);
+      width: 0.95rem;
+      height: 0.95rem;
+      border: 1.5px solid var(--border);
       background: var(--card);
-      border-radius: 3px;
+      border-radius: 2px;
       box-sizing: border-box;
     }}
     .chk-label input[type="checkbox"]:focus-visible + span::before {{
@@ -799,284 +823,325 @@ def render_html_document(payload: dict[str, Any]) -> str:
     .chk-label input[type="checkbox"]:checked + span::after {{
       content: "✓";
       position: absolute;
-      left: 0.2rem;
+      left: 0.16rem;
       top: 50%;
       transform: translateY(-50%);
       color: #ffffff;
       font-weight: 700;
-      font-size: 0.78rem;
+      font-size: 0.75rem;
     }}
   }}
 
-  .canvas-box {{
-    width: 100%;
-    position: relative;
+  .grid-main {{
+    display: grid;
+    grid-template-columns: minmax(0, 2.15fr) minmax(320px, 1fr);
+    gap: 14px;
+    align-items: start;
   }}
-  canvas {{
-    display: block;
-    width: 100%;
-    border-radius: 6px;
-  }}
-
-  .kpi-grid {{
+  .grid-two {{
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px;
+    gap: 14px;
   }}
-  .kpi {{
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 8px 10px;
-  }}
-  .kpi-k {{
-    font-size: 0.75rem;
-    color: var(--muted);
-    display: block;
-  }}
-  .kpi-v {{
-    font-size: 0.96rem;
-    font-weight: 700;
-    font-variant-numeric: tabular-nums;
+  @media (max-width: 980px) {{
+    .grid-main, .grid-two {{ grid-template-columns: 1fr; }}
   }}
 
-  /* Responsive sticky table per responsive-table guide */
+  .fig-title {{
+    margin: 0 0 2px;
+    font-family: var(--font-serif);
+    font-size: 0.96rem;
+    font-weight: 700;
+  }}
+  .fig-sub {{
+    margin: 0 0 8px;
+    font-size: 0.78rem;
+    color: var(--muted);
+  }}
+  .fig-caption {{
+    margin: 9px 0 0;
+    font-family: var(--font-serif);
+    font-size: 0.84rem;
+    color: var(--muted);
+    line-height: 1.42;
+  }}
+  .fig-caption strong {{ color: var(--fg); }}
+
+  .canvas-box {{ width: 100%; position: relative; }}
+  canvas {{ display: block; width: 100%; }}
+
+  /* Booktabs quantitative readout tables */
+  table.booktabs {{
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.81rem;
+    font-variant-numeric: tabular-nums;
+    margin-top: 8px;
+  }}
+  table.booktabs thead th {{
+    border-top: 1.5px solid var(--rule-strong);
+    border-bottom: 1px solid var(--rule-strong);
+    padding: 5px 6px;
+    text-align: left;
+    font-weight: 700;
+    font-size: 0.76rem;
+    color: var(--muted);
+  }}
+  table.booktabs tbody td,
+  table.booktabs tbody th {{
+    padding: 5px 6px;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+    font-weight: 400;
+  }}
+  table.booktabs tbody tr:last-child td,
+  table.booktabs tbody tr:last-child th {{
+    border-bottom: 1.5px solid var(--rule-strong);
+  }}
+  table.booktabs .num {{
+    text-align: right;
+    font-family: var(--font-mono);
+    font-weight: 600;
+  }}
+
+  /* Responsive sticky comparison table (Table 1) */
   .table-wrapper {{
     overflow: auto;
     max-inline-size: 100%;
     max-block-size: min(560px, 75vh);
     container-type: inline-size;
-    border: 1px solid var(--border);
-    border-radius: 8px;
+    border-top: 1.5px solid var(--rule-strong);
+    border-bottom: 1.5px solid var(--rule-strong);
   }}
   .table-wrapper:focus-visible {{
     outline: 2px solid var(--accent);
     outline-offset: 2px;
   }}
-  table {{
+  table.ladder {{
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
-    font-size: 0.84rem;
+    font-size: 0.82rem;
     font-variant-numeric: tabular-nums;
     --label-2: "Params";
     --label-3: "Lookahead";
-    --label-4: "7.3 Held-Out";
-    --label-5: "NICU 1 Hz";
+    --label-4: "Session 7.3 LOPO";
+    --label-5: "NICU 1 Hz (S=28)";
     --label-6: "p_Holm";
     --label-7: "NICU Trig-10s";
     --label-8: "Ext >=28 bpm";
     --label-9: "Ext Slope";
-    --label-10: "20 bpm Skirt";
+    --label-10: "20-bpm Skirt";
   }}
-  caption {{
+  table.ladder caption {{
     text-align: left;
+    font-family: var(--font-serif);
     font-weight: 700;
     font-size: 0.9rem;
-    padding: 10px 12px;
+    padding: 8px 6px;
     background: var(--card);
     border-bottom: 1px solid var(--border);
   }}
-  thead {{
+  table.ladder thead {{
     position: sticky;
     inset-block-start: 0;
     z-index: 2;
   }}
-  thead th {{
+  table.ladder thead th {{
     background: var(--surface2);
     color: var(--fg);
     text-align: left;
-    padding: 9px 10px;
-    border-bottom: 1px solid var(--border);
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--rule-strong);
     font-weight: 700;
     white-space: nowrap;
   }}
-  tbody th {{
+  table.ladder tbody th {{
     position: sticky;
     inset-inline-start: 0;
     z-index: 1;
     background: var(--card);
     text-align: left;
-    padding: 8px 10px;
+    padding: 7px 10px;
     border-bottom: 1px solid var(--border);
     white-space: nowrap;
     font-weight: 600;
   }}
-  tbody td {{
-    padding: 8px 10px;
+  table.ladder tbody td {{
+    padding: 7px 10px;
     border-bottom: 1px solid var(--border);
     white-space: nowrap;
+    font-family: var(--font-mono);
   }}
-  tbody tr.row-ours th,
-  tbody tr.row-ours td {{
+  table.ladder tbody tr.row-ours th,
+  table.ladder tbody tr.row-ours td {{
     background: var(--surface2);
     font-weight: 700;
   }}
 
   @container (width < 600px) {{
-    table, thead, tbody, tr, th, td {{ display: block; }}
-    thead {{ display: none; }}
-    tbody tr {{
+    table.ladder, table.ladder thead, table.ladder tbody, table.ladder tr, table.ladder th, table.ladder td {{ display: block; }}
+    table.ladder thead {{ display: none; }}
+    table.ladder tbody tr {{
       margin-block-end: 0.85rem;
       border: 1px solid var(--border);
-      border-radius: 6px;
-      overflow: hidden;
     }}
-    tbody th {{
+    table.ladder tbody th {{
       position: sticky;
       inset-block-start: 0;
       z-index: 2;
       background: var(--surface2);
     }}
-    tbody td {{
-      padding: 6px 10px;
-      white-space: normal;
-    }}
-    td:nth-child(2)::before {{ content: var(--label-2) ": "; font-weight: 700; color: var(--muted); }}
-    td:nth-child(3)::before {{ content: var(--label-3) ": "; font-weight: 700; color: var(--muted); }}
-    td:nth-child(4)::before {{ content: var(--label-4) ": "; font-weight: 700; color: var(--muted); }}
-    td:nth-child(5)::before {{ content: var(--label-5) ": "; font-weight: 700; color: var(--muted); }}
-    td:nth-child(6)::before {{ content: var(--label-6) ": "; font-weight: 700; color: var(--muted); }}
-    td:nth-child(7)::before {{ content: var(--label-7) ": "; font-weight: 700; color: var(--muted); }}
-    td:nth-child(8)::before {{ content: var(--label-8) ": "; font-weight: 700; color: var(--muted); }}
-    td:nth-child(9)::before {{ content: var(--label-9) ": "; font-weight: 700; color: var(--muted); }}
-    td:nth-child(10)::before {{ content: var(--label-10) ": "; font-weight: 700; color: var(--muted); }}
+    table.ladder tbody td {{ padding: 5px 10px; white-space: normal; }}
+    table.ladder td:nth-child(2)::before {{ content: var(--label-2) ": "; font-family: var(--font-sans); font-weight: 700; color: var(--muted); }}
+    table.ladder td:nth-child(3)::before {{ content: var(--label-3) ": "; font-family: var(--font-sans); font-weight: 700; color: var(--muted); }}
+    table.ladder td:nth-child(4)::before {{ content: var(--label-4) ": "; font-family: var(--font-sans); font-weight: 700; color: var(--muted); }}
+    table.ladder td:nth-child(5)::before {{ content: var(--label-5) ": "; font-family: var(--font-sans); font-weight: 700; color: var(--muted); }}
+    table.ladder td:nth-child(6)::before {{ content: var(--label-6) ": "; font-family: var(--font-sans); font-weight: 700; color: var(--muted); }}
+    table.ladder td:nth-child(7)::before {{ content: var(--label-7) ": "; font-family: var(--font-sans); font-weight: 700; color: var(--muted); }}
+    table.ladder td:nth-child(8)::before {{ content: var(--label-8) ": "; font-family: var(--font-sans); font-weight: 700; color: var(--muted); }}
+    table.ladder td:nth-child(9)::before {{ content: var(--label-9) ": "; font-family: var(--font-sans); font-weight: 700; color: var(--muted); }}
+    table.ladder td:nth-child(10)::before {{ content: var(--label-10) ": "; font-family: var(--font-sans); font-weight: 700; color: var(--muted); }}
   }}
 </style>
 </head>
 <body>
-<div class="app-shell">
-  <header class="topbar">
-    <div class="title-wrap">
-      <h1>NICU Anchor Session 7.3 — Live Causal <code>FilterSafe-8</code> &amp; UQ Replay</h1>
-      <p class="subtitle">Master's Thesis Demo (Hosam Shibly, BTU M.Sc. AI Module 13600) &middot; Offline Zero-Install &middot; Strict Held-Out LOPO Infant 7 vs. Frozen Stage 4 Models</p>
-    </div>
-    <div class="badge-row">
-      <span class="pill pill-brand">R2e FilterSafe-8: 8 params</span>
-      <span class="pill">Archive SHA: <code>{payload["meta"]["archive_sha_short"]}</code></span>
-      <label class="pill" for="theme-select">
-        Theme
-        <select id="theme-select" class="sel" aria-label="Color scheme">
-          <option value="light dark">Auto</option>
-          <option value="light">Light</option>
-          <option value="dark">Dark</option>
+<div class="monograph-shell">
+  <header class="masthead">
+    <p class="rubric">Brandenburg University of Technology Cottbus–Senftenberg &middot; Faculty 1 &middot; M.Sc. Artificial Intelligence (Module 13600)</p>
+    <h1 class="masthead-title">Physics-Constrained Machine Learning for Contactless Neonatal Radar Respiratory Monitoring</h1>
+    <p class="masthead-sub">Interactive Companion Supplement — Causal <code>FilterSafe-8</code> Tracking, Selective Abstention, and Out-of-Band Generalization</p>
+    <div class="meta-bar">
+      <div class="meta-items">
+        <span><strong>Author:</strong> Hosam Shibly</span>
+        <span>&middot; <strong>Protocol:</strong> Held-Out LOPO Infant 7 (Session 7.3, <i>N</i> = {payload["meta"]["n_win"]}, 25.0 min)</span>
+        <span>&middot; <strong>Sealed Core:</strong> <code>5e458c1</code></span>
+        <span>&middot; <strong>Archive SHA-256:</strong> <code>{payload["meta"]["archive_sha_short"]}</code></span>
+      </div>
+      <label for="theme-select">
+        Appearance
+        <select id="theme-select" class="sel" aria-label="Color appearance">
+          <option value="auto">System (Auto)</option>
+          <option value="light" selected>Paper (Light)</option>
+          <option value="dark">Slate (Dark)</option>
         </select>
       </label>
     </div>
   </header>
 
   <div class="tabs">
-    <div class="tablist" focusgroup="tablist nomemory" role="tablist" aria-label="Interactive thesis demo views">
-      <button type="button" role="tab" id="tab-session" aria-selected="true" focusgroupstart>1. Session 7.3 Live Replay &amp; UQ</button>
-      <button type="button" role="tab" id="tab-stress">2. 20-bpm Skirt &amp; WGN Stress Test</button>
-      <button type="button" role="tab" id="tab-ladder">3. Complexity Ladder &amp; Audited Tables</button>
+    <div class="tablist" focusgroup="tablist nomemory" role="tablist" aria-label="Interactive monograph figures and tables">
+      <button type="button" role="tab" id="tab-session" aria-selected="true" focusgroupstart>Figure 1 &middot; Session 7.3 Causal Tracking &amp; Selective UQ</button>
+      <button type="button" role="tab" id="tab-stress">Figure 2 &middot; Sub-Band Skirt (20 bpm) &amp; Sensor-Dropout Stress</button>
+      <button type="button" role="tab" id="tab-ladder">Table 1 &middot; Cohort LOPO &amp; External Transfer Summary</button>
     </div>
 
     <div id="panel-session" role="tabpanel" aria-labelledby="tab-session" tabindex="0">
       <div class="panel-inner">
-        <div class="card">
+        <div class="plate">
           <div class="controls-bar">
-            <button type="button" id="btn-play" class="btn btn-primary">Play Live</button>
-            <button type="button" id="btn-step-back" class="btn" aria-label="Step backward 1 window">-2 s</button>
-            <button type="button" id="btn-step-fwd" class="btn" aria-label="Step forward 1 window">+2 s</button>
+            <button type="button" id="btn-play" class="btn btn-primary">&#9654; Play</button>
+            <button type="button" id="btn-step-back" class="btn" aria-label="Step backward 2 seconds">&minus;2 s</button>
+            <button type="button" id="btn-step-fwd" class="btn" aria-label="Step forward 2 seconds">+2 s</button>
             <label class="mono-val" for="speed-select">
-              Speed
+              Rate
               <select id="speed-select" class="sel">
-                <option value="1">1x (2s/tick)</option>
-                <option value="5" selected>5x</option>
-                <option value="15">15x</option>
-                <option value="30">30x</option>
+                <option value="1">1&times; (0.5 Hz)</option>
+                <option value="5" selected>5&times;</option>
+                <option value="15">15&times;</option>
+                <option value="30">30&times;</option>
               </select>
             </label>
             <div class="scrubber-wrap">
-              <label for="time-slider" class="mono-val" style="white-space:nowrap;">Time</label>
-              <input id="time-slider" type="range" min="0" max="{payload["meta"]["n_win"] - 1}" step="1" value="180" />
-              <span id="time-readout" class="mono-val" style="min-width:128px;text-align:right;">t = 0.0 min</span>
+              <label for="time-slider" class="mono-val" style="white-space:nowrap;">Cursor <i>t</i></label>
+              <input id="time-slider" type="range" min="0" max="{payload["meta"]["n_win"] - 1}" step="1" value="240" />
+              <span id="time-readout" class="mono-val" style="min-width:136px;text-align:right;"><i>t</i> = 0.00 min</span>
             </div>
             <label class="mono-val" for="bg-select">
-              Heatmap
+              Density Field
               <select id="bg-select" class="sel">
-                <option value="posterior" selected>Causal Posterior α_t(r)</option>
+                <option value="posterior" selected>Causal Posterior p(r_t | y_1:t)</option>
                 <option value="salience">Emission Salience e_t(r)</option>
-                <option value="none">Clean Background</option>
+                <option value="none">None (White/Slate)</option>
               </select>
             </label>
           </div>
-          <div class="toggle-list" role="group" aria-label="Model trajectory toggles">
-            <label class="chk-label" for="chk-ref"><input type="checkbox" id="chk-ref" class="visually-hidden" checked /><span><i class="swatch" style="background:currentColor;"></i> 1 Hz Monitor Ref</span></label>
-            <label class="chk-label" for="chk-r2e"><input type="checkbox" id="chk-r2e" class="visually-hidden" checked /><span><i class="swatch" style="background:#009E73;"></i> R2e FilterSafe-8 (8p)</span></label>
-            <label class="chk-label" for="chk-c5"><input type="checkbox" id="chk-c5" class="visually-hidden" checked /><span><i class="swatch" style="background:#009E73;opacity:0.45;height:8px;"></i> 80% C5 Conformal Tube</span></label>
-            <label class="chk-label" for="chk-r0"><input type="checkbox" id="chk-r0" class="visually-hidden" checked /><span><i class="swatch" style="background:#56B4E9;"></i> R0 HPSS+NLS (0p)</span></label>
-            <label class="chk-label" for="chk-r3a"><input type="checkbox" id="chk-r3a" class="visually-hidden" checked /><span><i class="swatch" style="background:#CC79A7;"></i> R3a Causal TCN (15.8k p)</span></label>
-            <label class="chk-label" for="chk-r1a"><input type="checkbox" id="chk-r1a" class="visually-hidden" /><span><i class="swatch" style="background:#0072B2;"></i> R1a Fwd HMM (3p)</span></label>
-            <label class="chk-label" for="chk-r3c"><input type="checkbox" id="chk-r3c" class="visually-hidden" /><span><i class="swatch" style="background:#E69F00;"></i> R3c Ridge (439p)</span></label>
-            <label class="chk-label" for="chk-r3b"><input type="checkbox" id="chk-r3b" class="visually-hidden" /><span><i class="swatch" style="background:#D55E00;"></i> R3b MLP (14.6k p)</span></label>
-            <label class="chk-label" for="chk-r1f"><input type="checkbox" id="chk-r1f" class="visually-hidden" /><span><i class="swatch" style="background:#6d28d9;"></i> R1f Offline FB HMM</span></label>
+          <div class="toggle-list" role="group" aria-label="Estimator overlays">
+            <label class="chk-label" for="chk-ref"><input type="checkbox" id="chk-ref" class="visually-hidden" checked /><span><i class="swatch" style="background:currentColor;"></i> 1 Hz Reference</span></label>
+            <label class="chk-label" for="chk-r2e"><input type="checkbox" id="chk-r2e" class="visually-hidden" checked /><span><i class="swatch" style="background:#009E73;"></i> R2e <code>FilterSafe-8</code> (<i>P</i> = 8)</span></label>
+            <label class="chk-label" for="chk-c5"><input type="checkbox" id="chk-c5" class="visually-hidden" checked /><span><i class="swatch" style="background:#009E73;opacity:0.45;height:8px;"></i> 80% <i>C</i><sub>5</sub> Conformal Interval</span></label>
+            <label class="chk-label" for="chk-r0"><input type="checkbox" id="chk-r0" class="visually-hidden" checked /><span><i class="swatch" style="background:#56B4E9;"></i> R0 HPSS+NLS (<i>P</i> = 0)</span></label>
+            <label class="chk-label" for="chk-r3a"><input type="checkbox" id="chk-r3a" class="visually-hidden" checked /><span><i class="swatch" style="background:#CC79A7;"></i> R3a Causal TCN (<i>P</i> = 15,817)</span></label>
+            <label class="chk-label" for="chk-r1a"><input type="checkbox" id="chk-r1a" class="visually-hidden" /><span><i class="swatch" style="background:#0072B2;"></i> R1a Fwd HMM (<i>P</i> = 3)</span></label>
+            <label class="chk-label" for="chk-r3c"><input type="checkbox" id="chk-r3c" class="visually-hidden" /><span><i class="swatch" style="background:#E69F00;"></i> R3c Ridge (<i>P</i> = 439)</span></label>
+            <label class="chk-label" for="chk-r3b"><input type="checkbox" id="chk-r3b" class="visually-hidden" /><span><i class="swatch" style="background:#D55E00;"></i> R3b MLP (<i>P</i> = 14,569)</span></label>
+            <label class="chk-label" for="chk-r1f"><input type="checkbox" id="chk-r1f" class="visually-hidden" /><span><i class="swatch" style="background:#6d28d9;"></i> R1f Offline FB</span></label>
           </div>
         </div>
 
         <div class="grid-main">
           <div style="display:flex;flex-direction:column;gap:14px;">
-            <div class="card">
-              <div class="card-header">
-                <h2 class="card-title">Tracking Trajectory (Held-Out LOPO Infant 7 &middot; 25.0 min, 736 Windows)</h2>
-                <p class="card-note">Click or drag anywhere on the plot to jump cursor t &middot; Pink markers = clinical pauses &gt;5 s</p>
-              </div>
+            <div class="plate">
+              <h2 class="fig-title">(a) Causal Respiratory Rate Tracking Trajectory (Session 7.3)</h2>
+              <p class="fig-sub">Click or drag horizontally across axes (a) or (b) to scrub cursor <i>t</i>; shaded vertical columns indicate abstained windows and top ticks mark &gt;5 s pauses.</p>
               <div class="canvas-box">
-                <canvas id="cv-traj" height="305" aria-label="Respiratory rate trajectory canvas"></canvas>
+                <canvas id="cv-traj" height="310" aria-label="Respiratory rate trajectory plot"></canvas>
               </div>
-            </div>
-
-            <div class="card">
-              <div class="card-header">
-                <h2 class="card-title">Causal Uncertainty Timeline: U2 Posterior SD vs. U6b Barrier SQI</h2>
-                <p class="card-note">Vertical cursor = live playback time &middot; Dashed line = selective abstention threshold for current coverage</p>
-              </div>
+              <h2 class="fig-title" style="margin-top:14px;">(b) Normalized Causal Uncertainty Signals: <i>U</i><sub>2</sub> vs. <i>U</i><sub>6b</sub></h2>
               <div class="canvas-box">
-                <canvas id="cv-uq" height="165" aria-label="Causal uncertainty timeline canvas"></canvas>
+                <canvas id="cv-uq" height="165" aria-label="Uncertainty signal timeline"></canvas>
               </div>
+              <p class="fig-caption"><strong>Figure 1a–b.</strong> Out-of-sample LOPO trajectory on preterm Anchor Session <code>7.3</code> (25.0 min, 736 overlapping 30 s windows at 2 s stride). Memoryless <code>R0</code> jumps onto harmonic/motion clutter while the unconstrained neural foil <code>R3a</code> (Causal TCN, RMSE 6.353 bpm) degrades below <code>R0</code> (4.789 bpm). <code>FilterSafe-8</code> (<code>R2e</code>, 4.117 bpm) maintains continuous Bayesian posterior coherence and finite-<i>K</i> conformal coverage (Chapter 4–5).</p>
             </div>
           </div>
 
           <div style="display:flex;flex-direction:column;gap:14px;">
-            <div class="card">
-              <div class="card-header">
-                <h2 class="card-title">Instantaneous State Belief at Cursor t</h2>
-                <p class="card-note" id="slice-subtitle">Comparing memoryless emission e_t(r) vs. causal posterior α_t(r)</p>
-              </div>
+            <div class="plate">
+              <h2 class="fig-title">(c) Instantaneous State Density at Cursor <i>t</i></h2>
+              <p class="fig-sub">Bars: likelihood <i>e<sub>t</sub></i>(<i>r</i>); curve: causal forward posterior <i>p</i>(<i>r<sub>t</sub></i> | <b>y</b><sub>1:<i>t</i></sub>).</p>
               <div class="canvas-box">
                 <canvas id="cv-slice" height="205" aria-label="Spectral emission and posterior distribution slice"></canvas>
               </div>
-              <div class="kpi-grid" style="margin-top:10px;">
-                <div class="kpi"><span class="kpi-k">1 Hz Ref / Pause</span><span id="kpi-ref" class="kpi-v">--</span></div>
-                <div class="kpi"><span class="kpi-k">R2e FilterSafe-8 &plusmn; C5</span><span id="kpi-r2e" class="kpi-v">--</span></div>
-                <div class="kpi"><span class="kpi-k">R0 (0p) vs. R3a TCN (16k)</span><span id="kpi-foils" class="kpi-v">--</span></div>
-                <div class="kpi"><span class="kpi-k">U2 SD / U6b Barrier</span><span id="kpi-uq" class="kpi-v">--</span></div>
-              </div>
+              <table class="booktabs" aria-label="Instantaneous cursor telemetry">
+                <thead>
+                  <tr><th>Signal / Estimator</th><th class="num">Value at <i>t</i></th></tr>
+                </thead>
+                <tbody>
+                  <tr><th>1 Hz Reference (Clinical State)</th><td id="kpi-ref" class="num">--</td></tr>
+                  <tr><th><code>R2e</code> <code>FilterSafe-8</code> &plusmn; 80% <i>C</i><sub>5</sub></th><td id="kpi-r2e" class="num">--</td></tr>
+                  <tr><th><code>R0</code> (0p) / <code>R3a</code> TCN (15.8k)</th><td id="kpi-foils" class="num">--</td></tr>
+                  <tr><th><i>U</i><sub>2</sub> Post. SD / <i>U</i><sub>6b</sub> Barrier SQI</th><td id="kpi-uq" class="num">--</td></tr>
+                </tbody>
+              </table>
             </div>
 
-            <div class="card">
-              <div class="card-header">
-                <h2 class="card-title">Interactive Selective Abstention Gate</h2>
+            <div class="plate">
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
+                <h2 class="fig-title" style="margin:0;">Selective Abstention Analysis</h2>
                 <label class="mono-val" for="proxy-select">
                   Proxy
                   <select id="proxy-select" class="sel">
-                    <option value="u6b" selected>U6b Zero-Tuned Barrier</option>
-                    <option value="u2">U2 Posterior SD (0p)</option>
+                    <option value="u6b" selected>U6b Barrier SQI</option>
+                    <option value="u2">U2 Posterior SD</option>
                   </select>
                 </label>
               </div>
-              <div style="display:flex;align-items:center;gap:10px;">
-                <label for="cov-slider" class="mono-val" style="white-space:nowrap;">Coverage</label>
+              <div style="display:flex;align-items:center;gap:10px;margin-top:4px;">
+                <label for="cov-slider" class="mono-val" style="white-space:nowrap;">Target Coverage</label>
                 <input id="cov-slider" type="range" min="50" max="100" step="1" value="80" />
-                <span id="cov-readout" class="mono-val" style="min-width:46px;text-align:right;">80%</span>
+                <span id="cov-readout" class="mono-val" style="min-width:44px;text-align:right;">80%</span>
               </div>
-              <div class="kpi-grid" style="margin-top:6px;">
-                <div class="kpi"><span class="kpi-k">Retained R2e 1 Hz RMSE</span><span id="kpi-ret-rmse" class="kpi-v">--</span></div>
-                <div class="kpi"><span class="kpi-k">Delta vs. 100% Coverage</span><span id="kpi-ret-delta" class="kpi-v">--</span></div>
-                <div class="kpi"><span class="kpi-k">80% C5 Empirical Cov.</span><span id="kpi-ret-c5" class="kpi-v">--</span></div>
-                <div class="kpi"><span class="kpi-k">Retained Clinical Pauses</span><span id="kpi-ret-pause" class="kpi-v">--</span></div>
-              </div>
+              <table class="booktabs" aria-label="Selective risk-coverage summary">
+                <thead>
+                  <tr><th>Retained Cohort Metric</th><th class="num">Result</th></tr>
+                </thead>
+                <tbody>
+                  <tr><th>Retained <code>R2e</code> 1 Hz RMSE</th><td id="kpi-ret-rmse" class="num">--</td></tr>
+                  <tr><th>&Delta; RMSE vs. 100% Coverage</th><td id="kpi-ret-delta" class="num">--</td></tr>
+                  <tr><th>Empirical 80% <i>C</i><sub>5</sub> Coverage</th><td id="kpi-ret-c5" class="num">--</td></tr>
+                  <tr><th>Retained Apnea Pauses (&gt;5 s)</th><td id="kpi-ret-pause" class="num">--</td></tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
@@ -1085,45 +1150,40 @@ def render_html_document(payload: dict[str, Any]) -> str:
 
     <div id="panel-stress" role="tabpanel" aria-labelledby="tab-stress" hidden="until-found">
       <div class="panel-inner">
-        <div class="card">
-          <div class="card-header">
-            <h2 class="card-title">Live Frozen Stage 4 Stress Test: Why Physics Constraints Prevent Out-of-Band &amp; Dropout Hallucination</h2>
-            <p class="card-note">Computed live from SHA-256 verified <code>frozen_stage4_models.npz</code> (<code>af33a83e157f7d2e</code>) on synthetic 24 GHz CW I/Q waveforms</p>
-          </div>
+        <div class="plate">
           <div class="grid-two">
             <div>
-              <h3 style="margin:0 0 6px;font-size:0.88rem;">A. Frequency Sweep Across 28 bpm High-Pass Cutoff (14–72 bpm)</h3>
-              <div class="canvas-box"><canvas id="cv-sweep" height="295" aria-label="Frequency sweep invariance plot"></canvas></div>
+              <h2 class="fig-title">(a) Frequency Sweep Across 28 bpm Cutoff (14–72 bpm)</h2>
+              <p class="fig-sub">Zero-touch evaluation of frozen Stage 4 weights (<code>af33a83e</code>) on unit-SNR 24 GHz CW simulations.</p>
+              <div class="canvas-box"><canvas id="cv-sweep" height="305" aria-label="Frequency sweep invariance plot"></canvas></div>
             </div>
             <div>
-              <h3 style="margin:0 0 6px;font-size:0.88rem;">B. 20 bpm Bradypnea &rarr; Pure WGN Dropout &rarr; 20 bpm Recovery</h3>
-              <div class="canvas-box"><canvas id="cv-dropout" height="295" aria-label="Bradypnea to WGN dropout stress replay"></canvas></div>
+              <h2 class="fig-title">(b) 20 bpm Bradypnea Skirt &rarr; Pure WGN Dropout &rarr; Recovery</h2>
+              <p class="fig-sub">36 causal windows testing spectral skirt integrity and zero-tuned <i>U</i><sub>6b</sub> out-of-distribution rejection.</p>
+              <div class="canvas-box"><canvas id="cv-dropout" height="305" aria-label="Bradypnea to WGN dropout stress replay"></canvas></div>
             </div>
           </div>
+          <p class="fig-caption"><strong>Figure 2a–b.</strong> Because <code>FilterSafe-8</code> operates strictly via <i>SO</i>(2)&times;&#8477;<sub>&gt;0</sub>-invariant folded log-salience channels with zero learned absolute-frequency weights, it maintains unit slope across the 28 bpm high-pass boundary and holds 20 bpm bradypnea accurately while <i>U</i><sub>6b</sub> rises sharply during white Gaussian noise (WGN) dropout. High-capacity regressors (<code>R3a</code>, <code>R3b</code>, <code>R3c</code>) collapse outside training support and hallucinate rates under noise (Chapter 6).</p>
         </div>
       </div>
     </div>
 
     <div id="panel-ladder" role="tabpanel" aria-labelledby="tab-ladder" hidden="until-found">
       <div class="panel-inner">
-        <div class="card">
-          <div class="card-header">
-            <h2 class="card-title">Audited Complexity Ladder: Anchor Session 7.3 vs. Full NICU Cohort (K=11, S=28) &amp; External 24.2 GHz L4</h2>
-            <p class="card-note">Cohort &amp; external values loaded verbatim from <code>metrics_stage2_complexity.json</code> and <code>metrics_stage4_external.json</code></p>
-          </div>
+        <div class="plate">
           <div tabindex="0" role="region" aria-labelledby="ladder-caption" class="table-wrapper">
-            <table>
-              <caption id="ladder-caption">Held-out NICU Session 7.3 vs. full cohort &amp; zero-touch external hardware RMSE (bpm)</caption>
+            <table class="ladder">
+              <caption id="ladder-caption">Table 1. Multi-stage complexity ladder: Session 7.3 held-out LOPO vs. NICU cohort (<i>K</i> = 11, <i>S</i> = 28) &amp; zero-touch 24.2 GHz transfer (RMSE in bpm).</caption>
               <thead>
                 <tr>
                   <th>Model Family</th>
                   <th>Params</th>
                   <th>Lookahead (Blk / STFT)</th>
                   <th>Session 7.3 LOPO 1 Hz</th>
-                  <th>NICU 1 Hz (S=28)</th>
-                  <th>p_Holm vs R0</th>
+                  <th>NICU 1 Hz (<i>S</i> = 28)</th>
+                  <th><i>p</i><sub>Holm</sub> vs. R0</th>
                   <th>NICU Trig-10s</th>
-                  <th>Ext >=28 bpm</th>
+                  <th>Ext &ge;28 bpm</th>
                   <th>Ext Slope</th>
                   <th>Ext 20-bpm Skirt</th>
                 </tr>
@@ -1131,6 +1191,7 @@ def render_html_document(payload: dict[str, Any]) -> str:
               <tbody id="ladder-tbody"></tbody>
             </table>
           </div>
+          <p class="fig-caption"><strong>Table 1 Notes.</strong> Session <code>7.3</code> LOPO RMSE is evaluated over 593 finite valid 30 s reference windows (matching the 100% coverage cohort in Figure 1); full-cohort NICU and zero-touch Stage 4 values are read directly from immutable JSON archives <code>metrics_stage2_complexity.json</code> and <code>metrics_stage4_external.json</code> (Chapters 4 and 6).</p>
         </div>
       </div>
     </div>
@@ -1146,6 +1207,9 @@ def render_html_document(payload: dict[str, Any]) -> str:
   const N_WIN = DATA.meta.n_win;
   const GRID_MIN = DATA.meta.grid_min;
   const GRID_LEN = DATA.meta.grid_len;
+
+  const isNum = (v) => typeof v === "number" && Number.isFinite(v);
+  const fmt = (v, d = 1, unit = "") => (isNum(v) ? v.toFixed(d) + unit : "\u2014 (artifact)");
 
   function decodeU8Matrix(b64) {{
     const bin = atob(b64);
@@ -1172,35 +1236,39 @@ def render_html_document(payload: dict[str, Any]) -> str:
   }};
 
   const COLORS = {{
-    ref: "fg",
     r2e: "#009E73",
     r0: "#56B4E9",
     r3a: "#CC79A7",
     r1a: "#0072B2",
     r3c: "#E69F00",
     r3b: "#D55E00",
-    r1f: "#7C3AED",
+    r1f: "#6d28d9",
   }};
+
+  // Set default initial appearance cleanly to Paper (Light)
+  document.documentElement.dataset.theme = "light";
 
   function getThemeColors() {{
     const cs = getComputedStyle(document.documentElement);
     return {{
       bg: cs.getPropertyValue("--card").trim() || "#ffffff",
-      surface2: cs.getPropertyValue("--surface2").trim() || "#edf1f7",
-      border: cs.getPropertyValue("--border").trim() || "#d3dbe6",
-      fg: cs.getPropertyValue("--fg").trim() || "#121926",
-      muted: cs.getPropertyValue("--muted").trim() || "#4a576d",
-      brand: cs.getPropertyValue("--brand-color").trim() || "#006c4f",
-      accent: cs.getPropertyValue("--accent").trim() || "#005896",
-      warn: cs.getPropertyValue("--warn").trim() || "#b54500",
-      danger: cs.getPropertyValue("--danger").trim() || "#a61d56",
+      surface2: cs.getPropertyValue("--surface2").trim() || "#f2f4f7",
+      border: cs.getPropertyValue("--border").trim() || "#cfd5df",
+      ruleStrong: cs.getPropertyValue("--rule-strong").trim() || "#1f2937",
+      fg: cs.getPropertyValue("--fg").trim() || "#141821",
+      muted: cs.getPropertyValue("--muted").trim() || "#4b5565",
+      brand: cs.getPropertyValue("--brand-color").trim() || "#1b4d3e",
+      accent: cs.getPropertyValue("--accent").trim() || "#1b365d",
+      warn: cs.getPropertyValue("--warn").trim() || "#9a3412",
+      danger: cs.getPropertyValue("--danger").trim() || "#881337",
     }};
   }}
 
   function setupCanvas(cv, cssH) {{
     const dpr = Math.max(window.devicePixelRatio || 1, 1);
     const rect = cv.getBoundingClientRect();
-    const cssW = Math.max(rect.width || cv.parentElement.clientWidth || 640, 280);
+    const parentW = cv.parentElement ? cv.parentElement.clientWidth : 640;
+    const cssW = Math.max(rect.width || parentW || 640, 280);
     cv.style.height = cssH + "px";
     const targetW = Math.round(cssW * dpr);
     const targetH = Math.round(cssH * dpr);
@@ -1223,20 +1291,25 @@ def render_html_document(payload: dict[str, Any]) -> str:
     const arr = STATE.proxy === "u6b" ? S73.u6b : S73.u2;
     const validIdx = [];
     for (let i = 0; i < N_WIN; i++) {{
-      if (S73.valid[i]) validIdx.push(i);
+      if (S73.valid[i] && isNum(S73.ref_1hz[i]) && isNum(S73.pred_R2e[i]) && isNum(arr[i])) {{
+        validIdx.push(i);
+      }}
     }}
     const sorted = validIdx.map((i) => arr[i]).sort((a, b) => a - b);
     const frac = STATE.coveragePct / 100.0;
-    const thrIdx = Math.min(sorted.length - 1, Math.max(0, Math.floor(frac * (sorted.length - 1))));
-    const thr = sorted[thrIdx];
+    const thrIdx = sorted.length > 0
+      ? Math.min(sorted.length - 1, Math.max(0, Math.floor(frac * (sorted.length - 1))))
+      : 0;
+    const thr = sorted.length > 0 ? sorted[thrIdx] : 1.0;
 
     let seAll = 0, nAll = 0, seRet = 0, nRet = 0, covHits = 0;
     let pausesAll = 0, pausesRet = 0;
     const kept = new Uint8Array(N_WIN);
     for (let i = 0; i < N_WIN; i++) {{
-      const isKept = STATE.coveragePct >= 100 ? true : arr[i] <= thr;
+      const uVal = arr[i];
+      const isKept = STATE.coveragePct >= 100 || (isNum(uVal) && uVal <= thr);
       if (isKept) kept[i] = 1;
-      if (!S73.valid[i]) continue;
+      if (!S73.valid[i] || !isNum(S73.ref_1hz[i]) || !isNum(S73.pred_R2e[i])) continue;
       const err = S73.pred_R2e[i] - S73.ref_1hz[i];
       seAll += err * err;
       nAll++;
@@ -1244,31 +1317,29 @@ def render_html_document(payload: dict[str, Any]) -> str:
       if (isKept) {{
         seRet += err * err;
         nRet++;
-        if (Math.abs(err) <= S73.c5_half_80[i]) covHits++;
+        if (isNum(S73.c5_half_80[i]) && Math.abs(err) <= S73.c5_half_80[i]) covHits++;
         if (S73.pause[i]) pausesRet++;
       }}
     }}
     const rmseAll = Math.sqrt(seAll / Math.max(1, nAll));
     const rmseRet = Math.sqrt(seRet / Math.max(1, nRet));
     return {{
-      thr,
-      kept,
-      rmseAll,
-      rmseRet,
-      delta: rmseRet - rmseAll,
-      c5Cov: covHits / Math.max(1, nRet),
-      pausesRet,
-      pausesAll,
-      nRet,
-      nAll,
+      thr, kept, rmseAll, rmseRet, delta: rmseRet - rmseAll,
+      c5Cov: covHits / Math.max(1, nRet), pausesRet, pausesAll, nRet, nAll,
     }};
+  }}
+
+  function drawFrameAndTicks(ctx, pad, pw, ph, tc) {{
+    ctx.strokeStyle = tc.ruleStrong;
+    ctx.lineWidth = 1.0;
+    ctx.strokeRect(pad.l, pad.t, pw, ph);
   }}
 
   function drawTrajectory(ab) {{
     const cv = document.getElementById("cv-traj");
-    const {{ ctx, w, h }} = setupCanvas(cv, 305);
+    const {{ ctx, w, h }} = setupCanvas(cv, 310);
     const tc = getThemeColors();
-    const pad = {{ l: 46, r: 16, t: 16, b: 30 }};
+    const pad = {{ l: 52, r: 14, t: 14, b: 36 }};
     const pw = w - pad.l - pad.r;
     const ph = h - pad.t - pad.b;
     const yMin = 18, yMax = 90;
@@ -1278,7 +1349,6 @@ def render_html_document(payload: dict[str, Any]) -> str:
     ctx.fillStyle = tc.bg;
     ctx.fillRect(0, 0, w, h);
 
-    // Optional background heatmap (e_t or alpha_t)
     if (STATE.bgMode !== "none") {{
       const mat = STATE.bgMode === "posterior" ? POST_U8 : SAL_U8;
       const cols = Math.min(N_WIN, 240);
@@ -1291,60 +1361,70 @@ def render_html_document(payload: dict[str, Any]) -> str:
           const v = mat[ti * GRID_LEN + b] / 255.0;
           if (v < 0.08) continue;
           ctx.fillStyle = STATE.bgMode === "posterior"
-            ? `rgba(0, 158, 115, ${{(v * 0.42).toFixed(3)}})`
-            : `rgba(86, 180, 233, ${{(v * 0.36).toFixed(3)}})`;
+            ? `rgba(0, 158, 115, ${{(v * 0.34).toFixed(3)}})`
+            : `rgba(86, 180, 233, ${{(v * 0.30).toFixed(3)}})`;
           ctx.fillRect(x, pad.t + ((GRID_LEN - 1 - b) / GRID_LEN) * ph, cellW + 0.6, cellH + 0.6);
         }}
       }}
     }}
 
-    // Shade invalid/abstained regions + highlight >5s pause ticks
     for (let i = 0; i < N_WIN; i++) {{
       if (S73.valid[i] && !ab.kept[i]) {{
-        ctx.fillStyle = "rgba(213, 94, 0, 0.11)";
-        ctx.fillRect(xOf(i) - 1, pad.t, pw / N_WIN + 1.5, ph);
+        ctx.fillStyle = "rgba(154, 52, 18, 0.10)";
+        ctx.fillRect(xOf(i) - 0.5, pad.t, pw / N_WIN + 1.0, ph);
       }}
       if (S73.pause[i] && S73.valid[i]) {{
         ctx.fillStyle = tc.danger;
-        ctx.fillRect(xOf(i) - 1, pad.t, Math.max(2, pw / N_WIN), 5);
+        ctx.fillRect(xOf(i) - 0.5, pad.t + 1, Math.max(2, pw / N_WIN), 5);
       }}
     }}
 
-    // Grid lines
-    ctx.strokeStyle = tc.border;
-    ctx.lineWidth = 1;
+    // Subtle dashed horizontal gridlines + ticks
     ctx.font = "11px ui-monospace, SFMono-Regular, Menlo, monospace";
     ctx.fillStyle = tc.muted;
     ctx.textAlign = "right";
     for (let br = 20; br <= 90; br += 10) {{
       const yy = yOf(br);
+      ctx.save();
+      ctx.strokeStyle = tc.border;
+      ctx.lineWidth = 0.8;
+      ctx.setLineDash([2, 3]);
       ctx.beginPath(); ctx.moveTo(pad.l, yy); ctx.lineTo(pad.l + pw, yy); ctx.stroke();
-      ctx.fillText(String(br), pad.l - 6, yy + 4);
+      ctx.restore();
+      ctx.strokeStyle = tc.ruleStrong;
+      ctx.beginPath(); ctx.moveTo(pad.l - 4, yy); ctx.lineTo(pad.l, yy); ctx.stroke();
+      ctx.fillText(String(br), pad.l - 7, yy + 4);
     }}
     ctx.textAlign = "center";
+    const tMaxMin = isNum(S73.t_min[N_WIN - 1]) ? S73.t_min[N_WIN - 1] : 25.0;
     for (let m = 0; m <= 25; m += 5) {{
-      const xx = pad.l + (m / S73.t_min[N_WIN - 1]) * pw;
-      ctx.fillText(m + "m", xx, h - 8);
+      const xx = pad.l + (m / tMaxMin) * pw;
+      ctx.strokeStyle = tc.ruleStrong;
+      ctx.beginPath(); ctx.moveTo(xx, pad.t + ph); ctx.lineTo(xx, pad.t + ph + 4); ctx.stroke();
+      ctx.fillText(String(m), xx, pad.t + ph + 16);
     }}
+    ctx.font = "11px ui-sans-serif, system-ui, sans-serif";
+    ctx.fillText("Recording Time t (min)", pad.l + pw / 2, h - 4);
     ctx.save();
     ctx.translate(14, pad.t + ph / 2);
     ctx.rotate(-Math.PI / 2);
-    ctx.textAlign = "center";
-    ctx.fillText("Rate (bpm)", 0, 0);
+    ctx.fillText("Rate (breaths/min)", 0, 0);
     ctx.restore();
 
-    // 80% C5 Conformal tube around R2e
     if (STATE.toggles.c5 && STATE.toggles.r2e) {{
       ctx.beginPath();
+      let started = false;
       for (let i = 0; i < N_WIN; i++) {{
+        if (!isNum(S73.pred_R2e[i]) || !isNum(S73.c5_half_80[i])) continue;
         const x = xOf(i), y = yOf(S73.pred_R2e[i] + S73.c5_half_80[i]);
-        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        if (!started) {{ ctx.moveTo(x, y); started = true; }} else ctx.lineTo(x, y);
       }}
       for (let i = N_WIN - 1; i >= 0; i--) {{
+        if (!isNum(S73.pred_R2e[i]) || !isNum(S73.c5_half_80[i])) continue;
         ctx.lineTo(xOf(i), yOf(S73.pred_R2e[i] - S73.c5_half_80[i]));
       }}
       ctx.closePath();
-      ctx.fillStyle = "rgba(0, 158, 115, 0.22)";
+      ctx.fillStyle = "rgba(0, 158, 115, 0.20)";
       ctx.fill();
     }}
 
@@ -1357,39 +1437,43 @@ def render_html_document(payload: dict[str, Any]) -> str:
       ctx.beginPath();
       let started = false;
       for (let i = 0; i < N_WIN; i++) {{
-        if (!Number.isFinite(arr[i])) {{ started = false; continue; }}
-        const x = xOf(i), y = yOf(arr[i]);
+        const v = arr[i];
+        if (!isNum(v)) {{ started = false; continue; }}
+        const x = xOf(i), y = yOf(v);
         if (!started) {{ ctx.moveTo(x, y); started = true; }} else ctx.lineTo(x, y);
       }}
       ctx.stroke();
       ctx.restore();
     }};
 
-    if (STATE.toggles.r0) drawSeries(S73.pred_R0, COLORS.r0, 1.15, 0.78);
-    if (STATE.toggles.r3b) drawSeries(S73.pred_R3b, COLORS.r3b, 1.2, 0.78);
+    if (STATE.toggles.r0) drawSeries(S73.pred_R0, COLORS.r0, 1.15, 0.80);
+    if (STATE.toggles.r3b) drawSeries(S73.pred_R3b, COLORS.r3b, 1.2, 0.80);
     if (STATE.toggles.r3c) drawSeries(S73.pred_R3c, COLORS.r3c, 1.25, 0.85);
-    if (STATE.toggles.r3a) drawSeries(S73.pred_R3a, COLORS.r3a, 1.35, 0.85);
-    if (STATE.toggles.r1a) drawSeries(S73.pred_R1a, COLORS.r1a, 1.35, 0.88);
+    if (STATE.toggles.r3a) drawSeries(S73.pred_R3a, COLORS.r3a, 1.35, 0.88);
+    if (STATE.toggles.r1a) drawSeries(S73.pred_R1a, COLORS.r1a, 1.35, 0.90);
     if (STATE.toggles.r1f) drawSeries(S73.pred_R1f, COLORS.r1f, 1.35, 0.88, [4, 3]);
-    if (STATE.toggles.ref) drawSeries(S73.ref_1hz, tc.fg, 1.75, 0.92);
+    if (STATE.toggles.ref) drawSeries(S73.ref_1hz, tc.fg, 1.7, 0.92);
     if (STATE.toggles.r2e) drawSeries(S73.pred_R2e, COLORS.r2e, 2.0, 1.0);
 
-    // Live playback cursor
+    drawFrameAndTicks(ctx, pad, pw, ph, tc);
+
     const cx = xOf(STATE.tIdx);
     ctx.strokeStyle = tc.accent;
-    ctx.lineWidth = 1.5;
+    ctx.lineWidth = 1.4;
     ctx.setLineDash([4, 3]);
     ctx.beginPath(); ctx.moveTo(cx, pad.t); ctx.lineTo(cx, pad.t + ph); ctx.stroke();
     ctx.setLineDash([]);
-    ctx.fillStyle = COLORS.r2e;
-    ctx.beginPath(); ctx.arc(cx, yOf(S73.pred_R2e[STATE.tIdx]), 4.5, 0, Math.PI * 2); ctx.fill();
+    if (isNum(S73.pred_R2e[STATE.tIdx])) {{
+      ctx.fillStyle = COLORS.r2e;
+      ctx.beginPath(); ctx.arc(cx, yOf(S73.pred_R2e[STATE.tIdx]), 4.2, 0, Math.PI * 2); ctx.fill();
+    }}
   }}
 
   function drawUncertaintyTimeline(ab) {{
     const cv = document.getElementById("cv-uq");
     const {{ ctx, w, h }} = setupCanvas(cv, 165);
     const tc = getThemeColors();
-    const pad = {{ l: 46, r: 16, t: 14, b: 26 }};
+    const pad = {{ l: 52, r: 14, t: 12, b: 32 }};
     const pw = w - pad.l - pad.r;
     const ph = h - pad.t - pad.b;
     const xOf = (i) => pad.l + (i / (N_WIN - 1)) * pw;
@@ -1398,54 +1482,71 @@ def render_html_document(payload: dict[str, Any]) -> str:
     ctx.fillStyle = tc.bg;
     ctx.fillRect(0, 0, w, h);
 
-    ctx.strokeStyle = tc.border;
-    ctx.lineWidth = 1;
     ctx.font = "11px ui-monospace, SFMono-Regular, Menlo, monospace";
     ctx.fillStyle = tc.muted;
     ctx.textAlign = "right";
     for (const v of [0.0, 0.25, 0.5, 0.75, 1.0]) {{
       const yy = yOf(v);
+      ctx.save();
+      ctx.strokeStyle = tc.border;
+      ctx.lineWidth = 0.8;
+      ctx.setLineDash([2, 3]);
       ctx.beginPath(); ctx.moveTo(pad.l, yy); ctx.lineTo(pad.l + pw, yy); ctx.stroke();
-      ctx.fillText(v.toFixed(2), pad.l - 6, yy + 4);
+      ctx.restore();
+      ctx.fillText(v.toFixed(2), pad.l - 7, yy + 4);
     }}
+    ctx.textAlign = "center";
+    const tMaxMin = isNum(S73.t_min[N_WIN - 1]) ? S73.t_min[N_WIN - 1] : 25.0;
+    for (let m = 0; m <= 25; m += 5) {{
+      ctx.fillText(String(m), pad.l + (m / tMaxMin) * pw, pad.t + ph + 14);
+    }}
+    ctx.font = "11px ui-sans-serif, system-ui, sans-serif";
+    ctx.fillText("Recording Time t (min)", pad.l + pw / 2, h - 3);
+    ctx.save();
+    ctx.translate(14, pad.t + ph / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillText("SQI / SD [0, 1]", 0, 0);
+    ctx.restore();
 
-    // Abstention highlight
     for (let i = 0; i < N_WIN; i++) {{
       if (S73.valid[i] && !ab.kept[i]) {{
-        ctx.fillStyle = "rgba(213, 94, 0, 0.14)";
-        ctx.fillRect(xOf(i) - 1, pad.t, pw / N_WIN + 1.5, ph);
+        ctx.fillStyle = "rgba(154, 52, 18, 0.12)";
+        ctx.fillRect(xOf(i) - 0.5, pad.t, pw / N_WIN + 1.0, ph);
       }}
     }}
 
-    const plotCurve = (arr, color, lw, dash = []) => {{
+    const plotCurve = (arr, color, lw) => {{
       ctx.save();
       ctx.strokeStyle = color;
       ctx.lineWidth = lw;
-      ctx.setLineDash(dash);
       ctx.beginPath();
+      let started = false;
       for (let i = 0; i < N_WIN; i++) {{
+        if (!isNum(arr[i])) {{ started = false; continue; }}
         const x = xOf(i), y = yOf(arr[i]);
-        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        if (!started) {{ ctx.moveTo(x, y); started = true; }} else ctx.lineTo(x, y);
       }}
       ctx.stroke();
       ctx.restore();
     }};
-    plotCurve(S73.u2, COLORS.r1a, 1.4);
+    plotCurve(S73.u2, COLORS.r1a, 1.35);
     plotCurve(S73.u6b, COLORS.r3b, 1.5);
 
-    if (STATE.coveragePct < 100) {{
+    if (STATE.coveragePct < 100 && isNum(ab.thr)) {{
       const yt = yOf(ab.thr);
       ctx.save();
-      ctx.strokeStyle = tc.fg;
+      ctx.strokeStyle = tc.ruleStrong;
       ctx.lineWidth = 1.2;
       ctx.setLineDash([5, 4]);
       ctx.beginPath(); ctx.moveTo(pad.l, yt); ctx.lineTo(pad.l + pw, yt); ctx.stroke();
       ctx.restore();
     }}
 
+    drawFrameAndTicks(ctx, pad, pw, ph, tc);
+
     const cx = xOf(STATE.tIdx);
     ctx.strokeStyle = tc.accent;
-    ctx.lineWidth = 1.5;
+    ctx.lineWidth = 1.4;
     ctx.setLineDash([4, 3]);
     ctx.beginPath(); ctx.moveTo(cx, pad.t); ctx.lineTo(cx, pad.t + ph); ctx.stroke();
     ctx.setLineDash([]);
@@ -1455,7 +1556,7 @@ def render_html_document(payload: dict[str, Any]) -> str:
     const cv = document.getElementById("cv-slice");
     const {{ ctx, w, h }} = setupCanvas(cv, 205);
     const tc = getThemeColors();
-    const pad = {{ l: 38, r: 12, t: 18, b: 28 }};
+    const pad = {{ l: 40, r: 12, t: 16, b: 32 }};
     const pw = w - pad.l - pad.r;
     const ph = h - pad.t - pad.b;
     const ti = STATE.tIdx;
@@ -1463,26 +1564,30 @@ def render_html_document(payload: dict[str, Any]) -> str:
     ctx.fillStyle = tc.bg;
     ctx.fillRect(0, 0, w, h);
 
-    ctx.strokeStyle = tc.border;
-    ctx.lineWidth = 1;
     ctx.font = "11px ui-monospace, SFMono-Regular, Menlo, monospace";
     ctx.fillStyle = tc.muted;
     ctx.textAlign = "right";
     for (const v of [0, 0.5, 1.0]) {{
       const yy = pad.t + (1 - v) * ph;
+      ctx.save();
+      ctx.strokeStyle = tc.border;
+      ctx.lineWidth = 0.8;
+      ctx.setLineDash([2, 3]);
       ctx.beginPath(); ctx.moveTo(pad.l, yy); ctx.lineTo(pad.l + pw, yy); ctx.stroke();
+      ctx.restore();
       ctx.fillText(v.toFixed(1), pad.l - 5, yy + 4);
     }}
     ctx.textAlign = "center";
     for (let br = 20; br <= 90; br += 10) {{
       const xx = pad.l + ((br - GRID_MIN) / (GRID_LEN - 1)) * pw;
-      ctx.fillText(String(br), xx, h - 8);
+      ctx.fillText(String(br), xx, pad.t + ph + 14);
     }}
+    ctx.font = "11px ui-sans-serif, system-ui, sans-serif";
+    ctx.fillText("Candidate Rate r (breaths/min)", pad.l + pw / 2, h - 3);
 
     const xGrid = (b) => pad.l + (b / (GRID_LEN - 1)) * pw;
     const yNorm = (v) => pad.t + (1 - v) * ph;
 
-    // Emission bars (light blue)
     ctx.fillStyle = "rgba(86, 180, 233, 0.45)";
     const bw = Math.max(1.5, pw / GRID_LEN - 0.5);
     for (let b = 0; b < GRID_LEN; b++) {{
@@ -1491,7 +1596,6 @@ def render_html_document(payload: dict[str, Any]) -> str:
       ctx.fillRect(xGrid(b) - bw / 2, y, bw, pad.t + ph - y);
     }}
 
-    // Causal posterior curve
     ctx.strokeStyle = COLORS.r2e;
     ctx.lineWidth = 2.0;
     ctx.beginPath();
@@ -1502,20 +1606,22 @@ def render_html_document(payload: dict[str, Any]) -> str:
     }}
     ctx.stroke();
 
-    // Vertical markers for Ref, R0, R2e
+    drawFrameAndTicks(ctx, pad, pw, ph, tc);
+
     const drawMarker = (val, color, label, dy) => {{
-      if (!Number.isFinite(val)) return;
+      if (!isNum(val)) return;
       const xx = pad.l + ((Math.min(90, Math.max(18, val)) - GRID_MIN) / (GRID_LEN - 1)) * pw;
       ctx.strokeStyle = color;
       ctx.lineWidth = 1.6;
       ctx.beginPath(); ctx.moveTo(xx, pad.t); ctx.lineTo(xx, pad.t + ph); ctx.stroke();
       ctx.fillStyle = color;
+      ctx.font = "11px ui-monospace, SFMono-Regular, Menlo, monospace";
       ctx.textAlign = xx > w - 45 ? "right" : "left";
       ctx.fillText(label, xx + (xx > w - 45 ? -4 : 4), pad.t + dy);
     }};
-    drawMarker(S73.pred_R0[ti], COLORS.r0, "R0", 12);
-    drawMarker(S73.ref_1hz[ti], tc.fg, "Ref", 25);
-    drawMarker(S73.pred_R2e[ti], COLORS.r2e, "R2e", 38);
+    drawMarker(S73.pred_R0[ti], COLORS.r0, "R0", 13);
+    drawMarker(S73.ref_1hz[ti], tc.fg, "Ref", 27);
+    drawMarker(S73.pred_R2e[ti], COLORS.r2e, "R2e", 41);
   }}
 
   function drawStressTabs() {{
@@ -1524,120 +1630,124 @@ def render_html_document(payload: dict[str, Any]) -> str:
     if (!cv1 || !cv2) return;
     const tc = getThemeColors();
 
-    // A. Sweep plot
     {{
-      const {{ ctx, w, h }} = setupCanvas(cv1, 295);
+      const {{ ctx, w, h }} = setupCanvas(cv1, 305);
       const sw = DATA.stress.sweep;
-      const pad = {{ l: 46, r: 16, t: 22, b: 34 }};
+      const pad = {{ l: 50, r: 16, t: 22, b: 36 }};
       const pw = w - pad.l - pad.r, ph = h - pad.t - pad.b;
       const xOf = (r) => pad.l + ((r - 14) / (72 - 14)) * pw;
       const yOf = (y) => pad.t + ((85 - Math.min(85, Math.max(10, y))) / (85 - 10)) * ph;
 
       ctx.fillStyle = tc.bg; ctx.fillRect(0, 0, w, h);
-      // 28 bpm cutoff shading (<28 bpm skirt)
-      ctx.fillStyle = "rgba(213, 94, 0, 0.09)";
+      ctx.fillStyle = "rgba(154, 52, 18, 0.08)";
       ctx.fillRect(pad.l, pad.t, xOf(28) - pad.l, ph);
       ctx.strokeStyle = tc.warn; ctx.setLineDash([4, 3]);
       ctx.beginPath(); ctx.moveTo(xOf(28), pad.t); ctx.lineTo(xOf(28), pad.t + ph); ctx.stroke();
       ctx.setLineDash([]);
 
-      ctx.strokeStyle = tc.border; ctx.lineWidth = 1;
       ctx.font = "11px ui-monospace, SFMono-Regular, Menlo, monospace";
       ctx.fillStyle = tc.muted; ctx.textAlign = "right";
       for (const y of [15, 30, 45, 60, 75]) {{
-        const yy = yOf(y); ctx.beginPath(); ctx.moveTo(pad.l, yy); ctx.lineTo(pad.l + pw, yy); ctx.stroke();
+        const yy = yOf(y);
+        ctx.save(); ctx.strokeStyle = tc.border; ctx.lineWidth = 0.8; ctx.setLineDash([2, 3]);
+        ctx.beginPath(); ctx.moveTo(pad.l, yy); ctx.lineTo(pad.l + pw, yy); ctx.stroke(); ctx.restore();
         ctx.fillText(String(y), pad.l - 6, yy + 4);
       }}
       ctx.textAlign = "center";
-      for (const r of [14, 20, 28, 40, 56, 72]) {{
-        ctx.fillText(String(r), xOf(r), h - 10);
-      }}
+      for (const r of [14, 20, 28, 40, 56, 72]) ctx.fillText(String(r), xOf(r), pad.t + ph + 15);
+      ctx.font = "11px ui-sans-serif, system-ui, sans-serif";
+      ctx.fillText("Simulated Respiratory Rate (breaths/min)", pad.l + pw / 2, h - 4);
       ctx.fillStyle = tc.warn;
-      ctx.fillText("<28 bpm Skirt", (pad.l + xOf(28)) / 2, pad.t + 14);
+      ctx.fillText("Skirt (<28 bpm)", (pad.l + xOf(28)) / 2, pad.t + 14);
 
-      // Identity line
       ctx.save(); ctx.strokeStyle = tc.fg; ctx.lineWidth = 1.4; ctx.setLineDash([5, 4]);
       ctx.beginPath(); ctx.moveTo(xOf(14), yOf(14)); ctx.lineTo(xOf(72), yOf(72)); ctx.stroke(); ctx.restore();
 
       for (const [k, color, lw] of [["R3c", COLORS.r3c, 1.5], ["R3b", COLORS.r3b, 1.6], ["R3a", COLORS.r3a, 1.8], ["R0", COLORS.r0, 1.5], ["R2e", COLORS.r2e, 2.3]]) {{
         ctx.strokeStyle = color; ctx.lineWidth = lw; ctx.beginPath();
+        let started = false;
         sw.rates_bpm.forEach((r, idx) => {{
-          const x = xOf(r), y = yOf(sw[k][idx]);
-          idx === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+          const v = sw[k][idx];
+          if (!isNum(v)) {{ started = false; return; }}
+          const x = xOf(r), y = yOf(v);
+          if (!started) {{ ctx.moveTo(x, y); started = true; }} else ctx.lineTo(x, y);
         }});
         ctx.stroke();
       }}
-      // Compact inline legend
+      drawFrameAndTicks(ctx, pad, pw, ph, tc);
+
       let lx = pad.l + 8;
+      ctx.font = "11px ui-sans-serif, system-ui, sans-serif";
       for (const [lbl, c] of [["Identity", tc.fg], ["R2e (8p)", COLORS.r2e], ["R3a TCN", COLORS.r3a], ["R3b MLP", COLORS.r3b], ["R3c Ridge", COLORS.r3c]]) {{
-        ctx.fillStyle = c; ctx.fillRect(lx, h - 29, 10, 3);
-        ctx.fillStyle = tc.muted; ctx.textAlign = "left"; ctx.fillText(lbl, lx + 13, h - 24);
-        lx += ctx.measureText(lbl).width + 24;
+        ctx.fillStyle = c; ctx.fillRect(lx, h - 49, 10, 3);
+        ctx.fillStyle = tc.muted; ctx.textAlign = "left"; ctx.fillText(lbl, lx + 13, h - 44);
+        lx += ctx.measureText(lbl).width + 22;
       }}
     }}
 
-    // B. 20 bpm -> WGN -> 20 bpm Dropout plot
     {{
-      const {{ ctx, w, h }} = setupCanvas(cv2, 295);
+      const {{ ctx, w, h }} = setupCanvas(cv2, 305);
       const rp = DATA.stress.dropout_replay;
       const n = rp.n_win;
-      const pad = {{ l: 46, r: 42, t: 22, b: 34 }};
+      const pad = {{ l: 50, r: 44, t: 22, b: 36 }};
       const pw = w - pad.l - pad.r, ph = h - pad.t - pad.b;
       const xOf = (i) => pad.l + (i / (n - 1)) * pw;
       const yOf = (y) => pad.t + ((85 - Math.min(85, Math.max(10, y))) / (85 - 10)) * ph;
       const yU = (u) => pad.t + (1 - u) * ph;
 
       ctx.fillStyle = tc.bg; ctx.fillRect(0, 0, w, h);
-      // Shade WGN windows 12..23
-      ctx.fillStyle = "rgba(166, 29, 86, 0.12)";
+      ctx.fillStyle = "rgba(136, 19, 55, 0.10)";
       ctx.fillRect(xOf(11.5), pad.t, xOf(23.5) - xOf(11.5), ph);
 
-      ctx.strokeStyle = tc.border; ctx.lineWidth = 1;
       ctx.font = "11px ui-monospace, SFMono-Regular, Menlo, monospace";
       ctx.fillStyle = tc.muted; ctx.textAlign = "right";
       for (const y of [20, 40, 60, 80]) {{
-        const yy = yOf(y); ctx.beginPath(); ctx.moveTo(pad.l, yy); ctx.lineTo(pad.l + pw, yy); ctx.stroke();
+        const yy = yOf(y);
+        ctx.save(); ctx.strokeStyle = tc.border; ctx.lineWidth = 0.8; ctx.setLineDash([2, 3]);
+        ctx.beginPath(); ctx.moveTo(pad.l, yy); ctx.lineTo(pad.l + pw, yy); ctx.stroke(); ctx.restore();
         ctx.fillText(String(y), pad.l - 6, yy + 4);
       }}
       ctx.textAlign = "left";
-      for (const u of [0.0, 0.5, 1.0]) {{
-        ctx.fillText(u.toFixed(1), pad.l + pw + 6, yU(u) + 4);
-      }}
+      for (const u of [0.0, 0.5, 1.0]) ctx.fillText(u.toFixed(1), pad.l + pw + 6, yU(u) + 4);
       ctx.textAlign = "center";
-      ctx.fillStyle = tc.danger;
-      ctx.fillText("Pure WGN Dropout", (xOf(12) + xOf(23)) / 2, pad.t + 14);
+      ctx.font = "11px ui-sans-serif, system-ui, sans-serif";
+      ctx.fillStyle = tc.danger; ctx.fillText("WGN Dropout", (xOf(12) + xOf(23)) / 2, pad.t + 14);
       ctx.fillStyle = tc.muted;
-      ctx.fillText("20 bpm Skirt", xOf(5.5), h - 10);
-      ctx.fillText("Recovery (20 bpm)", xOf(29.5), h - 10);
+      ctx.fillText("20 bpm Skirt", xOf(5.5), pad.t + ph + 15);
+      ctx.fillText("Recovery (20 bpm)", xOf(29.5), pad.t + ph + 15);
+      ctx.fillText("Window Sequence Index (2 s stride)", pad.l + pw / 2, h - 4);
 
-      // Reference 20 bpm segments
       ctx.save(); ctx.strokeStyle = tc.fg; ctx.lineWidth = 1.5; ctx.setLineDash([4, 3]);
       ctx.beginPath(); ctx.moveTo(xOf(0), yOf(20)); ctx.lineTo(xOf(11), yOf(20));
       ctx.moveTo(xOf(24), yOf(20)); ctx.lineTo(xOf(35), yOf(20)); ctx.stroke(); ctx.restore();
 
-      for (const [k, color, lw, dash] of [["R3a", COLORS.r3a, 1.7, []], ["R3b", COLORS.r3b, 1.5, []], ["R2e", COLORS.r2e, 2.3, []]]) {{
-        ctx.save(); ctx.strokeStyle = color; ctx.lineWidth = lw; ctx.setLineDash(dash);
+      for (const [k, color, lw] of [["R3a", COLORS.r3a, 1.7], ["R3b", COLORS.r3b, 1.5], ["R2e", COLORS.r2e, 2.3]]) {{
+        ctx.save(); ctx.strokeStyle = color; ctx.lineWidth = lw;
         ctx.beginPath();
+        let started = false;
         for (let i = 0; i < n; i++) {{
+          if (!isNum(rp[k][i])) {{ started = false; continue; }}
           const x = xOf(i), y = yOf(rp[k][i]);
-          i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+          if (!started) {{ ctx.moveTo(x, y); started = true; }} else ctx.lineTo(x, y);
         }}
         ctx.stroke(); ctx.restore();
       }}
-      // U6b dashed overlay (right axis [0,1])
       ctx.save(); ctx.strokeStyle = tc.warn; ctx.lineWidth = 1.7; ctx.setLineDash([5, 3]);
       ctx.beginPath();
+      let uStarted = false;
       for (let i = 0; i < n; i++) {{
+        if (!isNum(rp.U6b[i])) {{ uStarted = false; continue; }}
         const x = xOf(i), y = yU(rp.U6b[i]);
-        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        if (!uStarted) {{ ctx.moveTo(x, y); uStarted = true; }} else ctx.lineTo(x, y);
       }}
       ctx.stroke(); ctx.restore();
+      drawFrameAndTicks(ctx, pad, pw, ph, tc);
 
       let lx = pad.l + 8;
       for (const [lbl, c] of [["R2e (bpm)", COLORS.r2e], ["R3a TCN", COLORS.r3a], ["R3b MLP", COLORS.r3b], ["U6b SQI (right)", tc.warn]]) {{
-        ctx.fillStyle = c; ctx.fillRect(lx, pad.t + 4, 10, 3);
-        ctx.fillStyle = tc.muted; ctx.textAlign = "left"; ctx.fillText(lbl, lx + 13, pad.t + 9);
-        lx += ctx.measureText(lbl).width + 22;
+        ctx.fillStyle = c; ctx.fillRect(lx, h - 49, 10, 3);
+        ctx.fillStyle = tc.muted; ctx.textAlign = "left"; ctx.fillText(lbl, lx + 13, h - 44);
+        lx += ctx.measureText(lbl).width + 20;
       }}
     }}
   }}
@@ -1662,11 +1772,11 @@ def render_html_document(payload: dict[str, Any]) -> str:
 
   function updateKPIs(ab) {{
     const i = STATE.tIdx;
-    const tStr = S73.t_min[i].toFixed(2);
-    document.getElementById("time-readout").textContent = `t = ${{tStr}} m (${{i + 1}}/${{N_WIN}})`;
+    const tVal = isNum(S73.t_min[i]) ? S73.t_min[i].toFixed(2) : "0.00";
+    document.getElementById("time-readout").innerHTML = `<i>t</i> = ${{tVal}} m (${{i + 1}}/${{N_WIN}})`;
     const ts = document.getElementById("time-slider");
     ts.value = String(i);
-    ts.setAttribute("aria-valuetext", `${{tStr}} minutes`);
+    ts.setAttribute("aria-valuetext", `${{tVal}} minutes`);
     syncRangeVars(ts);
 
     const cs = document.getElementById("cov-slider");
@@ -1674,12 +1784,13 @@ def render_html_document(payload: dict[str, Any]) -> str:
     cs.setAttribute("aria-valuetext", `${{STATE.coveragePct}} percent retained`);
     syncRangeVars(cs);
 
-    const isP = S73.pause[i] ? " | PAUSE >5s" : "";
-    const isV = S73.valid[i] ? "" : " | Invalid";
-    document.getElementById("kpi-ref").textContent = `${{S73.ref_1hz[i].toFixed(1)}} bpm${{isP}}${{isV}}`;
-    document.getElementById("kpi-r2e").textContent = `${{S73.pred_R2e[i].toFixed(1)}} \u00B1 ${{S73.c5_half_80[i].toFixed(1)}} bpm`;
-    document.getElementById("kpi-foils").textContent = `${{S73.pred_R0[i].toFixed(1)}} / ${{S73.pred_R3a[i].toFixed(1)}} bpm`;
-    document.getElementById("kpi-uq").textContent = `${{S73.u2[i].toFixed(3)}} / ${{S73.u6b[i].toFixed(3)}}`;
+    const stateTag = S73.pause[i] ? " [PAUSE >5s]" : (S73.valid[i] ? "" : " [Invalid]");
+    document.getElementById("kpi-ref").textContent = `${{fmt(S73.ref_1hz[i], 1, " bpm")}}${{stateTag}}`;
+    const r2eStr = fmt(S73.pred_R2e[i], 1, "");
+    const c5Str = isNum(S73.c5_half_80[i]) ? S73.c5_half_80[i].toFixed(1) : "--";
+    document.getElementById("kpi-r2e").textContent = `${{r2eStr}} \u00B1 ${{c5Str}} bpm`;
+    document.getElementById("kpi-foils").textContent = `${{fmt(S73.pred_R0[i], 1, "")}} / ${{fmt(S73.pred_R3a[i], 1, " bpm")}}`;
+    document.getElementById("kpi-uq").textContent = `${{fmt(S73.u2[i], 3, "")}} / ${{fmt(S73.u6b[i], 3, "")}}`;
 
     document.getElementById("kpi-ret-rmse").textContent = `${{ab.rmseRet.toFixed(3)}} bpm (${{ab.nRet}}/${{ab.nAll}})`;
     const sign = ab.delta <= 0 ? "" : "+";
@@ -1697,7 +1808,6 @@ def render_html_document(payload: dict[str, Any]) -> str:
     drawStressTabs();
   }}
 
-  // Playback loop
   function tick(now) {{
     if (STATE.playing) {{
       const intervalMs = 1000.0 / STATE.speed;
@@ -1710,11 +1820,10 @@ def render_html_document(payload: dict[str, Any]) -> str:
     }}
   }}
 
-  // Wire controls
   const btnPlay = document.getElementById("btn-play");
   btnPlay.addEventListener("click", () => {{
     STATE.playing = !STATE.playing;
-    btnPlay.textContent = STATE.playing ? "Pause" : "Play Live";
+    btnPlay.innerHTML = STATE.playing ? "&#9208; Pause" : "&#9654; Play";
     if (STATE.playing) {{
       STATE.lastTick = performance.now();
       requestAnimationFrame(tick);
@@ -1742,7 +1851,14 @@ def render_html_document(payload: dict[str, Any]) -> str:
     STATE.coveragePct = Number(e.target.value); redrawAll();
   }});
   document.getElementById("theme-select").addEventListener("change", (e) => {{
-    document.documentElement.style.colorScheme = e.target.value;
+    const val = e.target.value;
+    if (val === "auto") {{
+      delete document.documentElement.dataset.theme;
+      document.documentElement.style.colorScheme = "light dark";
+    }} else {{
+      document.documentElement.dataset.theme = val;
+      document.documentElement.style.colorScheme = val;
+    }}
     requestAnimationFrame(redrawAll);
   }});
 
@@ -1751,11 +1867,10 @@ def render_html_document(payload: dict[str, Any]) -> str:
     el.addEventListener("change", () => {{ STATE.toggles[k] = el.checked; redrawAll(); }});
   }}
 
-  // Click / drag scrubbing on trajectory & UQ canvases
   function attachScrub(cv) {{
     const jump = (ev) => {{
       const rect = cv.getBoundingClientRect();
-      const frac = Math.min(1, Math.max(0, (ev.clientX - rect.left - 46) / Math.max(1, rect.width - 62)));
+      const frac = Math.min(1, Math.max(0, (ev.clientX - rect.left - 52) / Math.max(1, rect.width - 66)));
       STATE.tIdx = Math.round(frac * (N_WIN - 1));
       redrawAll();
     }};
@@ -1766,7 +1881,6 @@ def render_html_document(payload: dict[str, Any]) -> str:
   attachScrub(document.getElementById("cv-traj"));
   attachScrub(document.getElementById("cv-uq"));
 
-  // Tabs logic with find-in-page beforematch & fallback keyboard navigation
   const tabs = Array.from(document.querySelectorAll('[role="tab"]'));
   const panels = Array.from(document.querySelectorAll('[role="tabpanel"]'));
   function activateTab(targetTab, focusTab = false) {{
